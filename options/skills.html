@@ -1,0 +1,132 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <title>PREFERENCES | MailtoWebmails</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="firefox, addon, extension, mailto, webmail, pref, preference">
+    <meta name="author" content="Noitidart">
+    <meta name="description" content="This is the preferences frontend for the MailtoWebmails add-on. From here you can install and uninstall webmail services that will handle mailto links when you click them.">
+    <!-- styles -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="font/css/fontello.css" rel="stylesheet">
+    <link href='css/font-family_droid-sans.css' rel='stylesheet' type='text/css'>
+	<!-- scripts -->
+	<script>
+		function init() {
+			var actToggles = document.querySelectorAll('a.act-toggle');
+			Array.prototype.forEach.call(actToggles, function(actTog) {
+				actTog.addEventListener('click', toggleToActive, false);
+			});
+		}
+		function toggleToActive(e) {
+			var thisToggle = e.target;
+			if (thisToggle.classList.contains('active-me')) {
+				//this toggler clicked is active so forget it, exit
+				return;
+			}
+			
+			var curActive = document.querySelector('a.active-me');
+			
+			curActive.classList.remove('active-me');
+			thisToggle.classList.add('active-me');
+		}
+		document.addEventListener('DOMContentLoaded', init, false);
+	</script>
+    </head>
+    <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container"> <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </a> <a class="brand" href="index.html"><img src="img/icon64.png"/></a>
+          <ul class="nav nav-collapse pull-right">
+			<li><a href="https://github.com/Noitidart/MailtoWebmails/issues/new"><i class="icon-mail"></i> Report A Problem</a></li>
+            <li><a href="#" class="active"><i class="icon-doc-text"></i> Preferences</a></li>
+          </ul>
+          <!-- Everything you want hidden at 940px or less, place within here -->
+          <div class="nav-collapse collapse">
+            <!-- .nav, .navbar-search, .navbar-form, etc -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--Skills container-->
+    <div class="container skills">
+      <h2>Add/Remove Services</h2>
+      <div class="row">
+        <div class="span3">
+          <div class="ps">
+            <h3>Ps</h3>
+          </div>
+        </div>
+        <div class="span5">
+          <h3>Outlook<a href="#" class="hire-me act-toggle active-me"><i class="icon-user"></i> </a></h3>
+		  <div>Outlook.com is the new Hotmail and Live Mail</div>
+		  <!--
+		  <h5>Installations <span>10</span></h5>
+		  <div class="expand-bg"> <span class="expand ps2"> &nbsp; </span> </div>
+		  -->
+		  <a href="#" class="hire-me install-me"><i class="icon-paper-plane"></i> Install </a>
+		  <a href="#" class="hire-me uninstall-me"><i class="icon-cancel"></i> Uninstall </a>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span3">
+          <div class="ai">
+            <h3>Ai</h3>
+          </div>
+        </div>
+        <div class="span5">
+          <h3>Illustrator<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
+          <div class="expand-bg"> <span class="expand ai2"> &nbsp; </span> </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span3">
+          <div class="html">
+            <h3>HTML5</h3>
+          </div>
+        </div>
+        <div class="span5">
+          <h3>HTML5 <span>75%</span></h3>
+          <div class="expand-bg"> <span class="expand html2"> &nbsp; </span> </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span3">
+          <div class="css">
+            <h3>CSS3</h3>
+          </div>
+        </div>
+        <div class="span5">
+          <h3>CSS3 <span>85%</span></h3>
+          <div class="expand-bg"> <span class="expand css2"> &nbsp; </span> </div>
+        </div>
+      </div>
+    </div>
+    <!--END: Skills container-->
+    <!-- Social Icons -->
+    <div class="row social">
+      <ul class="social-icons">
+        <li><a href="#" target="_blank"><img src="img/fb.png" alt="facebook"></a></li>
+        <li><a href="#" target="_blank"><img src="img/tw.png" alt="twitter"></a></li>
+        <li><a href="#" target="_blank"><img src="img/go.png" alt="google plus"></a></li>
+        <li><a href="#" target="_blank"><img src="img/pin.png" alt="pinterest"></a></li>
+        <li><a href="#" target="_blank"><img src="img/st.png" alt="stumbleupon"></a></li>
+        <li><a href="#" target="_blank"><img src="img/dr.png" alt="dribbble"></a></li>
+      </ul>
+    </div>
+    <!-- END: Social Icons -->
+    <!-- Footer -->
+    <div class="footer">
+      <div class="container">
+        <p class="pull-left"><a href="https://addons.mozilla.org/en-US/firefox/addon/mailtowebmails/"> <i class="icon-picture"></i> Add-on Homepage</a></p>
+        <p class="pull-right"><a href="https://github.com/Noitidart/MailtoWebmails/issues/new?title=Add%20Webservice%20Request:%20TYPE_NAME_OF_WEBMAIL_SERVICE_HERE&body=I%20was%20trying%20to%20install%20a%20webmail%20service%20from%20the%20options%20panel%20of%20MailtoWebesrvices%20but%20the%20one%20I%20was%20looking%20for%20was%20not%20found.%20I%20was%20looking%20for%20TYPE_NAME_OF_WEBMAIL_SERVICE_HERE"> <i class="icon-mail"></i> Webmail you were looking for not found? Request it be added by clicking here...</a></p>
+      </div>
+    </div>
+    <!-- Scripts -->
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    </body>
+    </html>
