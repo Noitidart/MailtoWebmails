@@ -16,6 +16,10 @@
     <link href='css/font-family_droid-sans.css' rel='stylesheet' type='text/css'>
 	<!-- scripts -->
 	<script>
+		const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
+		Cu.import('resource://gre/modules/Services.jsm');
+		Cu.import('resource://gre/modules/addons/XPIProvider.jsm');
+		
 		function init() {
 			var actToggles = document.querySelectorAll('a.act-toggle');
 			Array.prototype.forEach.call(actToggles, function(actTog) {
@@ -37,7 +41,7 @@
 			
 			var thisToggle = thisStall.parentNode.querySelector('a.act-toggle');
 			if (thisToggle.classList.contains('active-me')) {
-				alert('Cannot uninstall this handler because it is currently set to be your active mailto handler');
+				Services.prompt.alert(Services.wm.getMostRecentWindow('navigator:browser'), 'MailtoWebmails - Exception', 'Cannot uninstall this handler because it is currently set as the active mailto handler');
 				return false;
 			}
 			thisStall.classList.toggle('stalled');
@@ -143,23 +147,11 @@
       </div>
     </div>
     <!--END: Skills container-->
-    <!-- Social Icons -->
-    <div class="row social">
-      <ul class="social-icons">
-        <li><a href="#" target="_blank"><img src="img/fb.png" alt="facebook"></a></li>
-        <li><a href="#" target="_blank"><img src="img/tw.png" alt="twitter"></a></li>
-        <li><a href="#" target="_blank"><img src="img/go.png" alt="google plus"></a></li>
-        <li><a href="#" target="_blank"><img src="img/pin.png" alt="pinterest"></a></li>
-        <li><a href="#" target="_blank"><img src="img/st.png" alt="stumbleupon"></a></li>
-        <li><a href="#" target="_blank"><img src="img/dr.png" alt="dribbble"></a></li>
-      </ul>
-    </div>
-    <!-- END: Social Icons -->
     <!-- Footer -->
     <div class="footer">
       <div class="container">
         <p class="pull-left"><a href="https://addons.mozilla.org/en-US/firefox/addon/mailtowebmails/"> <i class="icon-picture"></i> Add-on Homepage</a></p>
-        <p class="pull-right"><a href="https://github.com/Noitidart/MailtoWebmails/issues/new?title=Add%20Webservice%20Request:%20TYPE_NAME_OF_WEBMAIL_SERVICE_HERE&body=I%20was%20trying%20to%20install%20a%20webmail%20service%20from%20the%20options%20panel%20of%20MailtoWebesrvices%20but%20the%20one%20I%20was%20looking%20for%20was%20not%20found.%20I%20was%20looking%20for%20TYPE_NAME_OF_WEBMAIL_SERVICE_HERE"> <i class="icon-mail"></i> Didn't find the webmail client you were looking for? Request it be added here...</a></p>
+        <p class="pull-right"><a href="https://github.com/Noitidart/MailtoWebmails/issues/new?title=Add%20Webservice%20Request:%20TYPE_NAME_OF_WEBMAIL_SERVICE_HERE&body=I%20was%20trying%20to%20install%20a%20webmail%20service%20from%20the%20options%20panel%20of%20MailtoWebesrvices%20but%20the%20one%20I%20was%20looking%20for%20was%20not%20found.%20I%20was%20looking%20for%20TYPE_NAME_OF_WEBMAIL_SERVICE_HERE"> <i class="icon-mail"></i> Didn't find a webmail client you needed? Request it here...</a></p>
       </div>
     </div>
     <!-- Scripts -->
