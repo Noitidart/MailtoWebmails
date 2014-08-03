@@ -3,6 +3,7 @@
     <head>
     <meta charset="utf-8">
     <title>PREFERENCES | MailtoWebmails</title>
+	<link rel="icon" type="image/png" href="img/icon16.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="keywords" content="firefox, addon, extension, mailto, webmail, pref, preference">
     <meta name="author" content="Noitidart">
@@ -32,6 +33,12 @@
 			var thisStall = e.target;
 			if (thisStall.nodeName == 'I') {
 				thisStall = thisStall.parentNode;
+			}
+			
+			var thisToggle = thisStall.parentNode.querySelector('a.act-toggle');
+			if (thisToggle.classList.contains('active-me')) {
+				alert('Cannot uninstall this handler because it is currently set to be your active mailto handler');
+				return false;
 			}
 			thisStall.classList.toggle('stalled');
 		}
@@ -75,6 +82,36 @@
       <h2>Add/Remove Handlers</h2>
       <div class="row">
         <div class="span3">
+          <div class="css">
+            <h3></h3>
+          </div>
+        </div>
+        <div class="span5">
+          <h3>AIM Mail<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
+		  <div class="sp5desc">This handles both AOL Mail and AIM Mail</div>
+		  <!--
+          <div class="expand-bg"> <span class="expand css2"> &nbsp; </span> </div>
+		  -->
+		  <a href="#" class="hire-me stall-me"><i></i> </a>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span3">
+          <div class="ai">
+            <h3></h3>
+          </div>
+        </div>
+        <div class="span5">
+          <h3>Gmail<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
+		  <div class="sp5desc">The GMail handler comes installed by default with Firefox</div>
+		  <!--
+          <div class="expand-bg"> <span class="expand ai2"> &nbsp; </span> </div>
+		  -->
+		  <a href="#" class="hire-me stall-me stalled"><i></i> </a>
+        </div>
+      </div>
+      <div class="row">
+        <div class="span3">
           <div class="ps">
             <h3></h3>
           </div>
@@ -91,47 +128,17 @@
       </div>
       <div class="row">
         <div class="span3">
-          <div class="ai">
-            <h3></h3>
-          </div>
-        </div>
-        <div class="span5">
-          <h3>Gmail<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
-		  <div class="sp5desc">The GMail handler comes installed with Firefox</div>
-		  <!--
-          <div class="expand-bg"> <span class="expand ai2"> &nbsp; </span> </div>
-		  -->
-		  <a href="#" class="hire-me stall-me"><i></i> </a>
-        </div>
-      </div>
-      <div class="row">
-        <div class="span3">
           <div class="html">
             <h3></h3>
           </div>
         </div>
         <div class="span5">
 		  <h3>Y! Mail<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
-		  <div class="sp5desc">The Yahoo Mail handler comes installed with Firefox</div>
+		  <div class="sp5desc">The Yahoo Mail handler comes installed by default with Firefox</div>
 		  <!--
           <div class="expand-bg"> <span class="expand html2"> &nbsp; </span> </div>
 		  -->
-		  <a href="#" class="hire-me stall-me"><i></i> </a>
-        </div>
-      </div>
-      <div class="row">
-        <div class="span3">
-          <div class="css">
-            <h3></h3>
-          </div>
-        </div>
-        <div class="span5">
-          <h3>AIM Mail<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
-		  <div class="sp5desc">AOL mail is also known as AIM Mail</div>
-		  <!--
-          <div class="expand-bg"> <span class="expand css2"> &nbsp; </span> </div>
-		  -->
-		  <a href="#" class="hire-me stall-me"><i></i> </a>
+		  <a href="#" class="hire-me stall-me stalled"><i></i> </a>
         </div>
       </div>
     </div>
