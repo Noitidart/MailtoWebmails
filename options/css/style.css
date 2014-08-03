@@ -97,6 +97,9 @@ a.act-toggle:hover:after {
 a.stall-me {
 	//background-color: rgb(240, 73, 73);
 	text-decoration: none;
+	font-size: 1.4em;
+	padding: 10px 30px;
+	margin: 15px 0 0 50%;
 }
 a.stall-me:after {
 	content: 'Install';
@@ -154,49 +157,48 @@ ul.social-icons li a:hover {
 .skills .span3 {
 	width:235px;
 	overflow: hidden;
+	display: inline-block; float:none; vertical-align: middle; /*added this for vertically aligning the circle logo and right desc with install block in middle togather*/
 }
 .skills .span5 {
 	text-align:left;
-	padding:47px 0;
+	display: inline-block; float:none; vertical-align: middle; /*padding:47px 0;*/ /*added and removed this for vertically aligning the circle logo and right desc with install block in middle togather*/
 }
-.skills .ps, .skills .ai, .skills .html, .skills .css {
+.skills .span5 .sp5desc{
+	text-indent: 2px;
+}
+.skills .span3 div {
 	padding:25px;
 	width:100px;
 	height:100px;
-	-webkit-border-radius: 50%;
-	-moz-border-radius: 50%;
 	border-radius: 50%;
 	text-align:center;
 	border:8px solid #203748;
 	float:right;
-	-webkit-transition: all 0.2s linear;
-	-moz-transition: all 0.2s linear;
-	-o-transition: all 0.2s linear;
 	transition: all 0.2s linear;
 }
+/* start - colors and background images of circles */
 .skills .ps {
-	background:#30a5dc;
+	background: rgb(0, 115, 198) url(../img/logo-outlook.png) center center no-repeat;
 }
 .skills .ai {
-	background:#ee742b;
+	background: rgb(227, 66, 66) url(../img/logo-gmail.png) center center no-repeat;
 }
 .skills .html {
-	background:#f04949;
+	background: rgb(65, 2, 143) url(../img/logo-y!mail3.png) center center no-repeat;
 }
 .skills .css {
-	background:#39d084;
+	background: rgb(255, 204, 0) url(../img/logo-aolmail.png) center center no-repeat;
 }
-.skills .ps:hover, .skills .ai:hover, .skills .html:hover, .skills .css:hover {
-	border:8px solid #fff;
+/* end - colors and background images of circles */
+
+.skills .span3 div:hover {
+	border:8px solid rgba(255, 255, 255, .7);
 }
-.skills .ps h3, .skills .ai h3, .skills .html h3, .skills .css h3 {
+.skills .span3 div h3 {
 	color:#fff;
-	font-size: 3.4em;
+	font-size: 2em;
 	font-weight: normal;
 	line-height: 80px;
-}
-.skills .html h3, .skills .css h3 {
-	font-size: 2.2em;
 }
 .expand-bg {
 	background: none repeat scroll 0 0 #EAEDF2;
