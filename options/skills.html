@@ -20,9 +20,28 @@
 			Array.prototype.forEach.call(actToggles, function(actTog) {
 				actTog.addEventListener('click', toggleToActive, false);
 			});
+			var stalls = document.querySelectorAll('a.stall-me');
+			Array.prototype.forEach.call(stalls, function(stall) {
+				stall.addEventListener('click', toggleStall, false);
+			});
 		}
+		
+		function toggleStall(e) {
+			//check if active then make it inactive if unisntalled
+			
+			var thisStall = e.target;
+			if (thisStall.nodeName == 'I') {
+				thisStall = thisStall.parentNode;
+			}
+			thisStall.classList.toggle('stalled');
+		}
+		
 		function toggleToActive(e) {
 			var thisToggle = e.target;
+			if (thisToggle.nodeName == 'I') {
+				thisToggle = thisToggle.parentNode;
+			}
+			
 			if (thisToggle.classList.contains('active-me')) {
 				//this toggler clicked is active so forget it, exit
 				return;
@@ -67,8 +86,7 @@
 		  <h5>Installations <span>10</span></h5>
 		  <div class="expand-bg"> <span class="expand ps2"> &nbsp; </span> </div>
 		  -->
-		  <a href="#" class="hire-me install-me"><i class="icon-paper-plane"></i> Install </a>
-		  <a href="#" class="hire-me uninstall-me"><i class="icon-cancel"></i> Uninstall </a>
+		  <a href="#" class="hire-me stall-me stalled"><i></i> </a>
         </div>
       </div>
       <div class="row">

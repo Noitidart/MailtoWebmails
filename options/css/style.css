@@ -92,6 +92,42 @@ a.act-toggle:hover:after {
 	content: 'Set as Active';
 }
 
+
+
+a.stall-me {
+	//background-color: rgb(240, 73, 73);
+	text-decoration: none;
+}
+a.stall-me:after {
+	content: 'Install';
+}
+
+a.stall-me.stalled {
+	background-color: rgb(240, 73, 73);
+}
+a.stall-me.stalled:after {
+	content: 'Uninstall';
+}
+
+a.stall-me i:before {
+	content: '\e804';
+	font-family: 'fontello';
+	font-style: normal;
+	font-weight: normal;
+	display: inline-block;
+	text-decoration: inherit;
+	width: 1em;
+	margin-right: 0.2em;
+	text-align: center;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1em;
+	margin-left: 0.2em;
+}
+
+a.stall-me.stalled i:before {
+	content: '\e80f';
+}
 /* end - buttons */
 .social {
 	text-align:center;
