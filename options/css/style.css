@@ -65,6 +65,10 @@ a.hire-me:hover {
 	background:#11d170;
 }
 
+.span5:not(.stalled) a.act-toggle {
+	cursor: default;
+}
+
 a.act-toggle {
 	padding: 2px 10px 2px 7px;
 	font-size: 14px;
@@ -88,7 +92,7 @@ a.act-toggle:not(.active-me), a.act-toggle:not(.active-me):hover {
 a.act-toggle:after {
 	content: 'Inactive';
 }
-a.act-toggle:hover:after {
+.stalled a.act-toggle:not(.active-me):hover:after {
 	content: 'Set as Active';
 }
 
@@ -105,10 +109,10 @@ a.stall-me:after {
 	content: 'Install';
 }
 
-a.stall-me.stalled {
+.stalled a.stall-me {
 	background-color: rgb(240, 73, 73);
 }
-a.stall-me.stalled:after {
+.stalled a.stall-me:after {
 	content: 'Uninstall';
 }
 
@@ -128,7 +132,7 @@ a.stall-me i:before {
 	margin-left: 0.2em;
 }
 
-a.stall-me.stalled i:before {
+.stalled a.stall-me i:before {
 	content: '\e80f';
 }
 /* end - buttons */

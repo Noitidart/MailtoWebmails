@@ -44,7 +44,7 @@
 				Services.prompt.alert(Services.wm.getMostRecentWindow('navigator:browser'), 'MailtoWebmails - Exception', 'Cannot uninstall this handler because it is currently set as the active mailto handler');
 				return false;
 			}
-			thisStall.classList.toggle('stalled');
+			thisStall.parentNode.classList.toggle('stalled');
 		}
 		
 		function toggleToActive(e) {
@@ -56,6 +56,13 @@
 			if (thisToggle.classList.contains('active-me')) {
 				//this toggler clicked is active so forget it, exit
 				return;
+			}
+			
+			var thisStallParent = thisToggle.parentNode.parentNode;
+			if (!thisStallParent.classList.contains('stalled')) {
+				Services.prompt.alert(Services.wm.getMostRecentWindow('navigator:browser'), 'MailtoWebmails - Exception', 'Cannot set this handler to active as it is not installed');
+				//nevermind comment to right, because sometimes these inactive buttons are clickable, they are expecting it to do something, so do notify them that it cannot set to active as its not installed //not prompting anymore because i made the css so on hover its not a click pointer so its not "clickable" so it should do nothing. so in other words: if the button is not pointer on hover, then on click user should not expect something.
+				return false;
 			}
 			
 			var curActive = document.querySelector('a.active-me');
@@ -105,13 +112,13 @@
             <h3></h3>
           </div>
         </div>
-        <div class="span5">
+        <div class="span5 stalled">
           <h3>Gmail<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
 		  <div class="sp5desc">The GMail handler comes installed by default with Firefox</div>
 		  <!--
           <div class="expand-bg"> <span class="expand ai2"> &nbsp; </span> </div>
 		  -->
-		  <a href="#" class="hire-me stall-me stalled"><i></i> </a>
+		  <a href="#" class="hire-me stall-me"><i></i> </a>
         </div>
       </div>
       <div class="row">
@@ -121,7 +128,7 @@
           </div>
         </div>
         <div class="span5">
-          <h3>Outlook<a href="#" class="hire-me act-toggle active-me"><i class="icon-user"></i> </a></h3>
+          <h3>Outlook<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
 		  <div class="sp5desc">Outlook.com is the new Hotmail and Live Mail</div>
 		  <!--
 		  <h5>Installations <span>10</span></h5>
@@ -136,13 +143,13 @@
             <h3></h3>
           </div>
         </div>
-        <div class="span5">
-		  <h3>Y! Mail<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
+        <div class="span5 stalled">
+		  <h3>Y! Mail<a href="#" class="hire-me act-toggle active-me"><i class="icon-user"></i> </a></h3>
 		  <div class="sp5desc">The Yahoo Mail handler comes installed by default with Firefox</div>
 		  <!--
           <div class="expand-bg"> <span class="expand html2"> &nbsp; </span> </div>
 		  -->
-		  <a href="#" class="hire-me stall-me stalled"><i></i> </a>
+		  <a href="#" class="hire-me stall-me"><i></i> </a>
         </div>
       </div>
     </div>
