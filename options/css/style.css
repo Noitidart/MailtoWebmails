@@ -46,6 +46,10 @@ a.brand:after {
 	padding:40px 0;
 }
 /* start - buttons */
+a:not([href]) {
+	cursor: pointer;
+}
+
 a.hire-me {
 	display: inline-block;
  *display: inline;
