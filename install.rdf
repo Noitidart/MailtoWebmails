@@ -5,7 +5,7 @@
 	<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 	  <Description about="urn:mozilla:install-manifest">
 		<em:id>MailtoWebmails@jetpack</em:id>
-		<em:version>initial</em:version>
+		<em:version>1.0</em:version>
 		<em:type>2</em:type>
 		<em:bootstrap>true</em:bootstrap>
 		<em:unpack>true</em:unpack>
@@ -26,6 +26,7 @@
 		<em:contributor>David Lanham for Icon</em:contributor>
 		<em:contributor>Akash Bhandange for HTML Design</em:contributor>
 		<em:contributor>Lester Gonzales for HTML Design</em:contributor>
+		<em:contributor>nmaier for XPCOM Protocol Education</em:contributor>
 		<em:optionsType>3</em:optionsType>
 		<em:optionsURL>chrome://mailtowebmails/content/options/prefs.html</em:optionsURL>
 	  </Description>

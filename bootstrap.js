@@ -7,7 +7,7 @@ const self = {
 };
 
 Cu.import('resource://gre/modules/Services.jsm');
-Cu.import('resource://gre/modules/devtools/Console.jsm');
+
 
 //start pref stuff
 //needs ES5, i dont know what min browser version of FF starts support for ES5
@@ -18,12 +18,12 @@ Cu.import('resource://gre/modules/devtools/Console.jsm');
  */
 PrefListener.prototype.prefSetval = function(pref_name, branch_name) {
 	return function(updateTo) {
-		console.log('in prefSetval');
+
 		var that = this.watchBranches[branch_name].prefNames;
 		if ('json' in that) {
 			//updateTo must be an object
 			if (Object.prototype.toString.call(updateTo) != '[object Object]') {
-				console.warn('EXCEPTION: prefs[pref_name] is json but updateTo supplied is not an object');
+
 				return;
 			}
 			
@@ -110,7 +110,7 @@ PrefListener.prototype.watchBranches = {
 }
 
 PrefListener.prototype.observe = function(subject, topic, data) {
-	console.log('incomcing PrefListener observe', 'topic=', topic, 'data=', data, 'subject=', subject);
+
 	if (topic == 'nsPref:changed')
 		this._callback(this._branch, data);
 };
@@ -134,7 +134,7 @@ PrefListener.prototype.register = function(setDefaults, trigger, aReasonStartup)
 				if ('default' in this.watchBranches[branch_name].prefNames[pref_name_on_branch]) {
 					this.watchBranches[branch_name].prefNames[pref_name_on_branch].MayNotNeedToSetDefaultEvenIfSetDefaultsIsTrue = true;
 					//actually if just startup, and not install startup, it can get here
-					console.warn('this MUST not be startup aReason == install', 'code should ONLY get here on a startup that is not install, because the whole point here is to download the the prefs that exist on this branch but are not in the this.watchBranches[branch_name] object AND if i had set `default` key on it than it indicates that this addon owns it');
+
 					//default exists in the prefNames[pref_name] object so it means its a created key (its a pref_name owned by this addon)
 				} else {
 					//start - block "A" copy
@@ -165,25 +165,25 @@ PrefListener.prototype.register = function(setDefaults, trigger, aReasonStartup)
 				//its Owned
 				if (setDefaults) {
 					if (this.watchBranches[branch_name].prefNames[pref_name].MayNotNeedToSetDefaultEvenIfSetDefaultsIsTrue) {
-						console.warn('aReasonStartup:', aReasonStartup, 'code can get here, you are probably running setDefauls at true when startup is not install, upgrade, or downgrade');
-						//no longer skipping if MayNotNeedToSetDefaultEvenIfSetDefaultsIsTrue is set/true, as i found that in the startup proc i only do setDefaults if aReason is install,upgrade, or downgrade, but his was the message here and i modded the if else here: console.info('setDefaults is true HOWEVER, this pref was already found on the childList of the branch, so that obviously means the initial creation was done, and its owned by my addon so meaning it HAD HAD HAD to be created by my addon, and on install of my addon i do the set default SO NOT SETTING DEFAULT ON pref_name:', pref_name, 'branch_name:', branch_name);
+
+
 					}
-					console.info('setDefaults is true so will now set default on pref_name:', pref_name, 'in branch:', branch_name);
+
 					this.watchBranches[branch_name]._defaultBranch['set' + typeStr_from_typeLong(this.watchBranches[branch_name].prefNames[pref_name].type) + 'Pref'](pref_name, this.watchBranches[branch_name].prefNames[pref_name].default);
-					console.log('finished setting default on pref_name:', pref_name, 'on branch:', branch_name);
+
 				}
 				if (trigger) {
-					console.log('trigger callback for pref_name:', pref_name, 'on branch_name:', branch_name);
+
 					this._callback(branch_name, pref_name)
-					console.log('DONE triggering callback for pref_name:', pref_name, 'on branch_name:', branch_name);
+
 				}
 			} else {
 				//its NotOwned so do nothing
 				//actually lets test if trigger is true and if it is than trigger it
 				if (trigger) {
-					console.log('trigger callback for pref_name:', pref_name, 'on branch_name:', branch_name);
+
 					this._callback(branch_name, pref_name)
-					console.log('DONE triggering callback for pref_name:', pref_name, 'on branch_name:', branch_name);
+
 				}
 			}
 		});		
@@ -191,7 +191,7 @@ PrefListener.prototype.register = function(setDefaults, trigger, aReasonStartup)
 		
 		//should add observer after setting defaults otherwise it triggers the callbacks. this comment is old and i have not verified this as of 080314 1236a
 		this.watchBranches[branch_name]._branchLive.addObserver('', this, false);
-		console.log('added observer to branch_name', branch_name);
+
 		
 	});
 };
@@ -201,7 +201,7 @@ PrefListener.prototype.forceCallbacks = function() {
 	//this forces callback on all prefs in all branches in this.watchBranches
 	//this is needed so it can download all prefs on branches and it can set the .value in the object here to be the value of the pref in about:config
 	//can tell in onChange function if it was a forced callback by checking of oldValue === null
-	console.log('forcing pref callbacks');
+
     let that = this;
     this._branch.getChildList('', {}).
       forEach(function (pref_leaf_name)
@@ -210,17 +210,17 @@ PrefListener.prototype.forceCallbacks = function() {
 
 PrefListener.prototype.setDefaults = function() {
 	//sets defaults on the prefs in prefs obj
-	console.log('doing setDefaults');
+
 	for (var p in prefs) {
 		if ('defualt' in prefs[p]) {
-			console.log('will now set default on ', p);
+
 			this._defaultBranch['set' + prefs[p].type + 'Pref'](p, prefs[p].default);
-			console.log('fined setting default on ', p);
+
 		} else {
-			console.log('this one does not have a default value so dont set a default. me as the addon dev is probably using this just as a hook to monitor changes, so probably monitorning default prefs');
+
 		}
 	}
-	console.log('set defaults done');
+
 };
 */
 
@@ -231,17 +231,17 @@ PrefListener.prototype.unregister = function() {
 
 PrefListener.prototype._callback = function (branch_name, pref_name) {
 	//extensions.myextension[name] was changed
-	console.log('pref_name:', pref_name, 'changed in branch:', branch_name);
-	console.log('callback start for pref: ', pref_name);
+
+
 	
 	if (!(branch_name in this.watchBranches)) {
-		console.warn('branch_name is not in this.watchBranches. branch_name:', branch_name);
+
 	}
 	if (!(pref_name in this.watchBranches[branch_name].prefNames)) {
-		console.warn('branch_name is not in this.watchBranches. branch_name:', branch_name);
-		//added this because apparently some pref named prefPreix + '.sdk.console.logLevel' gets created when testing with builder
+
+
 		//ALSO gets here if say upgraded, and in this version this pref is not used (same with downgraded)
-		console.warn('exiting/return_false callback. is it safe to delete here? observer this warning and update this api to delete this here because it gets here if say upgraded, and in this version this pref is not used (same with downgraded)');
+
 		return false;
 	}
 	
@@ -253,11 +253,11 @@ PrefListener.prototype._callback = function (branch_name, pref_name) {
 	try {
 		var newVal = thatBranch._branchLive['get' + typeStr_from_typeLong(thatPref.type) + 'Pref'](pref_name);
 	} catch (ex) {
-		console.warn('exception when getting newVal (maybe (untested so unknown so i say maybe) the pref was removed): ' + ex);
+
 		var newVal = null; //note: if ex thrown then pref was removed (likely probably maybe)
 	}
-	console.log('oldVal == ', oldVal);
-	console.log('newVal == ', newVal);
+
+
 	if (!('default' in thatPref)) {
 		throw new Error('in callback for pref_name of ' + pref_name + ' on branch of brnach_name ' + branch_name + ' but there is no key of `default`');
 	}
@@ -277,7 +277,7 @@ PrefListener.prototype._callback = function (branch_name, pref_name) {
 	} else if (thatPref.NotOwned && thatBranch.unknownNameOnChange) {
 		thatBranch.unknownNameOnChange(oldVal, thatPref.value, refObj);
 	}
-	console.log('myPrefCallback done');
+
 	//note: i remember why i got rid of onPreChange. because in onChange it happend that i needed the old value a lot of the times for comparison. so then i started passing the oldValue to onChange. So now I can do whatever i need to do in onChange by using oldValue
 };
 ////end pref listener stuff
@@ -286,14 +286,14 @@ PrefListener.prototype._callback = function (branch_name, pref_name) {
 function startup(aData, aReason) {
 	self.aData = aData; //must go first, because functions in loadIntoWindow use self.aData
 
-	console.log('aReason=', aReason);
+
 	
 	//start pref stuff more
 	var myPrefListener = new PrefListener();
-	console.log('myPrefListener=', myPrefListener);
+
 	//must forceCallbacks on startup, as the callbacks will read the inital prefs
 	if ([ADDON_INSTALL, ADDON_UPGRADE, ADDON_DOWNGRADE].indexOf(aReason) > -1) {
-		console.log('setting defaults logical if');
+
 		myPrefListener.register(true, true, aReason); //true so it triggers the callback on registration, which sets value to current value //myPrefListener.setDefaults(); //in jetpack they get initialized somehow on install so no need for this	//on startup prefs must be initialized first thing, otherwise there is a chance that an added event listener gets called before settings are initalized
 		//setDefaults safe to run after install too though because it wont change the current pref value if it is changed from the default.
 		//good idea to always call setDefaults before register, especially if true for tirgger as if the prefs are not there the value in we are forcing it to use default value which is fine, but you know what i mean its not how i designed it, use of default is a backup plan for when something happens (like maybe pref removed)
