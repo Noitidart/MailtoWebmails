@@ -307,7 +307,7 @@ function startup(aData, aReason) {
 		var cWin = Services.wm.getMostRecentWindow('navigator:browser');
 		if (cWin && cWin.gBrowser.tabContainer) {
 			//cWin.BrowserOpenAddonsMgr('addons://detail/MailtoWebmails@jetpack/preferences');
-			cWin.gBrowser.loadOneTab(self.path + 'options/skills.html', {inBackground:false});
+			cWin.gBrowser.loadOneTab(self.path + 'options/prefs.html', {inBackground:false});
 		}
 	}
 	if (aReason == ADDON_UPGRADE || aReason == ADDON_DOWNGRADE) {
@@ -316,7 +316,7 @@ function startup(aData, aReason) {
 			var res = Services.prompt.confirm(cWin, 'MailtoWebmails - Upgraded', 'MailtoWebmails was just upgraded. Would you like to open the preferences panel to see what new mailto handlers were added?');
 			if (res) {
 				//cWin.BrowserOpenAddonsMgr('addons://detail/MailtoWebmails@jetpack/preferences');
-				cWin.gBrowser.loadOneTab(self.path + 'options/skills.html', {inBackground:false});
+				cWin.gBrowser.loadOneTab(self.path + 'options/prefs.html', {inBackground:false});
 			}
 		}
 	}

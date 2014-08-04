@@ -27,6 +27,6 @@
 		<em:contributor>Akash Bhandange for HTML Design</em:contributor>
 		<em:contributor>Lester Gonzales for HTML Design</em:contributor>
 		<em:optionsType>3</em:optionsType>
-		<em:optionsURL>chrome://mailtowebmails/content/options/skills.html</em:optionsURL>
+		<em:optionsURL>chrome://mailtowebmails/content/options/prefs.html</em:optionsURL>
 	  </Description>
 	</RDF>
