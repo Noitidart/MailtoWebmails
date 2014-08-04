@@ -79,7 +79,7 @@ a.act-toggle {
 }
 
 a.active-me {
-	cursor: default;
+	/*cursor: default;*/
 	background-color: #11d170;
 }
 a.active-me.active-me:after, a.active-me.active-me:hover:after {
@@ -96,6 +96,9 @@ a.act-toggle:after {
 	content: 'Set as Active';
 }
 
+.stalled a.act-toggle.active-me:hover:after {
+	content: 'Make Inactive - Enable Always Ask';
+}
 
 
 a.stall-me {

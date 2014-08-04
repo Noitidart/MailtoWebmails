@@ -20,6 +20,29 @@
 		Cu.import('resource://gre/modules/Services.jsm');
 		Cu.import('resource://gre/modules/addons/XPIProvider.jsm');
 		
+		const infoForWebmailHandlers = [
+			{
+				name: 'AIM Mail',
+				uriTemplate: 'http://webmail.aol.com/Mail/ComposeMessage.aspx?to=%s',
+				circleSelector: '.skills .css' //this is for me to target the proper row in the dom of the prefs frontend document.getElementById(circleId).parentNode.parentNode is the row element
+			},
+			{
+				name: 'GMail',
+				uriTemplate: 'https://mail.google.com/mail/?extsrc=mailto&url=%s',
+				circleSelector: '.skills .ai'
+			},
+			{
+				name: 'Outlook Live',
+				uriTemplate: 'http://mail.live.com/secure/start?action=compose&to=%s',
+				circleSelector: '.skills .ps'
+			},
+			{
+				name: 'Y! Mail',
+				uriTemplate: 'https://compose.mail.yahoo.com/?To=%s',
+				circleSelector: '.skills .html'
+			},
+		];
+		
 		function init() {
 			var actToggles = document.querySelectorAll('a.act-toggle');
 			Array.prototype.forEach.call(actToggles, function(actTog) {
@@ -29,6 +52,53 @@
 			Array.prototype.forEach.call(stalls, function(stall) {
 				stall.addEventListener('click', toggleStall, false);
 			});
+			
+			//start - determine active handler
+			var eps = Cc["@mozilla.org/uriloader/external-protocol-service;1"].getService(Ci.nsIExternalProtocolService);
+			var handlerInfo = eps.getProtocolHandlerInfo('mailto');
+			//console.log('epsHandlerInfo', handlerInfo)
+			//console.log('handlerInfo.possibleApplicationHandlers', handlerInfo.possibleApplicationHandlers);
+			//end - determine active handler
+			
+			//start - find installed handlers
+			var uriTemplates_of_installedHandlers = [];
+			var handlers = handlerInfo.possibleApplicationHandlers.enumerate();
+			while (handlers.hasMoreElements()) {
+				var handler = handlers.getNext().QueryInterface(Ci.nsIWebHandlerApp);
+				uriTemplates_of_installedHandlers.push(handler.uriTemplate);
+			}
+			//end - find installed handlers
+
+			//start - determine if there is a preferred web app handler
+			//note: handlerInfo.preferredAction can be stale. if handlerInfo.alwaysAskBeforeHandling is set to true, than the prerredAction can be internally or whatev its not true it will always ask
+			if (handlerInfo.preferredAction == Ci.nsIHandlerInfo.useHelperApp) { //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
+				//it i shandled internally so it probably is a web app
+				if (handlerInfo.preferredApplicationHandler.uriTemplate) { //if app handler is set to local app handler that is default, than preferredApplicationHandler is left at what it was before. can identify if preferredApplicationHandler is stale by testing if `handlerInfo.alwaysAskBeforeHandling == true` OR `handlerInfo.preferredAction != Ci.Ci.nsIHandlerInfo.handleInternally`
+					var preferredHandlerUriTemplate = handlerInfo.preferredApplicationHandler.uriTemplate;
+				}
+			} else {
+				//its not handled interntally and for a web app to be a handler for it IT HAS to be set to Ci.nsIHandlerInfo.handleInternally
+			}
+			//end - determine if there is a preferred web app handler
+			
+			//start - mark installed handlers as installed in dom AND the active handler as active in dom
+			for (var i=0; i<infoForWebmailHandlers.length; i++) {
+				var info = infoForWebmailHandlers[i];
+				if (uriTemplates_of_installedHandlers.indexOf(info.uriTemplate) > -1) {
+					//yes its installed
+					var thisRow = document.querySelector(info.circleSelector).parentNode.parentNode;
+					//var thisStall = thisRow.querySelector('a.stall-me');
+					thisRow.querySelector('.span5').classList.add('stalled');
+					/*
+					if (handlerInfo.preferredApplicationHandler.uriTemplate == info.uriTemplate) {
+						var thisTog = thisRow.querySelector('a.act-toggle');
+						thisTog.classList.add('active-me');
+					}
+					// cant do this way because if it used to be a web app handler (like y mail) and then they changed it to always ask (or a local app handler), the preferredApplicationHandler is left as it what it was last time. so it will be y mail even though it is at always ask (or local app handler)
+					*/
+				}
+			}
+			//end - mark installed handlers as installed in dom
 		}
 		
 		function toggleStall(e) {
@@ -41,8 +111,13 @@
 			
 			var thisToggle = thisStall.parentNode.querySelector('a.act-toggle');
 			if (thisToggle.classList.contains('active-me')) {
-				Services.prompt.alert(Services.wm.getMostRecentWindow('navigator:browser'), 'MailtoWebmails - Exception', 'Cannot uninstall this handler because it is currently set as the active mailto handler');
-				return false;
+				//Services.prompt.alert(Services.wm.getMostRecentWindow('navigator:browser'), 'MailtoWebmails - Exception', 'Cannot uninstall this handler because it is currently set as the active mailto handler');
+				var res = Services.prompt.confirm(Services.wm.getMostRecentWindow('navigator:browser'), 'MailtoWebmails - Enable "Always Ask"', 'This handler is currently set as the "Active" handler. If you uninstall this handler it will be made "Inactive" and will enable the "Always Ask" setting. Which means on all future clicks on "mailto:" links, Firefox will ask you which of the installed handlers you want to open the link with.');
+				if (res) {
+					thisToggle.classList.remove('active-me')
+				} else {
+					return false;
+				}
 			}
 			thisStall.parentNode.classList.toggle('stalled');
 		}
@@ -55,7 +130,14 @@
 			
 			if (thisToggle.classList.contains('active-me')) {
 				//this toggler clicked is active so forget it, exit
-				return;
+				//setting it to inactive. user wants it to always ask
+				var res = Services.prompt.confirm(Services.wm.getMostRecentWindow('navigator:browser'), 'MailtoWebmails - Enable "Always Ask"', 'Are you sure want to set the only "Active" handler to "Inactive"? This will enable the "Always Ask" setting. Which means on all future clicks on "mailto:" links, Firefox will ask you which of the installed handlers you want to open the link with.');
+				if (res) {
+					thisToggle.classList.remove('active-me');
+					return true;
+				} else {
+					return false;
+				}
 			}
 			
 			var thisStallParent = thisToggle.parentNode.parentNode;
@@ -66,8 +148,9 @@
 			}
 			
 			var curActive = document.querySelector('a.active-me');
-			
-			curActive.classList.remove('active-me');
+			if (curActive) {
+				curActive.classList.remove('active-me');
+			}
 			thisToggle.classList.add('active-me');
 		}
 		document.addEventListener('DOMContentLoaded', init, false);
@@ -112,7 +195,7 @@
             <h3></h3>
           </div>
         </div>
-        <div class="span5 stalled">
+        <div class="span5">
           <h3>Gmail<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
 		  <div class="sp5desc">The GMail handler comes installed by default with Firefox</div>
 		  <!--
@@ -128,7 +211,7 @@
           </div>
         </div>
         <div class="span5">
-          <h3>Outlook<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
+          <h3>Outlook Live<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
 		  <div class="sp5desc">Outlook.com is the new Hotmail and Live Mail</div>
 		  <!--
 		  <h5>Installations <span>10</span></h5>
@@ -143,8 +226,8 @@
             <h3></h3>
           </div>
         </div>
-        <div class="span5 stalled">
-		  <h3>Y! Mail<a href="#" class="hire-me act-toggle active-me"><i class="icon-user"></i> </a></h3>
+        <div class="span5">
+		  <h3>Y! Mail<a href="#" class="hire-me act-toggle"><i class="icon-user"></i> </a></h3>
 		  <div class="sp5desc">The Yahoo Mail handler comes installed by default with Firefox</div>
 		  <!--
           <div class="expand-bg"> <span class="expand html2"> &nbsp; </span> </div>
