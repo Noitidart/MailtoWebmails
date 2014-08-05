@@ -8,6 +8,7 @@ const self = {
 
 Cu.import('resource://gre/modules/Services.jsm');
 Cu.import('resource://gre/modules/devtools/Console.jsm');
+Cu.import(self.path + 'modules/infoForWebmailHandlers.jsm');
 
 //start pref stuff
 //needs ES5, i dont know what min browser version of FF starts support for ES5
@@ -302,6 +303,36 @@ function startup(aData, aReason) {
 	}
 	//end pref stuff more
 	
+	if ([ADDON_INSTALL, ADDON_UPGRADE, ADDON_DOWNGRADE].indexOf(aReason) > -1) { //have to do install too because i dont uninstall the handlres on uninstall of add-on
+		//go through installed handlers. make sure the installed handler's uriTemplate matches that of what is in infoForWebmailHandlers, if it doesnt, then update the installed handlers uriTemplate
+
+		var handlerInfo = myServices.eps.getProtocolHandlerInfo('mailto');
+		
+		var shouldCallStore = false;
+		//start - find installed handlers
+		var handlers = handlerInfo.possibleApplicationHandlers.enumerate();
+		while (handlers.hasMoreElements()) {
+			var handler = handlers.getNext().QueryInterface(Ci.nsIWebHandlerApp);
+			for (var i=0; i<infoForWebmailHandlers.length; i++) {
+				var info = infoForWebmailHandlers[i];
+				if (info.name == handler.name && info.uriTemplate != handler.uriTemplate) {
+					console.warn('installed and info name match BUT uriTemplate mismatch SO set installed uriTemplate to info uriTemplate');
+					handler.uriTemplate = info.uriTemplate;
+					shouldCallStore = true;
+				}
+				if (info.name != handler.name && info.uriTemplate == handler.uriTemplate) {
+					console.warn('installed and info uriTemplate match BUT name mismatch SO set installed name to info name');
+					handler.name = info.name;
+					shouldCallStore = true;
+				}
+			}
+		}
+		
+		if (shouldCallStore) {
+			myServices.hs.store(handlerInfo);
+		}
+		//end - find installed handlers
+	}
 	
 	if (aReason == ADDON_INSTALL) {
 		var cWin = Services.wm.getMostRecentWindow('navigator:browser');

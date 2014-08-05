@@ -1,34 +1,10 @@
 const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 Cu.import('resource://gre/modules/Services.jsm');
-Cu.import('resource://gre/modules/addons/XPIProvider.jsm');
-
+Cu.import('chrome://mailtowebmails/content/modules/infoForWebmailHandlers.jsm');
 const INSTALL_HANDLER = 0;
 const UNINSTALL_HANDLER = 1;
 const SET_HANDLER_ACTIVE = 2;
 const SET_HANDLER_INACTIVE = 3;
-
-const infoForWebmailHandlers = [
-	{
-		name: 'AIM Mail',
-		uriTemplate: 'http://webmail.aol.com/Mail/ComposeMessage.aspx?to=%s',
-		circleSelector: '.skills .css' //this is for me to target the proper row in the dom of the prefs frontend document.getElementById(circleId).parentNode.parentNode is the row element
-	},
-	{
-		name: 'GMail',
-		uriTemplate: 'https://mail.google.com/mail/?extsrc=mailto&url=%s',
-		circleSelector: '.skills .ai'
-	},
-	{
-		name: 'Outlook Live',
-		uriTemplate: 'http://mail.live.com/secure/start?action=compose&to=%s',
-		circleSelector: '.skills .ps'
-	},
-	{
-		name: 'Y! Mail',
-		uriTemplate: 'https://compose.mail.yahoo.com/?To=%s',
-		circleSelector: '.skills .html'
-	},
-];
 
 function init() {
 	var actToggles = document.querySelectorAll('a.act-toggle');
@@ -41,9 +17,8 @@ function init() {
 	});
 	
 	//start - determine active handler
-	var eps = Cc["@mozilla.org/uriloader/external-protocol-service;1"].getService(Ci.nsIExternalProtocolService);
-	var handlerInfo = eps.getProtocolHandlerInfo('mailto');
-
+	var handlerInfo = myServices.eps.getProtocolHandlerInfo('mailto');
+	console.log('hanlderInfo', handlerInfo);
 
 	//end - determine active handler
 	
@@ -54,6 +29,7 @@ function init() {
 		var handler = handlers.getNext().QueryInterface(Ci.nsIWebHandlerApp);
 		uriTemplates_of_installedHandlers.push(handler.uriTemplate);
 	}
+	console.info('uriTemplates_of_installedHandlers', uriTemplates_of_installedHandlers);
 	//end - find installed handlers
 
 	/*
@@ -75,6 +51,7 @@ function init() {
 		var info = infoForWebmailHandlers[i];
 		if (uriTemplates_of_installedHandlers.indexOf(info.uriTemplate) > -1) {
 			//yes its installed
+			console.log('is installed info: ', info);
 			var thisRow = document.querySelector(info.circleSelector).parentNode.parentNode;
 			//var thisStall = thisRow.querySelector('a.stall-me');
 			thisRow.querySelector('.span5').classList.add('stalled');
@@ -206,8 +183,7 @@ function circleAct(circleClass, act) {
 	}
 	
 	if (act != INSTALL_HANDLER) {
-		var eps = Cc["@mozilla.org/uriloader/external-protocol-service;1"].getService(Ci.nsIExternalProtocolService);
-		var handlerInfo = eps.getProtocolHandlerInfo('mailto');
+		var handlerInfo = myServices.eps.getProtocolHandlerInfo('mailto');
 		var handlers = handlerInfo.possibleApplicationHandlers;
 	}
 	
@@ -217,16 +193,14 @@ function circleAct(circleClass, act) {
 			var name = info.name;
 			var myURISpec = info.uriTemplate;
 
-			var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
+			var handler = Cc['@mozilla.org/uriloader/web-handler-app;1'	].createInstance(Ci.nsIWebHandlerApp);
 			handler.name = info.name;
 			handler.uriTemplate = info.uriTemplate;
 
-			var eps = Cc["@mozilla.org/uriloader/external-protocol-service;1"].getService(Ci.nsIExternalProtocolService);
-			var handlerInfo = eps.getProtocolHandlerInfo('mailto');
+			var handlerInfo = myServices.eps.getProtocolHandlerInfo('mailto');
 			handlerInfo.possibleApplicationHandlers.appendElement(handler, false);
 
-			var hs = Cc["@mozilla.org/uriloader/handler-service;1"].getService(Ci.nsIHandlerService);
-			hs.store(handlerInfo);
+			myServices.hs.store(handlerInfo);
 			break;
 			
 		case UNINSTALL_HANDLER:
@@ -247,8 +221,7 @@ function circleAct(circleClass, act) {
 					handlers.removeElementAt(i);
 					i--;
 				}
-				var hs = Cc["@mozilla.org/uriloader/handler-service;1"].getService(Ci.nsIHandlerService);
-				hs.store(handlerInfo);
+				myServices.hs.store(handlerInfo);
 			}
 			break;
 			
@@ -269,8 +242,7 @@ function circleAct(circleClass, act) {
 				handlerInfo.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
 				handlerInfo.preferredApplicationHandler = handler;
 				handlerInfo.alwaysAskBeforeHandling = false;
-				var hs = Cc["@mozilla.org/uriloader/handler-service;1"].getService(Ci.nsIHandlerService);
-				hs.store(handlerInfo);
+				myServices.hs.store(handlerInfo);
 			} else {
 				throw new Error('could not find yahoo mail handler. meaning i couldnt find a handler with uriTemplate of ...compose.mail.yahoo.... info = ' + uneval(info));
 				return false;
@@ -281,8 +253,7 @@ function circleAct(circleClass, act) {
 			handlerInfo.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
 			handlerInfo.preferredApplicationHandler = null;
 			handlerInfo.alwaysAskBeforeHandling = true;
-			var hs = Cc["@mozilla.org/uriloader/handler-service;1"].getService(Ci.nsIHandlerService);
-			hs.store(handlerInfo);
+			myServices.hs.store(handlerInfo);
 			break;
 			
 		default:
