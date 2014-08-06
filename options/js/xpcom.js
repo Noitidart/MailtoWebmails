@@ -1,6 +1,8 @@
 const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 Cu.import('resource://gre/modules/Services.jsm');
 Cu.import('resource://gre/modules/XPCOMUtils.jsm');
+Cu.import('resource://gre/modules/FileUtils.jsm');
+/* start - infoForWebmailHandlers.jsm */ 
 var myServices = {};
 
 XPCOMUtils.defineLazyGetter(myServices, 'eps', function(){ return Cc['@mozilla.org/uriloader/external-protocol-service;1'].getService(Ci.nsIExternalProtocolService) });
@@ -28,12 +30,42 @@ const infoForWebmailHandlers = [
 		circleSelector: '.skills .html'
 	}
 ];
+/* end - infoForWebmailHandlers.jsm */ 
 const INSTALL_HANDLER = 0;
 const UNINSTALL_HANDLER = 1;
 const SET_HANDLER_ACTIVE = 2;
 const SET_HANDLER_INACTIVE = 3;
 
+var reInitTimeout;
+var ds = null; //for aRDFObserver
+/* start - aRDFObserver structure */
+// is a nsIRDFObserver
+var aRDFObserver = {
+	onChange: function(aDataSource, aSource, aProperty, aOldTarget, aNewTarget) {
+		if (aSource.ValueUTF8 == 'urn:scheme:handler:mailto') {
+			console.log('mailto handler just changed');
+			try {
+				window.clearTimeout(reInitTimeout);
+			} catch (ignore) {}
+			reInitTimeout = window.setTimeout(function() {
+				console.info('reiniting NOW');
+				init();
+			}, 500);
+			//refresh my page
+		}
+	}
+};
+/* end - aRDFObserver structure */
+
 function init() {
+	//only on load should dontAddRdfObserver be !. so in all other times like "reiniting" must be true. as we dont want to add a 2nd+ rdf observer
+	if (ds === null) {		
+		var rdfs = Cc['@mozilla.org/rdf/rdf-service;1'].getService(Ci.nsIRDFService);
+		var file = FileUtils.getFile('UMimTyp', []);
+		var fileHandler = Services.io.getProtocolHandler('file').QueryInterface(Ci.nsIFileProtocolHandler);
+		ds = rdfs.GetDataSourceBlocking(fileHandler.getURLSpecFromFile(file));
+		ds.AddObserver(aRDFObserver);
+	}
 	var actToggles = document.querySelectorAll('a.act-toggle');
 	Array.prototype.forEach.call(actToggles, function(actTog) {
 		actTog.addEventListener('click', toggleToActive, false);
@@ -74,14 +106,16 @@ function init() {
 	//end - determine if there is a preferred web app handler
 	*/
 	//start - mark installed handlers as installed in dom AND the active handler as active in dom
+	//now that i watch 3rd party, i have to also now mark uninstalled handlers and inactive handlers as such
 	for (var i=0; i<infoForWebmailHandlers.length; i++) {
 		var info = infoForWebmailHandlers[i];
+		var thisRow = document.querySelector(info.circleSelector).parentNode.parentNode;
+		var span5 = thisRow.querySelector('.span5');
+		var thisTog = thisRow.querySelector('a.act-toggle');
 		if (uriTemplates_of_installedHandlers.indexOf(info.uriTemplate) > -1) {
 			//yes its installed
 			console.log('is installed info: ', info);
-			var thisRow = document.querySelector(info.circleSelector).parentNode.parentNode;
-			//var thisStall = thisRow.querySelector('a.stall-me');
-			thisRow.querySelector('.span5').classList.add('stalled');
+			span5.classList.add('stalled');
 			/*
 			if (handlerInfo.preferredApplicationHandler.uriTemplate == info.uriTemplate) {
 				var thisTog = thisRow.querySelector('a.act-toggle');
@@ -90,9 +124,13 @@ function init() {
 			// cant do this way because if it used to be a web app handler (like y mail) and then they changed it to always ask (or a local app handler), the preferredApplicationHandler is left as it what it was last time. so it will be y mail even though it is at always ask (or local app handler)
 			*/
 			if (!handlerInfo.alwaysAskBeforeHandling && handlerInfo.preferredAction == Ci.nsIHandlerInfo.useHelperApp && handlerInfo.preferredApplicationHandler instanceof Ci.nsIWebHandlerApp && handlerInfo.preferredApplicationHandler.uriTemplate == info.uriTemplate) { //checking instanceof to make sure its not null or something with no uriTemplate
-				var thisTog = thisRow.querySelector('a.act-toggle');
 				thisTog.classList.add('active-me');
+			} else {
+				thisTog.classList.remove('active-me');
 			}
+		} else {
+			span5.classList.remove('stalled');
+			thisTog.classList.remove('active-me');
 		}
 	}
 	//end - mark installed handlers as installed in dom
@@ -213,81 +251,93 @@ function circleAct(circleClass, act) {
 		var handlerInfo = myServices.eps.getProtocolHandlerInfo('mailto');
 		var handlers = handlerInfo.possibleApplicationHandlers;
 	}
-	
-	switch (act) {
-		case INSTALL_HANDLER:
-			var protocol = 'mailto';
-			var name = info.name;
-			var myURISpec = info.uriTemplate;
+	console.info('removed aRDFObserver so can do circleAct without observer thinking its 3rd party');
+	ds.RemoveObserver(aRDFObserver);
+	try {
+		switch (act) {
+			case INSTALL_HANDLER:
+				var protocol = 'mailto';
+				var name = info.name;
+				var myURISpec = info.uriTemplate;
 
-			var handler = Cc['@mozilla.org/uriloader/web-handler-app;1'	].createInstance(Ci.nsIWebHandlerApp);
-			handler.name = info.name;
-			handler.uriTemplate = info.uriTemplate;
+				var handler = Cc['@mozilla.org/uriloader/web-handler-app;1'	].createInstance(Ci.nsIWebHandlerApp);
+				handler.name = info.name;
+				handler.uriTemplate = info.uriTemplate;
 
-			var handlerInfo = myServices.eps.getProtocolHandlerInfo('mailto');
-			handlerInfo.possibleApplicationHandlers.appendElement(handler, false);
+				var handlerInfo = myServices.eps.getProtocolHandlerInfo('mailto');
+				handlerInfo.possibleApplicationHandlers.appendElement(handler, false);
 
-			myServices.hs.store(handlerInfo);
-			break;
-			
-		case UNINSTALL_HANDLER:
-			for (var i = 0; i < handlers.length; i++) {
-				var handler = handlers.queryElementAt(i, Ci.nsIWebHandlerApp);
+				myServices.hs.store(handlerInfo);
+				break;
+				
+			case UNINSTALL_HANDLER:
+				for (var i = 0; i < handlers.length; i++) {
+					var handler = handlers.queryElementAt(i, Ci.nsIWebHandlerApp);
 
-				if (handler.uriTemplate == info.uriTemplate) {
-					if (handlerInfo.preferredApplicationHandler instanceof Ci.nsIWebHandlerApp && handler.equals(handlerInfo.preferredApplicationHandler)) { //have to check instnaceof because it may be that preferredApplicationHandler is `null`, must do this because if its `null` then `handler.equals(handlerInfo.preferredApplicationHandler)` throws `NS_ERROR_ILLEGAL_VALUE: Illegal value'Illegal value' when calling method: [nsIWebHandlerApp::equals]`
+					if (handler.uriTemplate == info.uriTemplate) {
+						if (handlerInfo.preferredApplicationHandler instanceof Ci.nsIWebHandlerApp && handler.equals(handlerInfo.preferredApplicationHandler)) { //have to check instnaceof because it may be that preferredApplicationHandler is `null`, must do this because if its `null` then `handler.equals(handlerInfo.preferredApplicationHandler)` throws `NS_ERROR_ILLEGAL_VALUE: Illegal value'Illegal value' when calling method: [nsIWebHandlerApp::equals]`
 
-						//if the last preferredApplicationHandler was this then nullify it, just me trying to keep things not stale
-						handlerInfo.preferredApplicationHandler = null;
-						if (handlerInfo.preferredAction == Ci.nsIHandlerInfo.useHelperApp) {
-							//it looks like the preferredAction was to use this helper app, so now that its no longer there we will have to ask what the user wants to do next time the uesrs clicks a mailto: link
-							handlerInfo.alwaysAskBeforeHandling = true;
-							handlerInfo.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
+							//if the last preferredApplicationHandler was this then nullify it, just me trying to keep things not stale
+							handlerInfo.preferredApplicationHandler = null;
+							if (handlerInfo.preferredAction == Ci.nsIHandlerInfo.useHelperApp) {
+								//it looks like the preferredAction was to use this helper app, so now that its no longer there we will have to ask what the user wants to do next time the uesrs clicks a mailto: link
+								handlerInfo.alwaysAskBeforeHandling = true;
+								handlerInfo.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
+							}
 						}
+						handlers.removeElementAt(i);
+						i--;
 					}
-					handlers.removeElementAt(i);
-					i--;
+					myServices.hs.store(handlerInfo);
 				}
-				myServices.hs.store(handlerInfo);
-			}
-			break;
-			
-		case SET_HANDLER_ACTIVE:
-			var foundHandler = false;
-			handlers = handlers.enumerate();
-			while (handlers.hasMoreElements()) {
-				var handler = handlers.getNext();
-				if (handler.QueryInterface(Ci.nsIWebHandlerApp).uriTemplate == info.uriTemplate) { //this is how i decided to indentify if the handler, by uriTemplate
-					foundHandler = true;
-					break;
+				break;
+				
+			case SET_HANDLER_ACTIVE:
+				var foundHandler = false;
+				handlers = handlers.enumerate();
+				while (handlers.hasMoreElements()) {
+					var handler = handlers.getNext();
+					if (handler.QueryInterface(Ci.nsIWebHandlerApp).uriTemplate == info.uriTemplate) { //this is how i decided to indentify if the handler, by uriTemplate
+						foundHandler = true;
+						break;
+					}
 				}
-			}
 
-			if (foundHandler) {
-				//it was found. and in the while loop when i found it, i "break"ed out of the loop which left handlerInfo set at the yahoo mail handler
-				//set this to the prefered handler as this handler is the y! mail handler
-				handlerInfo.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
-				handlerInfo.preferredApplicationHandler = handler;
-				handlerInfo.alwaysAskBeforeHandling = false;
+				if (foundHandler) {
+					//it was found. and in the while loop when i found it, i "break"ed out of the loop which left handlerInfo set at the yahoo mail handler
+					//set this to the prefered handler as this handler is the y! mail handler
+					handlerInfo.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
+					handlerInfo.preferredApplicationHandler = handler;
+					handlerInfo.alwaysAskBeforeHandling = false;
+					myServices.hs.store(handlerInfo);
+				} else {
+					throw new Error('could not find yahoo mail handler. meaning i couldnt find a handler with uriTemplate of ...compose.mail.yahoo.... info = ' + uneval(info));
+				}
+				break;
+				
+			case SET_HANDLER_INACTIVE:
+				handlerInfo.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
+				handlerInfo.preferredApplicationHandler = null;
+				handlerInfo.alwaysAskBeforeHandling = true;
 				myServices.hs.store(handlerInfo);
-			} else {
-				throw new Error('could not find yahoo mail handler. meaning i couldnt find a handler with uriTemplate of ...compose.mail.yahoo.... info = ' + uneval(info));
-				return false;
-			}
-			break;
-			
-		case SET_HANDLER_INACTIVE:
-			handlerInfo.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
-			handlerInfo.preferredApplicationHandler = null;
-			handlerInfo.alwaysAskBeforeHandling = true;
-			myServices.hs.store(handlerInfo);
-			break;
-			
-		default:
-			throw new Error('invalid act supplied, making this error rather than prompt because this is a dev error');
+				break;
+				
+			default:
+				throw new Error('invalid act supplied, making this error rather than prompt because this is a dev error');
+		}
+	} catch(ex) {
+		throw(ex);
+	} finally {
+		//this finally block will run even though we throw in the catch block. see: https://gist.github.com/Noitidart/abeb5dc331dc322372e8
+		console.info('added aRDFObserver back');
+		ds.AddObserver(aRDFObserver);
 	}
-	
-	return true;
+	return true; //will not return true even though the finally block runs if an error is thrown in catch
 }
 
 document.addEventListener('DOMContentLoaded', init, false);
+
+window.addEventListener('unload', function() {
+	ds.RemoveObserver(aRDFObserver);
+	Services.ww.activeWindow.alert('unloaded so observer removed');
+}, false);

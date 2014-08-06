@@ -8,6 +8,7 @@ const self = {
 
 Cu.import('resource://gre/modules/Services.jsm');
 Cu.import('resource://gre/modules/devtools/Console.jsm');
+/* start - infoForWebmailHandlers.jsm */ 
 Cu.import('resource://gre/modules/XPCOMUtils.jsm');
 var myServices = {};
 
@@ -36,6 +37,7 @@ const infoForWebmailHandlers = [
 		circleSelector: '.skills .html'
 	}
 ];
+/* end - infoForWebmailHandlers.jsm */ 
 
 //start pref stuff
 //needs ES5, i dont know what min browser version of FF starts support for ES5
