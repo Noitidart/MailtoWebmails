@@ -339,5 +339,5 @@ document.addEventListener('DOMContentLoaded', init, false);
 
 window.addEventListener('unload', function() {
 	ds.RemoveObserver(aRDFObserver);
-	Services.ww.activeWindow.alert('unloaded so observer removed');
+	console.log('unloaded pref page so observer removed');
 }, false);

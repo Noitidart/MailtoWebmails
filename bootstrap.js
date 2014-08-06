@@ -385,6 +385,31 @@ function startup(aData, aReason) {
 function shutdown(aData, aReason) {
     if (aReason == APP_SHUTDOWN) return;
 	
+	//close all tools frontends if they're open
+	var DOMWindows = Services.wm.getEnumerator(null);
+	while (DOMWindows.hasMoreElements()) {
+		var aDOMWindow = DOMWindows.getNext();
+		if (aDOMWindow.gBrowser && aDOMWindow.gBrowser.tabContainer) {
+			for (var i = 0; i < aDOMWindow.gBrowser.tabContainer.childNodes.length; i++) {
+				if (aDOMWindow.gBrowser.tabContainer.childNodes[i].linkedBrowser.contentWindow.location.href == 'chrome://mailtowebmails/content/options/prefs.html') {
+					//aDOMWindow.gBrowser.removeTab(aDOMWindow.gBrowser.tabContainer.childNodes[i]);
+					//i--;
+					aDOMWindow.gBrowser.tabContainer.childNodes[i].linkedBrowser.contentWindow.location = 'data:text/html,MailtoWebmails tools/prefs page is no longer available. The add-on was disabled/uninstalled by user.';
+				}
+			}
+		} else if (aDOMWindow.gBrowser) {
+			if (aDOMWindow.gBrowser.contentWindow.location.href == 'chrome://mailtowebmails/content/options/prefs.html') {
+				//aDOMWindow.close();
+				aDOMWindow.gBrowser.contentWindow.location = 'data:text/html,MailtoWebmails tools/prefs page is no longer available. The add-on was disabled/uninstalled by user.';
+			}
+		} else if (aDOMWindow) {
+			if (aDOMWindow.location.href == 'chrome://mailtowebmails/content/options/prefs.html') {
+				//aDOMWindow.close();
+				aDOMWindow.location = 'data:text/html,MailtoWebmails tools/prefs page is no longer available. The add-on was disabled/uninstalled by user.';
+			}
+		}
+	}
+	
 	//start pref stuff more
 	myPrefListener.unregister();
 	//end pref stuff more
