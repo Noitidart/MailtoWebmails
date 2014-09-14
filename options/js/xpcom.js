@@ -11,7 +11,7 @@ XPCOMUtils.defineLazyGetter(myServices, 'hs', function(){ return Cc['@mozilla.or
 const infoForWebmailHandlers = [
 	{
 		name: 'AIM Mail',
-		uriTemplate: 'http://webmail.aol.com/Mail/ComposeMessage.aspx?to=%s',
+		uriTemplate: 'http://webmail.aol.com/Mail/ComposeMessage.aspx?to=%s', //chrome mailto ext uses: `http://mail.aol.com/33490-311/aim-6/en-us/mail/compose-message.aspx?to={to}&cc={cc}&bcc={bcc}&subject={subject}&body={body}`
 		circleSelector: '.skills .css' //this is for me to target the proper row in the dom of the prefs frontend document.getElementById(circleId).parentNode.parentNode is the row element
 	},
 	{
@@ -21,7 +21,7 @@ const infoForWebmailHandlers = [
 	},
 	{
 		name: 'GMail',
-		uriTemplate: 'https://mail.google.com/mail/?extsrc=mailto&url=%s',
+		uriTemplate: 'https://mail.google.com/mail/?extsrc=mailto&url=%s', //chrome mailto ext uses: `https://mail.google.com/mail/?view=cm&tf=1&to={to}&cc={cc}&bcc={bcc}&su={subject}&body={body}`
 		circleSelector: '.skills .ai'
 	},
 	{
@@ -36,12 +36,12 @@ const infoForWebmailHandlers = [
 	},
 	{
 		name: 'Outlook Live',
-		uriTemplate: 'https://mail.live.com/secure/start?action=compose&to=%s',
+		uriTemplate: 'https://mail.live.com/secure/start?action=compose&to=%s', //chrome mailto ext uses: `https://mail.live.com/default.aspx?rru=compose&to={to}&subject={subject}&body={body}&cc={cc}`
 		circleSelector: '.skills .ps'
 	},
 	{
 		name: 'Y! Mail',
-		uriTemplate: 'https://compose.mail.yahoo.com/?To=%s',
+		uriTemplate: 'https://compose.mail.yahoo.com/?To=%s', //chrome mailto ext uses: `http://compose.mail.yahoo.com/?To={to}&Cc={cc}&Bcc={bcc}&Subj={subject}&Body={body}`
 		circleSelector: '.skills .html'
 	},
 	{
