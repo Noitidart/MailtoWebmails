@@ -199,7 +199,19 @@ ul.social-icons li a:hover {
 	background: rgb(65, 2, 143) url(../img/logo-y!mail3.png) center center no-repeat;
 }
 .skills .css {
-	background: rgb(255, 204, 0) url(../img/logo-aolmail.png) center center no-repeat;
+	background: rgb(255, 204, 0) url(../img/logo-aolmail.png) 47% center no-repeat;
+}
+.skills .lycos {
+	background: rgb(140, 140, 140) url(../img/logo-lycos.png) center center no-repeat;
+}
+.skills .fastmail {
+	background: rgb(68, 86, 127) url(../img/logo-fastmail.png) center center no-repeat;
+}
+.skills .zoho {
+	background: rgb(36, 160, 68) url(../img/logo-zoho.png) center center no-repeat;
+}
+.skills .gmx {
+	background: rgb(0, 190, 235) url(../img/logo-gmx.png) center center no-repeat;
 }
 /* end - colors and background images of circles */
 

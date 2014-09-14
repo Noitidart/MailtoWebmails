@@ -22,9 +22,24 @@ const infoForWebmailHandlers = [
 		circleSelector: '.skills .css' //this is for me to target the proper row in the dom of the prefs frontend document.getElementById(circleId).parentNode.parentNode is the row element
 	},
 	{
+		name: 'FastMail',
+		uriTemplate: 'https://www.fastmail.fm/action/compose/?to=%s',
+		circleSelector: '.skills .fastmail'
+	},
+	{
 		name: 'GMail',
 		uriTemplate: 'https://mail.google.com/mail/?extsrc=mailto&url=%s',
 		circleSelector: '.skills .ai'
+	},
+	{
+		name: 'GMX',
+		uriTemplate: 'https://mail.google.com/mail/?extsrc=mailto&url=%s',
+		circleSelector: '.skills .gmx'
+	},
+	{
+		name: 'Lycos Mail',
+		uriTemplate: 'https://zmail.zoho.com/mail/compose.do?extsrc=mailto&mode=compose&tp=zb&ct={to}',
+		circleSelector: '.skills .lycos'
 	},
 	{
 		name: 'Outlook Live',
@@ -35,6 +50,11 @@ const infoForWebmailHandlers = [
 		name: 'Y! Mail',
 		uriTemplate: 'https://compose.mail.yahoo.com/?To=%s',
 		circleSelector: '.skills .html'
+	},
+	{
+		name: 'ZOHO Mail',
+		uriTemplate: 'https://zmail.zoho.com/mail/compose.do?extsrc=mailto&mode=compose&tp=zb&ct=%s',
+		circleSelector: '.skills .zoho'
 	}
 ];
 /* end - infoForWebmailHandlers.jsm */ 
