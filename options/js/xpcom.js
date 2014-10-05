@@ -68,12 +68,12 @@ var ds = null; //for aRDFObserver
 var aRDFObserver = {
 	onChange: function(aDataSource, aSource, aProperty, aOldTarget, aNewTarget) {
 		if (aSource.ValueUTF8 == 'urn:scheme:handler:mailto') {
-
+			console.log('mailto handler just changed');
 			try {
 				window.clearTimeout(reInitTimeout);
 			} catch (ignore) {}
 			reInitTimeout = window.setTimeout(function() {
-
+				console.info('reiniting NOW');
 				init();
 			}, 500);
 			//refresh my page
@@ -102,7 +102,7 @@ function init() {
 	
 	//start - determine active handler
 	var handlerInfo = myServices.eps.getProtocolHandlerInfo('mailto');
-
+	console.log('hanlderInfo', handlerInfo);
 
 	//end - determine active handler
 	
@@ -113,7 +113,7 @@ function init() {
 		var handler = handlers.getNext().QueryInterface(Ci.nsIWebHandlerApp);
 		uriTemplates_of_installedHandlers.push(handler.uriTemplate);
 	}
-
+	console.info('uriTemplates_of_installedHandlers', uriTemplates_of_installedHandlers);
 	//end - find installed handlers
 
 	/*
@@ -139,7 +139,7 @@ function init() {
 		var thisTog = thisRow.querySelector('a.act-toggle');
 		if (uriTemplates_of_installedHandlers.indexOf(info.uriTemplate) > -1) {
 			//yes its installed
-
+			console.log('is installed info: ', info);
 			span5.classList.add('stalled');
 			/*
 			if (handlerInfo.preferredApplicationHandler.uriTemplate == info.uriTemplate) {
@@ -276,7 +276,7 @@ function circleAct(circleClass, act) {
 		var handlerInfo = myServices.eps.getProtocolHandlerInfo('mailto');
 		var handlers = handlerInfo.possibleApplicationHandlers;
 	}
-
+	console.info('removed aRDFObserver so can do circleAct without observer thinking its 3rd party');
 	ds.RemoveObserver(aRDFObserver);
 	try {
 		switch (act) {
@@ -354,7 +354,7 @@ function circleAct(circleClass, act) {
 		throw(ex);
 	} finally {
 		//this finally block will run even though we throw in the catch block. see: https://gist.github.com/Noitidart/abeb5dc331dc322372e8
-
+		console.info('added aRDFObserver back');
 		ds.AddObserver(aRDFObserver);
 	}
 	return true; //will not return true even though the finally block runs if an error is thrown in catch
@@ -364,5 +364,5 @@ document.addEventListener('DOMContentLoaded', init, false);
 
 window.addEventListener('unload', function() {
 	ds.RemoveObserver(aRDFObserver);
-
+	console.log('unloaded pref page so observer removed');
 }, false);
