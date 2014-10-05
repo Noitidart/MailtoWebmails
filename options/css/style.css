@@ -207,6 +207,9 @@ ul.social-icons li a:hover {
 .skills .fastmail {
 	background: rgb(68, 86, 127) url(../img/logo-fastmail.png) center center no-repeat;
 }
+.skills .yandex {
+	background: rgb(223, 78, 44) url(../img/logo-yandex.png) center center no-repeat;
+}
 .skills .zoho {
 	background: rgb(36, 160, 68) url(../img/logo-zoho.png) center center no-repeat;
 }

@@ -23,12 +23,12 @@ const infoForWebmailHandlers = [
 		name: 'GMail',
 		uriTemplate: 'https://mail.google.com/mail/?extsrc=mailto&url=%s', //chrome mailto ext uses: `https://mail.google.com/mail/?view=cm&tf=1&to={to}&cc={cc}&bcc={bcc}&su={subject}&body={body}`
 		circleSelector: '.skills .ai'
-	},
+	},/*
 	{
 		name: 'GMX',
 		uriTemplate: 'https://mail.google.com/mail/?extsrc=mailto&url=%s',
 		circleSelector: '.skills .gmx'
-	},
+	},*/
 	{
 		name: 'Lycos Mail',
 		uriTemplate: 'https://zmail.zoho.com/mail/compose.do?extsrc=mailto&mode=compose&tp=zb&ct={to}',
@@ -43,6 +43,11 @@ const infoForWebmailHandlers = [
 		name: 'Y! Mail',
 		uriTemplate: 'https://compose.mail.yahoo.com/?To=%s', //chrome mailto ext uses: `http://compose.mail.yahoo.com/?To={to}&Cc={cc}&Bcc={bcc}&Subj={subject}&Body={body}`
 		circleSelector: '.skills .html'
+	},
+	{
+		name: 'Yandex.Mail',
+		uriTemplate: 'https://mail.yandex.com/compose?mailto=%s',
+		circleSelector: '.skills .yandex'
 	},
 	{
 		name: 'ZOHO Mail',
