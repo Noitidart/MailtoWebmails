@@ -16,7 +16,7 @@ const infoForWebmailHandlers = [
 	},
 	{
 		name: 'FastMail',
-		uriTemplate: 'https://www.fastmail.fm/action/compose/?to=%s',
+		uriTemplate: 'https://www.fastmail.com/action/compose/?mailto=%s',
 		circleSelector: '.skills .fastmail'
 	},
 	{
