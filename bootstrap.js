@@ -47,6 +47,11 @@ const infoForWebmailHandlers = [
 		circleSelector: '.skills .ps'
 	},
 	{
+		name: 'QQMail',
+		uriTemplate: 'http://www.mail.qq.com/cgi-bin/loginpage?delegate_url=%2Fcgi-bin%2Freadtemplate%3Ft%3Dcompose%26toemail%3D%s',
+		circleSelector: '.skills .qq'
+	},
+	{
 		name: 'Y! Mail',
 		uriTemplate: 'https://compose.mail.yahoo.com/?To=%s',
 		circleSelector: '.skills .html'

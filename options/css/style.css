@@ -216,6 +216,9 @@ ul.social-icons li a:hover {
 .skills .gmx {
 	background: rgb(0, 190, 235) url(../img/logo-gmx.png) center center no-repeat;
 }
+.skills .qq {
+	background: rgb(255, 102, 0) url(../img/logo-qq.png) center center no-repeat;
+}
 /* end - colors and background images of circles */
 
 .skills .span3 div:hover {
