@@ -7,7 +7,7 @@ const self = {
 };
 
 Cu.import('resource://gre/modules/Services.jsm');
-
+Cu.import('resource://gre/modules/devtools/Console.jsm');
 /* start - infoForWebmailHandlers.jsm */ 
 Cu.import('resource://gre/modules/XPCOMUtils.jsm');
 var myServices = {};
@@ -72,7 +72,7 @@ const infoForWebmailHandlers = [
 function startup(aData, aReason) {
 	self.aData = aData; //must go first, because functions in loadIntoWindow use self.aData
 
-
+	console.log('aReason=', aReason);
 	
 	if ([ADDON_INSTALL, ADDON_UPGRADE, ADDON_DOWNGRADE].indexOf(aReason) > -1) { //have to do install too because i dont uninstall the handlres on uninstall of add-on
 		//go through installed handlers. make sure the installed handler's uriTemplate matches that of what is in infoForWebmailHandlers, if it doesnt, then update the installed handlers uriTemplate
@@ -87,12 +87,12 @@ function startup(aData, aReason) {
 			for (var i=0; i<infoForWebmailHandlers.length; i++) {
 				var info = infoForWebmailHandlers[i];
 				if (info.name == handler.name && info.uriTemplate != handler.uriTemplate) {
-
+					console.warn('installed and info name match BUT uriTemplate mismatch SO set installed uriTemplate to info uriTemplate');
 					handler.uriTemplate = info.uriTemplate;
 					shouldCallStore = true;
 				}
 				if (info.name != handler.name && info.uriTemplate == handler.uriTemplate) {
-
+					console.warn('installed and info uriTemplate match BUT name mismatch SO set installed name to info name');
 					handler.name = info.name;
 					shouldCallStore = true;
 				}
