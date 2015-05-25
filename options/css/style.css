@@ -22,8 +22,8 @@ a.brand:after {
 
 .profile, .skills, .work, .resume {
 	padding:30px 0;
-	margin-bottom: 50px; /*fixes so that when there are lots of options the footer doesnt overlap a little of the last rows bottom*/
 }
+
 .profile h2, .skills h2, .work h2, .resume h2 {
 	font-weight:normal;
 	color: #39D084;
@@ -218,6 +218,9 @@ ul.social-icons li a:hover {
 }
 .skills .qq {
 	background: rgb(255, 102, 0) url(../img/logo-qq.png) center center no-repeat;
+}
+.skills .custom-handler-add {
+	background: rgb(173, 122, 122) url(../img/browse-img2.png) center center no-repeat;
 }
 /* end - colors and background images of circles */
 

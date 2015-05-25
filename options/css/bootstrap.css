@@ -1015,18 +1015,19 @@ label {
 	margin-bottom: 5px;
 }
 select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {
-	color: #555555;
+	/*color: #555555;*/
+	color: #fff;
 	display: inline-block;
 	font-size: 14px;
-	height: 28px;
-	line-height: 28px;
+	/* height: 28px; */
+	/* line-height: 28px; */
 	margin-bottom: 10px;
-	padding: 10px 6px;
+	padding: 4px 6px;
 	vertical-align: middle;
 	width: 80%;
 	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
+	-moz-border-radius: 1px;
+	border-radius: 1px;
 }
 input, textarea, .uneditable-input {
 	width: 206px;
@@ -1035,16 +1036,23 @@ textarea {
 	height: auto;
 }
 textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {
-	background-color: #ddf3df;
-	border: 0;
+	/*background-color: #ddf3df;*/
+	background-color: rgba(255, 255, 255, 0);
+	/*border: 0;*/
+	border-width: 1px;
+	border-style: solid;
+	border-color: rgba(255, 255, 255, .2);
+	/*
  -webkit-transition: background-color linear .2s;
- -moz-transition: background-color linear .2s;
+ -moz-transition: background-color linear .2s border-color linear .5s;
  -o-transition: background-color linear .2s;
- transition: background-color linear .2s;
+ */
+ transition: background-color linear .2s, border-color linear .2s, background-color .2s;
 }
 textarea:focus, input[type="text"]:focus, input[type="password"]:focus, input[type="datetime"]:focus, input[type="datetime-local"]:focus, input[type="date"]:focus, input[type="month"]:focus, input[type="time"]:focus, input[type="week"]:focus, input[type="number"]:focus, input[type="email"]:focus, input[type="url"]:focus, input[type="search"]:focus, input[type="tel"]:focus, input[type="color"]:focus, .uneditable-input:focus {
-	border-color: rgba(82, 168, 236, 0.8);
-	background-color: #95e09c;
+	border-color: rgba(255, 255, 255, 0.5);
+	/*background-color: #95e09c;*/
+	background-color: rgba(255, 255, 255, .05);
 	outline: 0;
 	outline: thin dotted \9;/* IE6-9 */
 }
