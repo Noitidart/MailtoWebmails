@@ -107,7 +107,7 @@ a.act-toggle:after {
 
 
 a.stall-me {
-	//background-color: rgb(240, 73, 73);
+	/*background-color: rgb(240, 73, 73);*/
 	text-decoration: none;
 	font-size: 1.4em;
 	padding: 10px 30px;
@@ -142,6 +142,42 @@ a.stall-me i:before {
 
 .stalled a.stall-me i:before {
 	content: '\e80f';
+}
+
+/*check*/
+a.personal-btn {
+	background-color: #7AA2FF;
+	font-size: 1.8em;
+	text-decoration: none;
+	width: 48px;
+	height: 48px;
+	display: block;
+	float: right;
+	border-radius: 29px;
+	padding: 5px;
+}
+
+a.personal-btn i:before {
+	color: #fff;
+	display: block;
+	font-family: 'fontello';
+	font-style: normal;
+	font-variant: normal;
+	font-weight: normal;
+	line-height: 2em;
+	position: relative;
+	text-align: center;
+	text-decoration: inherit;
+	text-transform: none;
+	top: -2px;
+}
+
+a.personal-btn.browse-img i:before {
+	content: '\e809';
+}
+
+a.personal-btn.pick-color i:before {
+	content: '\e808';
 }
 /* end - buttons */
 .social {
