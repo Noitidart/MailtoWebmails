@@ -365,6 +365,19 @@ function circleAct(circleClass, act) {
 	return true; //will not return true even though the finally block runs if an error is thrown in catch
 }
 
+function personal_img(target) {
+	var fp = Cc['@mozilla.org/filepicker;1'].createInstance(Ci.nsIFilePicker);
+	fp.init(Services.wm.getMostRecentWindow(null), 'Image Selection', Ci.nsIFilePicker.modeOpen);
+	fp.appendFilters(Ci.nsIFilePicker.filterImages);
+
+	var rv = fp.show();
+	if (rv == Ci.nsIFilePicker.returnOK) {
+		//console.log('fp.file:', fp.file);
+		target.style.backgroundImage = 'url(' + Services.io.newFileURI(fp.file).spec + ')';
+		target.classList.remove('no-custom-bg');
+	}// else { // cancelled	}
+}
+
 document.addEventListener('DOMContentLoaded', init, false);
 
 window.addEventListener('unload', function() {

@@ -157,6 +157,12 @@ a.personal-btn {
 	padding: 5px;
 }
 
+a.personal-btn.browse-img {
+	background-size: 80%;
+	background-position: center 47%;
+	background-repeat: no-repeat;
+}
+
 a.personal-btn i:before {
 	color: #fff;
 	display: block;
@@ -172,7 +178,7 @@ a.personal-btn i:before {
 	top: -2px;
 }
 
-a.personal-btn.browse-img i:before {
+a.personal-btn.browse-img.no-custom-bg i:before {
 	content: '\e809';
 }
 

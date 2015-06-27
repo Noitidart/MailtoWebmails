@@ -15,6 +15,7 @@
     <link href='css/font-family_droid-sans.css' rel='stylesheet' type='text/css'>
 	<!-- scripts -->
 	<script src="js/xpcom.js"></script>
+	</body>
     </head>
     <body>
     <div class="navbar">
@@ -198,8 +199,9 @@
           </div>
         </div>
         <div class="span5">
-		  <a class="personal-btn browse-img" style="margin-right:15px;margin-top:5px;"><i></i></a>
-		  <a class="personal-btn pick-color" style="margin-right:10px;margin-top:5px;"><i></i></a>
+		  <a class="personal-btn browse-img no-custom-bg" style="margin-right:15px;margin-top:5px;" onclick="personal_img(this)"><i></i></a>
+		  <a class="personal-btn pick-color" style="margin-right:10px;margin-top:5px;" onclick="this.nextSibling.nextSibling.click()"><i></i></a>
+		  <input id="my_color_picker3" value="#7AA2FF" type="color" style="display:none;" onchange="this.previousSibling.previousSibling.style.backgroundColor=this.value;">
 		  <div class="sp5desc"><input type="text" placeholder="Enter provider name"  style="width:60%;"/></div>
 		  <div class="sp5desc"><input type="text" placeholder="Enter wildcard compose link"  style="width:60%;"/></div>
 		  <div class="sp5desc"><textarea type="text" placeholder="Enter description of this webmail service" style="resize:none; width:100%; margin-bottom:0;"></textarea></div>
