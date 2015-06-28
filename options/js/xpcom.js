@@ -2,6 +2,7 @@ const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 Cu.import('resource://gre/modules/Services.jsm');
 Cu.import('resource://gre/modules/XPCOMUtils.jsm');
 Cu.import('resource://gre/modules/FileUtils.jsm');
+Cu.import('resource://gre/modules/osfile.jsm');
 /* start - infoForWebmailHandlers.jsm */ 
 var myServices = {};
 
@@ -137,12 +138,14 @@ function init() {
 	*/
 	//start - mark installed handlers as installed in dom AND the active handler as active in dom
 	//now that i watch 3rd party, i have to also now mark uninstalled handlers and inactive handlers as such
+	var uriTemplates_matchingPopular = [];
 	for (var i=0; i<infoForWebmailHandlers.length; i++) {
 		var info = infoForWebmailHandlers[i];
 		var thisRow = document.querySelector(info.circleSelector).parentNode.parentNode;
 		var span5 = thisRow.querySelector('.span5');
 		var thisTog = thisRow.querySelector('a.act-toggle');
 		if (uriTemplates_of_installedHandlers.indexOf(info.uriTemplate) > -1) {
+			uriTemplates_matchingPopular.push(info.uriTemplate);
 			//yes its installed
 			console.log('is installed info: ', info);
 			span5.classList.add('stalled');
@@ -164,8 +167,129 @@ function init() {
 		}
 	}
 	//end - mark installed handlers as installed in dom
+	
+	//start - read and do personal handlers
+	var pInstalledHandlers = [];
+	// find what handlers remain in the installed handlers that are not of popular, and put them into personal
+	for (var i=0; i<uriTemplates_of_installedHandlers.length; i++) {
+		if (uriTemplates_matchingPopular.indexOf(uriTemplates_of_installedHandlers[i]) == -1) {
+			pInstalledHandlers.push(uriTemplates_of_installedHandlers[i]);
+		}
+	}
+	
+	var pJson = []; // in case becauseNoSuchFile in readP
+	
+	var readP = function() {
+		var pomise_readIt = read_encoded(OS.Path.join(OS.Constants.Path.profileDir, 'mailtowebmails_personal-handlers.txt'), {encoding:'utf-8'});
+		pomise_readIt.then(
+			function(aVal) {
+				console.log('Fullfilled - pomise_readIt - ', aVal);
+				// start - do stuff here - pomise_readIt
+				writePToDom();
+				// end - do stuff here - pomise_readIt
+			},
+			function(aReason) {
+				if (aReasonMax(aReason).becauseNoSuchFile) {
+					writePToDom();
+					return;
+				}
+				var rejObj = {name:'pomise_readIt', aReason:aReason};
+				console.error('Rejected - pomise_readIt - ', rejObj);
+				//deferred_createProfile.reject(rejObj);
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'pomise_readIt', aCaught:aCaught};
+				console.error('Caught - pomise_readIt - ', rejObj);
+				//deferred_createProfile.reject(rejObj);
+			}
+		);
+	};
+	
+	var handlerInJson = function(keyName, keyValue, jsonArr) {
+		// jsonArr should be array like infoForWebmailHandlers
+		
+		// returns -1 if not found, else index in jsonArr
+		
+		for (var iii=0; iii<jsonArr.length; iii++) {
+			if (jsonArr[iii][keyName] == keyValue) {
+				return iii;
+			}
+		}
+		
+		return -1;
+	}
+	
+	var writePToDom = function() {
+		console.info('pInstalledHandlers:', pInstalledHandlers);
+		for (var i=0; i<pInstalledHandlers.length; i++) {
+			console.info('we have a p installed handler:', pInstalledHandlers[i])
+			var infoExists = handlerInJson(pInstalledHandlers[i], 'uriTemplate', pJson);
+			if (infoExists > -1) {
+				
+			} else {
+				pJson.push({
+					name: '???',
+					uriTemplate: pInstalledHandlers[i],
+					color: getRandomColor(),
+					image: '',
+					desc: '???'
+				});
+			}
+		}
+		
+		var pcontainer = document.getElementById('pcontainer');
+		for (var i=0; i<pJson.length; i++) {
+			var populatedTemplate = rowTemplate.slice();
+			populatedTemplate[2][2][1].style = 'background-color:' + pJson[i].color;
+			populatedTemplate[3][2][2] = pJson[i].name;
+			populatedTemplate[3][3][2] = pJson[i].desc;
+			var keys = {};
+			pcontainer.appendChild(jsonToDOM(populatedTemplate, document, keys));
+			console.info('keys:', keys);
+			keys.togAbil.addEventListener('click', function() {
+				alert('toggle ability on personal of uriTemplate:', pJson[i].uriTemplate);
+			})
+			keys.togInst.addEventListener('click', function() {
+				alert('toggle install on personal of uriTemplate:', pJson[i].uriTemplate);
+			})
+		}
+	};
+	
+	readP();
+	//end - read and do personal handlers
 }
 
+var rowTemplate =
+[
+	'div', {class:'row'},
+		['div', {class:'span3'},
+			['div', {class:'zoho', style:0}, // replace 0 with color `background-color:#fff`
+				['h3', {}] 
+			]
+		],
+		['div', {class:'span5'},
+			['h3', {},
+				0, // replace with name
+				['a', {class:'hire-me act-toggle', key:'togAbil'},
+					['i', {class:'icon-user'}]
+				]
+			],
+			['div', {class:'sp5desc'},
+				0 // replace with desc
+			],
+			/*
+			['div', {class:'expand-bg'},
+				['span', {class:'expand', style:0}, // replace 0 with img so `background-img:url(blah)`
+					'&nbsp;'
+				]
+			],
+			*/
+			['a', {class:'hire-me stall-me', key:'togInst'},
+				['i', {}]
+			],
+		]
+];
 function toggleStall(e) {
 	//check if active then make it inactive if unisntalled
 	
@@ -398,9 +522,207 @@ function toggleTip(trueForForceShow_falseForForceHide) {
 	}
 }
 
+function updatePersonalHandler() {
+	// updates by wildcard url, if not found it inserts it
+	var name = document.getElementById('pname').value;
+	var desc = document.getElementById('pdesc').value;
+	var color = document.getElementById('pcolor').value;
+	var img = document.getElementById('pimg').style.backgroundImage;
+	var url = document.getElementById('purl').value;
+	
+	
+}
+
+function shouldShowTip() {
+	var name = document.getElementById('pname').value;
+	var desc = document.getElementById('pdesc').value;
+	var url = document.getElementById('purl').value;
+	
+	if (url != '' && name != '' && desc != '') {
+		toggleTip(true);
+	} else {
+		toggleTip(false);
+	}
+}
 document.addEventListener('DOMContentLoaded', init, false);
 
 window.addEventListener('unload', function() {
 	ds.RemoveObserver(aRDFObserver);
 	console.log('unloaded pref page so observer removed');
 }, false);
+
+// common helper functions
+
+function read_encoded(path, options) {
+	// because the options.encoding was introduced only in Fx30, this function enables previous Fx to use it
+	// must pass encoding to options object, same syntax as OS.File.read >= Fx30
+	// TextDecoder must have been imported with Cu.importGlobalProperties(['TextDecoder']);
+	
+	var deferred_read_encoded = new Deferred();
+	
+	if (options && !('encoding' in options)) {
+		deferred_read_encoded.reject('Must pass encoding in options object, otherwise just use OS.File.read');
+		return deferred_read_encoded.promise;
+	}
+	
+	if (options && Services.vc.compare(Services.appinfo.version, 30) < 0) { // tests if version is less then 30
+		//var encoding = options.encoding; // looks like i dont need to pass encoding to TextDecoder, not sure though for non-utf-8 though
+		delete options.encoding;
+	}
+	var promise_readIt = OS.File.read(path, options);
+	
+	promise_readIt.then(
+		function(aVal) {
+			console.log('Fullfilled - promise_readIt - ', {a:{a:aVal}});
+			// start - do stuff here - promise_readIt
+			var readStr;
+			if (Services.vc.compare(Services.appinfo.version, 30) < 0) { // tests if version is less then 30
+				readStr = getTxtDecodr().decode(aVal); // Convert this array to a text
+			} else {
+				readStr = aVal;
+			}
+			deferred_read_encoded.resolve(readStr);
+			// end - do stuff here - promise_readIt
+		},
+		function(aReason) {
+			var rejObj = {name:'promise_readIt', aReason:aReason};
+			console.error('Rejected - promise_readIt - ', rejObj);
+			deferred_read_encoded.reject(rejObj);
+		}
+	).catch(
+		function(aCaught) {
+			var rejObj = {name:'promise_readIt', aCaught:aCaught};
+			console.error('Caught - promise_readIt - ', rejObj);
+			deferred_read_encoded.reject(rejObj);
+		}
+	);
+	
+	return deferred_read_encoded.promise;
+}
+
+/*dom insertion library function from MDN - https://developer.mozilla.org/en-US/docs/XUL_School/DOM_Building_and_HTML_Insertion*/
+
+function jsonToDOM(xml, doc, nodes) {
+	
+	var namespaces = {
+		html: 'http://www.w3.org/1999/xhtml',
+		xul: 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul'
+	};
+	var defaultNamespace = namespaces.html;
+	
+    function namespace(name) {
+        var m = /^(?:(.*):)?(.*)$/.exec(name);        
+        return [namespaces[m[1]], m[2]];
+    }
+
+    function tag(name, attr) {
+        if (Array.isArray(name)) {
+            var frag = doc.createDocumentFragment();
+            Array.forEach(arguments, function (arg) {
+                if (!Array.isArray(arg[0]))
+                    frag.appendChild(tag.apply(null, arg));
+                else
+                    arg.forEach(function (arg) {
+                        frag.appendChild(tag.apply(null, arg));
+                    });
+            });
+            return frag;
+        }
+
+        var args = Array.slice(arguments, 2);
+        var vals = namespace(name);
+        var elem = doc.createElementNS(vals[0] || defaultNamespace, vals[1]);
+
+        for (var key in attr) {
+            var val = attr[key];
+            if (nodes && key == 'key')
+                nodes[val] = elem;
+
+            vals = namespace(key);
+            if (typeof val == 'function')
+                elem.addEventListener(key.replace(/^on/, ''), val, false);
+            else
+                elem.setAttributeNS(vals[0] || '', vals[1], val);
+        }
+        args.forEach(function(e) {
+			try {
+				elem.appendChild(
+									Object.prototype.toString.call(e) == '[object Array]'
+									?
+										tag.apply(null, e)
+									:
+										e instanceof doc.defaultView.Node
+										?
+											e
+										:
+											doc.createTextNode(e)
+								);
+			} catch (ex) {
+				elem.appendChild(doc.createTextNode(ex));
+			}
+        });
+        return elem;
+    }
+    return tag.apply(null, xml);
+}
+/*end - dom insertion library function from MDN*/
+
+function getRandomColor() {
+	// http://stackoverflow.com/a/1484514/1828637
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+function Deferred() {
+	// update 062115 for typeof
+	if (typeof(Promise) != 'undefined' && Promise.defer) {
+		//need import of Promise.jsm for example: Cu.import('resource:/gree/modules/Promise.jsm');
+		return Promise.defer();
+	} else if (typeof(PromiseUtils) != 'undefined'  && PromiseUtils.defer) {
+		//need import of PromiseUtils.jsm for example: Cu.import('resource:/gree/modules/PromiseUtils.jsm');
+		return PromiseUtils.defer();
+	} else {
+		/* A method to resolve the associated Promise with the value passed.
+		 * If the promise is already settled it does nothing.
+		 *
+		 * @param {anything} value : This value is used to resolve the promise
+		 * If the value is a Promise then the associated promise assumes the state
+		 * of Promise passed as value.
+		 */
+		this.resolve = null;
+
+		/* A method to reject the assocaited Promise with the value passed.
+		 * If the promise is already settled it does nothing.
+		 *
+		 * @param {anything} reason: The reason for the rejection of the Promise.
+		 * Generally its an Error object. If however a Promise is passed, then the Promise
+		 * itself will be the reason for rejection no matter the state of the Promise.
+		 */
+		this.reject = null;
+
+		/* A newly created Pomise object.
+		 * Initially in pending state.
+		 */
+		this.promise = new Promise(function(resolve, reject) {
+			this.resolve = resolve;
+			this.reject = reject;
+		}.bind(this));
+		Object.freeze(this);
+	}
+}
+
+function aReasonMax(aReason) {
+	var deepestReason = aReason;
+	while (deepestReason.hasOwnProperty('aReason') || deepestReason.hasOwnProperty()) {
+		if (deepestReason.hasOwnProperty('aReason')) {
+			deepestReason = deepestReason.aReason;
+		} else if (deepestReason.hasOwnProperty('aCaught')) {
+			deepestReason = deepestReason.aCaught;
+		}
+	}
+	return deepestReason;
+}

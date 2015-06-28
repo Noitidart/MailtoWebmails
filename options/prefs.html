@@ -190,7 +190,7 @@
     </div>
     <!--END: Skills container-->
     <!--Custom container-->
-    <div class="container skills" style="margin-bottom:75px; padding-top:0;">
+    <div class="container skills" id="pcontainer" style="margin-bottom:75px; padding-top:0;">
       <h2>Personal Services</h2>
       <div class="row" style="position:relative;">
 		<div id="tip" style="position: absolute; background-color: rgb(255, 255, 255); padding: 5px; width: 100px; height: 50px; color: rgb(0, 0, 0); border-radius: 4px; display: table; text-align: center; cursor: pointer; transition:opacity 200ms, margin-left 200ms cubic-bezier(.67,.39,.58,1.4); margin-left:-75px; opacity:0; top:calc(50% - 25px); pointer-events:none;"><div style="position: absolute; top: 20px; background-color: inherit; transform: rotate(45deg); right: -9px; border-width: 1px 1px 0px 0px; border-style: solid solid none none; -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; width: 16px; height: 16px;"></div><div style="display:table-cell;vertical-align:middle;">Click Here to Save</div></div>
@@ -200,12 +200,12 @@
           </div>
         </div>
         <div class="span5">
-		  <a class="personal-btn browse-img no-custom-bg" style="margin-right:15px;margin-top:5px;" onclick="personal_img(this)"><i></i></a>
+		  <a id="pimg" class="personal-btn browse-img no-custom-bg" style="margin-right:15px;margin-top:5px;" onclick="personal_img(this)"><i></i></a>
 		  <a class="personal-btn pick-color" style="margin-right:10px;margin-top:5px;" onclick="this.nextSibling.nextSibling.click()"><i></i></a>
-		  <input id="my_color_picker3" value="#7AA2FF" type="color" style="display:none;" onchange="this.previousSibling.previousSibling.style.backgroundColor=this.value;">
-		  <div class="sp5desc"><input type="text" placeholder="Enter provider name"  style="width:60%;"/></div>
-		  <div class="sp5desc"><input type="text" placeholder="Enter wildcard compose link"  style="width:60%;"/></div>
-		  <div class="sp5desc"><textarea type="text" placeholder="Enter description of this webmail service" style="resize:none; width:100%; margin-bottom:0;"></textarea></div>
+		  <input id="pcolor" value="#7AA2FF" type="color" style="display:none;" onchange="this.previousSibling.previousSibling.style.backgroundColor=this.value;">
+		  <div class="sp5desc"><input onkeyup="shouldShowTip()" id="pname" type="text" placeholder="Enter provider name"  style="width:60%;"/></div>
+		  <div class="sp5desc"><input onkeyup="shouldShowTip()" id="purl" type="text" placeholder="Enter wildcard compose link"  style="width:60%;"/></div>
+		  <div class="sp5desc"><textarea onkeyup="shouldShowTip()" id="pdesc" placeholder="Enter description of this webmail service" style="resize:none; width:100%; margin-bottom:0;"></textarea></div>
 		  <!--
           <div class="expand-bg"> <span class="expand css2"> &nbsp; </span> </div>
 		  -->
