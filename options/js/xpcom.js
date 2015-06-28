@@ -378,6 +378,26 @@ function personal_img(target) {
 	}// else { // cancelled	}
 }
 
+function toggleTip(trueForForceShow_falseForForceHide) {
+	var tip = document.getElementById('tip');
+	if (trueForForceShow_falseForForceHide === true) {
+		tip.style.opacity = 1;
+		tip.style.marginLeft = '-25px';
+	} else if (trueForForceShow_falseForForceHide === false) {
+		tip.style.opacity = 0;
+		tip.style.marginLeft = '-75px';
+	} else {
+		// toggle
+		if (tip.style.opacity == 1) {
+			tip.style.opacity = 0;
+			tip.style.marginLeft = '-75px';
+		} else {
+			tip.style.opacity = 1;
+			tip.style.marginLeft = '-25px';
+		}
+	}
+}
+
 document.addEventListener('DOMContentLoaded', init, false);
 
 window.addEventListener('unload', function() {
