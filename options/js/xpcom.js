@@ -67,6 +67,7 @@ const UNINSTALL_HANDLER = 1;
 const SET_HANDLER_ACTIVE = 2;
 const SET_HANDLER_INACTIVE = 3;
 
+var gPArr;
 var reInitTimeout;
 var ds = null; //for aRDFObserver
 /* start - aRDFObserver structure */
@@ -177,7 +178,7 @@ function init() {
 		}
 	}
 	
-	var pJson = []; // in case becauseNoSuchFile in readP
+	gPArr = []; // in case becauseNoSuchFile in readP
 	
 	var readP = function() {
 		var pomise_readIt = read_encoded(OS.Path.join(OS.Constants.Path.profileDir, 'mailtowebmails_personal-handlers.txt'), {encoding:'utf-8'});
@@ -204,67 +205,67 @@ function init() {
 				//deferred_createProfile.reject(rejObj);
 			}
 		);
-	};
-	
-	var handlerInJson = function(keyName, keyValue, jsonArr) {
-		// jsonArr should be array like infoForWebmailHandlers
-		
-		// returns -1 if not found, else index in jsonArr
-		
-		for (var iii=0; iii<jsonArr.length; iii++) {
-			if (jsonArr[iii][keyName] == keyValue) {
-				return iii;
-			}
-		}
-		
-		return -1;
-	}
-	
+	};	
 	var writePToDom = function() {
 		console.info('pInstalledHandlers:', pInstalledHandlers);
 		for (var i=0; i<pInstalledHandlers.length; i++) {
 			console.info('we have a p installed handler:', pInstalledHandlers[i])
-			var infoExists = handlerInJson(pInstalledHandlers[i], 'uriTemplate', pJson);
+			var infoExists = handlerInJson(pInstalledHandlers[i], 'uriTemplate', gPArr);
 			if (infoExists > -1) {
 				
 			} else {
-				pJson.push({
+				gPArr.push({
 					name: '???',
 					uriTemplate: pInstalledHandlers[i],
 					color: getRandomColor(),
 					image: '',
-					desc: '???'
+					desc: '???',
+					hash: HashStringHelper(pInstalledHandlers[i])
 				});
 			}
 		}
 		
 		var pcontainer = document.getElementById('pcontainer');
-		for (var i=0; i<pJson.length; i++) {
-			var populatedTemplate = rowTemplate.slice();
-			populatedTemplate[2][2][1].style = 'background-color:' + pJson[i].color;
-			populatedTemplate[3][2][2] = pJson[i].name;
-			populatedTemplate[3][3][2] = pJson[i].desc;
-			var keys = {};
-			pcontainer.appendChild(jsonToDOM(populatedTemplate, document, keys));
-			console.info('keys:', keys);
-			keys.togAbil.addEventListener('click', function() {
-				alert('toggle ability on personal of uriTemplate:', pJson[i].uriTemplate);
-			})
-			keys.togInst.addEventListener('click', function() {
-				alert('toggle install on personal of uriTemplate:', pJson[i].uriTemplate);
-			})
+		for (var i=0; i<gPArr.length; i++) {
+			appendPHandlerToDom.bind(null, gPArr[i].name, gPArr[i].color, gPArr[i].desc, gPArr[i].uriTemplate, gPArr[i].img, gPArr[i].hash)();
 		}
 	};
 	
 	readP();
 	//end - read and do personal handlers
 }
+	
+function handlerInJson(keyName, keyValue, jsonArr) {
+	// jsonArr should be array like infoForWebmailHandlers
+	
+	// returns -1 if not found, else index in jsonArr
+	
+	for (var iii=0; iii<jsonArr.length; iii++) {
+		if (jsonArr[iii][keyName] == keyValue) {
+			return iii;
+		}
+	}
+	
+	return -1;
+}
+
+
+function appendPHandlerToDom(name, color, desc, uriTemplate, img, hash) {
+	var populatedTemplate = rowTemplate.slice();
+	populatedTemplate[2][2][1].style = 'background-color:' + color + ';background-image:url(' + img + ')';
+	populatedTemplate[3][2][2] = name;
+	populatedTemplate[3][3][2] = desc;
+	populatedTemplate[3][4][1].onclick = 'togAbil(' + hash + ')';
+	populatedTemplate[3][5][1].onclick = 'togInst(' + hash + ')';
+	
+	var keys = {};
+}
 
 var rowTemplate =
 [
 	'div', {class:'row'},
 		['div', {class:'span3'},
-			['div', {class:'zoho', style:0}, // replace 0 with color `background-color:#fff`
+			['div', {class:'zoho', style:0}, // replace 0 with color `background-color:#fff` and img url
 				['h3', {}] 
 			]
 		],
@@ -285,9 +286,12 @@ var rowTemplate =
 				]
 			],
 			*/
-			['a', {class:'hire-me stall-me', key:'togInst'},
+			['a', {class:'hire-me stall-me', onclick:0}, // replace with togAbil(hash of url)
 				['i', {}]
 			],
+			['a', {class:'edit-personal hire-me stall-me', onclick:0}, // replace with togInst(hash of url)
+				['i', {}]
+			]
 		]
 ];
 function toggleStall(e) {
@@ -530,7 +534,56 @@ function updatePersonalHandler() {
 	var img = document.getElementById('pimg').style.backgroundImage;
 	var url = document.getElementById('purl').value;
 	
+	if (name != '' || desc != '' || url != '') {
+		alert('Must fill out name, description, and url at the least');
+	}
 	
+	console.info('img:', img);
+	if (img.indexOf('url(') > -1) {
+		img = img.substr(4);
+		img = img.substr(0, img.length-1);
+	}
+	
+	var infoExists = handlerInJson(url, 'uriTemplate', gPArr);
+	
+	if (infoExists == -1) {
+		gPArr.push({
+			name: name,
+			uriTemplate: url,
+			color: color,
+			image: img,
+			desc: desc, 
+			hash: HashStringHelper(url)
+		});
+		
+		appendPHandlerToDom(name, color, desc, url, img, hash)
+	} else {
+		gPArr[infoExists].name = name;
+		//gPArr[infoExists].uriTemplate = url;
+		gPArr[infoExists].color = color;
+		gPArr[infoExists].image = img;
+		gPArr[infoExists].desc = desc;
+		//gPArr[infoExists].hash = HashStringHelper(url);
+		
+		var targetRowFromEl = document.querySelector('onclick[*=' + gPArr[infoExists].hash + ']');
+		var elRow = targetRowFromEl.parentNode.parentNode;
+		var circle = elRow.querySelector('.zoho');
+		var inputs = elRow.querySelectorAll('input[type=text]');
+		var elName = inputs[1];
+		var elUrl = inputs[2];
+		var elDesc = inputs[3];
+		
+		elName.value = name;
+		elDesc.value = desc;
+		
+		circle.style.backgroundImage = 'url(' + url + ')';
+		circle.style.backgroundColor = color;
+		
+		// :todo: write to disk, if social shared, then update. also :todo: if edit, and url changes, then update hash rather then insert new as it does right now
+	}
+	
+
+
 }
 
 function shouldShowTip() {
@@ -725,4 +778,75 @@ function aReasonMax(aReason) {
 		}
 	}
 	return deepestReason;
+}
+
+var HashString = (function (){
+	/**
+	 * Javascript implementation of
+	 * https://hg.mozilla.org/mozilla-central/file/0cefb584fd1a/mfbt/HashFunctions.h
+	 * aka. the mfbt hash function.
+	 */ 
+  // Note: >>>0 is basically a cast-to-unsigned for our purposes.
+  const encoder = getTxtEncodr();
+  const kGoldenRatio = 0x9E3779B9;
+
+  // Multiply two uint32_t like C++ would ;)
+  const mul32 = (a, b) => {
+    // Split into 16-bit integers (hi and lo words)
+    let ahi = (a >> 16) & 0xffff;
+    let alo = a & 0xffff;
+    let bhi = (b >> 16) & 0xffff
+    let blo = b & 0xffff;
+    // Compute new hi and lo seperately and recombine.
+    return (
+      (((((ahi * blo) + (alo * bhi)) & 0xffff) << 16) >>> 0) +
+      (alo * blo)
+    ) >>> 0;
+  };
+
+  // kGoldenRatioU32 * (RotateBitsLeft32(aHash, 5) ^ aValue);
+  const add = (hash, val) => {
+    // Note, cannot >> 27 here, but / (1<<27) works as well.
+    let rotl5 = (
+      ((hash << 5) >>> 0) |
+      (hash / (1<<27)) >>> 0
+    ) >>> 0;
+    return mul32(kGoldenRatio, (rotl5 ^ val) >>> 0);
+  }
+
+  return function(text) {
+    // Convert to utf-8.
+    // Also decomposes the string into uint8_t values already.
+    let data = encoder.encode(text);
+
+    // Compute the actual hash
+    let rv = 0;
+    for (let c of data) {
+      rv = add(rv, c | 0);
+    }
+    return rv;
+  };
+})();
+
+var _cache_HashStringHelper = {};
+function HashStringHelper(aText) {
+	if (!(aText in _cache_HashStringHelper)) {
+		_cache_HashStringHelper[aText] = HashString(aText);
+	}
+	return _cache_HashStringHelper[aText];
+}
+
+var txtDecodr; // holds TextDecoder if created
+function getTxtDecodr() {
+	if (!txtDecodr) {
+		txtDecodr = new TextDecoder();
+	}
+	return txtDecodr;
+}
+var txtEncodr; // holds TextDecoder if created
+function getTxtEncodr() {
+	if (!txtEncodr) {
+		txtEncodr = new TextEncoder();
+	}
+	return txtEncodr;
 }

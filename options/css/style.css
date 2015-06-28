@@ -53,7 +53,6 @@ a:not([href]) {
 
 a.hire-me {
 	display: inline-block;
- *display: inline;
 	padding:20px 60px;
 	background:#39d084;
 	color:#fff;
@@ -185,7 +184,25 @@ a.personal-btn.browse-img.no-custom-bg i:before {
 a.personal-btn.pick-color i:before {
 	content: '\e808';
 }
+
+/*edit for personal*/
+a.edit-personal {
+	background-color: #7AA2FF;
+	position: absolute;
+	right: 10px;
+	padding:10px;
+}
+a.edit-personal i:before {
+	content: '\e808';
+}
+
+a.edit-personal:after {
+	content: '';
+}
 /* end - buttons */
+#pcontainer .span5 {
+	position: relative; /*for positioning of the edit button*/
+}
 .social {
 	text-align:center;
 	padding-bottom:80px;
