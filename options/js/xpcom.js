@@ -210,7 +210,7 @@ function init() {
 		console.info('pInstalledHandlers:', pInstalledHandlers);
 		for (var i=0; i<pInstalledHandlers.length; i++) {
 			console.info('we have a p installed handler:', pInstalledHandlers[i])
-			var infoExists = handlerInJson(pInstalledHandlers[i], 'uriTemplate', gPArr);
+			var infoExists = handlerInJson('uriTemplate', pInstalledHandlers[i], gPArr);
 			if (infoExists > -1) {
 				
 			} else {
@@ -225,7 +225,6 @@ function init() {
 			}
 		}
 		
-		var pcontainer = document.getElementById('pcontainer');
 		for (var i=0; i<gPArr.length; i++) {
 			appendPHandlerToDom.bind(null, gPArr[i].name, gPArr[i].color, gPArr[i].desc, gPArr[i].uriTemplate, gPArr[i].img, gPArr[i].hash)();
 		}
@@ -251,6 +250,9 @@ function handlerInJson(keyName, keyValue, jsonArr) {
 
 
 function appendPHandlerToDom(name, color, desc, uriTemplate, img, hash) {
+	
+	var pcontainer = document.getElementById('pcontainer');
+	
 	var populatedTemplate = rowTemplate.slice();
 	populatedTemplate[2][2][1].style = 'background-color:' + color + ';background-image:url(' + img + ')';
 	populatedTemplate[3][2][2] = name;
@@ -258,7 +260,7 @@ function appendPHandlerToDom(name, color, desc, uriTemplate, img, hash) {
 	populatedTemplate[3][4][1].onclick = 'togAbil(' + hash + ')';
 	populatedTemplate[3][5][1].onclick = 'togInst(' + hash + ')';
 	
-	var keys = {};
+	pcontainer.appendChild(jsonToDOM(populatedTemplate, document, {}));
 }
 
 var rowTemplate =
@@ -534,8 +536,9 @@ function updatePersonalHandler() {
 	var img = document.getElementById('pimg').style.backgroundImage;
 	var url = document.getElementById('purl').value;
 	
-	if (name != '' || desc != '' || url != '') {
+	if (name == '' || desc == '' || url == '') {
 		alert('Must fill out name, description, and url at the least');
+		return;
 	}
 	
 	console.info('img:', img);
@@ -544,8 +547,8 @@ function updatePersonalHandler() {
 		img = img.substr(0, img.length-1);
 	}
 	
-	var infoExists = handlerInJson(url, 'uriTemplate', gPArr);
-	
+	var infoExists = handlerInJson('uriTemplate', url, gPArr);
+	console.info('infoExists:', infoExists)
 	if (infoExists == -1) {
 		gPArr.push({
 			name: name,
@@ -556,7 +559,7 @@ function updatePersonalHandler() {
 			hash: HashStringHelper(url)
 		});
 		
-		appendPHandlerToDom(name, color, desc, url, img, hash)
+		appendPHandlerToDom(name, color, desc, url, img, HashStringHelper(url));
 	} else {
 		gPArr[infoExists].name = name;
 		//gPArr[infoExists].uriTemplate = url;
@@ -564,11 +567,14 @@ function updatePersonalHandler() {
 		gPArr[infoExists].image = img;
 		gPArr[infoExists].desc = desc;
 		//gPArr[infoExists].hash = HashStringHelper(url);
-		
-		var targetRowFromEl = document.querySelector('onclick[*=' + gPArr[infoExists].hash + ']');
+		console.info('hash:', gPArr[infoExists].hash)
+		var targetRowFromEl = document.querySelector('[onclick*="' + gPArr[infoExists].hash + '"]');
 		var elRow = targetRowFromEl.parentNode.parentNode;
 		var circle = elRow.querySelector('.zoho');
 		var inputs = elRow.querySelectorAll('input[type=text]');
+		console.info('elRow:', elRow)
+		console.info('circle:', circle)
+		console.info('inputs:', inputs)
 		var elName = inputs[1];
 		var elUrl = inputs[2];
 		var elDesc = inputs[3];
@@ -584,6 +590,14 @@ function updatePersonalHandler() {
 	
 
 
+}
+
+function togAbil(aHash) {
+	alert('togging ABIL for aHash:' + aHash);
+}
+
+function togInst(aHash) {
+	alert('togging INST for aHash:' + aHash);
 }
 
 function shouldShowTip() {
@@ -780,62 +794,6 @@ function aReasonMax(aReason) {
 	return deepestReason;
 }
 
-var HashString = (function (){
-	/**
-	 * Javascript implementation of
-	 * https://hg.mozilla.org/mozilla-central/file/0cefb584fd1a/mfbt/HashFunctions.h
-	 * aka. the mfbt hash function.
-	 */ 
-  // Note: >>>0 is basically a cast-to-unsigned for our purposes.
-  const encoder = getTxtEncodr();
-  const kGoldenRatio = 0x9E3779B9;
-
-  // Multiply two uint32_t like C++ would ;)
-  const mul32 = (a, b) => {
-    // Split into 16-bit integers (hi and lo words)
-    let ahi = (a >> 16) & 0xffff;
-    let alo = a & 0xffff;
-    let bhi = (b >> 16) & 0xffff
-    let blo = b & 0xffff;
-    // Compute new hi and lo seperately and recombine.
-    return (
-      (((((ahi * blo) + (alo * bhi)) & 0xffff) << 16) >>> 0) +
-      (alo * blo)
-    ) >>> 0;
-  };
-
-  // kGoldenRatioU32 * (RotateBitsLeft32(aHash, 5) ^ aValue);
-  const add = (hash, val) => {
-    // Note, cannot >> 27 here, but / (1<<27) works as well.
-    let rotl5 = (
-      ((hash << 5) >>> 0) |
-      (hash / (1<<27)) >>> 0
-    ) >>> 0;
-    return mul32(kGoldenRatio, (rotl5 ^ val) >>> 0);
-  }
-
-  return function(text) {
-    // Convert to utf-8.
-    // Also decomposes the string into uint8_t values already.
-    let data = encoder.encode(text);
-
-    // Compute the actual hash
-    let rv = 0;
-    for (let c of data) {
-      rv = add(rv, c | 0);
-    }
-    return rv;
-  };
-})();
-
-var _cache_HashStringHelper = {};
-function HashStringHelper(aText) {
-	if (!(aText in _cache_HashStringHelper)) {
-		_cache_HashStringHelper[aText] = HashString(aText);
-	}
-	return _cache_HashStringHelper[aText];
-}
-
 var txtDecodr; // holds TextDecoder if created
 function getTxtDecodr() {
 	if (!txtDecodr) {
@@ -849,4 +807,59 @@ function getTxtEncodr() {
 		txtEncodr = new TextEncoder();
 	}
 	return txtEncodr;
+}
+var HashString = (function (){
+	/**
+	 * Javascript implementation of
+	 * https://hg.mozilla.org/mozilla-central/file/0cefb584fd1a/mfbt/HashFunctions.h
+	 * aka. the mfbt hash function.
+	 */ 
+  // Note: >>>0 is basically a cast-to-unsigned for our purposes.
+  const encoder = getTxtEncodr();
+  const kGoldenRatio = 0x9E3779B9;
+
+  // Multiply two uint32_t like C++ would ;)
+  const mul32 = (a, b) => {
+    // Split into 16-bit integers (hi and lo words)
+    var ahi = (a >> 16) & 0xffff;
+    var alo = a & 0xffff;
+    var bhi = (b >> 16) & 0xffff
+    var blo = b & 0xffff;
+    // Compute new hi and lo seperately and recombine.
+    return (
+      (((((ahi * blo) + (alo * bhi)) & 0xffff) << 16) >>> 0) +
+      (alo * blo)
+    ) >>> 0;
+  };
+
+  // kGoldenRatioU32 * (RotateBitsLeft32(aHash, 5) ^ aValue);
+  const add = (hash, val) => {
+    // Note, cannot >> 27 here, but / (1<<27) works as well.
+    var rotl5 = (
+      ((hash << 5) >>> 0) |
+      (hash / (1<<27)) >>> 0
+    ) >>> 0;
+    return mul32(kGoldenRatio, (rotl5 ^ val) >>> 0);
+  }
+
+  return function(text) {
+    // Convert to utf-8.
+    // Also decomposes the string into uint8_t values already.
+    var data = encoder.encode(text);
+
+    // Compute the actual hash
+    var rv = 0;
+    for (var c of data) {
+      rv = add(rv, c | 0);
+    }
+    return rv;
+  };
+})();
+
+var _cache_HashStringHelper = {};
+function HashStringHelper(aText) {
+	if (!(aText in _cache_HashStringHelper)) {
+		_cache_HashStringHelper[aText] = HashString(aText);
+	}
+	return _cache_HashStringHelper[aText];
 }
