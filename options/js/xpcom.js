@@ -179,7 +179,7 @@ function init() {
 	}
 	
 	gPArr = []; // in case becauseNoSuchFile in readP
-	
+	/*
 	var readP = function() {
 		var pomise_readIt = read_encoded(OS.Path.join(OS.Constants.Path.profileDir, 'mailtowebmails_personal-handlers.txt'), {encoding:'utf-8'});
 		pomise_readIt.then(
@@ -231,6 +231,7 @@ function init() {
 	};
 	
 	readP();
+	*/
 	//end - read and do personal handlers
 }
 	
@@ -248,12 +249,93 @@ function handlerInJson(keyName, keyValue, jsonArr) {
 	return -1;
 }
 
+function installCustomHandler(aCustomHandlerInfo) {
+	
+		// list all mailtos and see if this is a duplicate
+		var eps = Cc["@mozilla.org/uriloader/external-protocol-service;1"].getService(Ci.nsIExternalProtocolService);
+		var handlerInfo = eps.getProtocolHandlerInfo('mailto');
+		
+		var shouldCallStore = false;
+		//start - find installed handlers
+		var handlers = handlerInfo.possibleApplicationHandlers.enumerate();
+		while (handlers.hasMoreElements()) {
+			var handler = handlers.getNext().QueryInterface(Ci.nsIWebHandlerApp);
+			console.info('handler:', handler);
+			if (handler.uriTemplate == aCustomHandlerInfo.urlhandler) {
+				console.error('a handler with uriTemplate of', aCustomHandlerInfo.urlhandler, 'already exists!', handler, 'aCustomHandlerInfo:', aCustomHandlerInfo);
+				return;
+			}
+		}
+		// end - list all mailtos and see if this is a duplicate
+		
+	var protocol = 'mailto';
+	var name = aCustomHandlerInfo.name;
+	var newURIArgs = {
+		aURL: aCustomHandlerInfo.uriTemplate,
+		aOriginCharset: null,
+		aBaseURI: null
+	};
+	var myURI = Services.io.newURI(newURIArgs.aURL, newURIArgs.aOriginCharset, newURIArgs.aBaseURI);
+	var myURISpec = myURI.spec;
+
+
+	var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
+	handler.name = aCustomHandlerInfo.name;
+	handler.uriTemplate = myURISpec;
+	
+	var aCustomDetailedDescription = JSON.parse(JSON.stringify(aCustomHandlerInfo));
+	delete aCustomDetailedDescription.urihandler;
+	//handler.detailedDescription = JSON.stringify(aCustomDetailedDescription);
+	console.error('handler:', handler);
+
+	var eps = Cc["@mozilla.org/uriloader/external-protocol-service;1"].getService(Ci.nsIExternalProtocolService);
+	var handlerInfo = eps.getProtocolHandlerInfo(protocol);
+	handlerInfo.possibleApplicationHandlers.appendElement(handler, false);
+
+	if (handlerInfo.possibleApplicationHandlers.length > 1) {
+		// May want to always ask user before handling because it now has multiple possibleApplicationsHandlers BUT dont have to
+		//handlerInfo.alwaysAskBeforeHandling = true;
+	}
+
+	var hs = Cc["@mozilla.org/uriloader/handler-service;1"].getService(Ci.nsIHandlerService);
+	hs.store(handlerInfo);
+}
 
 function appendPHandlerToDom(name, color, desc, uriTemplate, img, hash) {
 	
 	var pcontainer = document.getElementById('pcontainer');
 	
+	var customHandlerInfo = {
+		name: name,
+		color: color,
+		desc: desc,
+		uriTemplate: uriTemplate,
+		img: img,
+		handlerId: new Date().getTime(), // just temporary till server assigns one to this guy
+		handlerIdIsTemp: true
+	};
+	
+	try {
+	var newURIArgs = {
+		aURL: aCustomHandlerInfo.uriTemplate,
+		aOriginCharset: null,
+		aBaseURI: null
+	};
+	var myURI = Services.io.newURI(newURIArgs.aURL, newURIArgs.aOriginCharset, newURIArgs.aBaseURI);
+	var myURISpec = myURI.spec;
+	} catch(ex) {
+		alert('ERROR: URL template provided is not in the format of a proper URL, please fix');
+		return;
+	}
+	
+	if (myURISpec.indexOf('%s') == -1) {
+		alert('ERROR: URL template does not include a wildcard, it must have a "%s", this is where the "To" email will get filled in.');
+		return;
+	}
+	
 	var populatedTemplate = rowTemplate.slice();
+	populatedTemplate[3][1]['data-handlerid'] = customHandlerInfo.handlerId;
+	populatedTemplate[3][1]['data-urlhandler'] = uriTemplate;
 	populatedTemplate[2][2][1].style = 'background-color:' + color + ';background-image:url(' + img + ')';
 	populatedTemplate[3][2][2] = name;
 	populatedTemplate[3][3][2] = desc;
@@ -261,6 +343,13 @@ function appendPHandlerToDom(name, color, desc, uriTemplate, img, hash) {
 	populatedTemplate[3][5][1].onclick = 'togInst(' + hash + ')';
 	
 	pcontainer.appendChild(jsonToDOM(populatedTemplate, document, {}));
+	
+	ds.RemoveObserver(aRDFObserver);
+	try {
+		installCustomHandler(customHandlerInfo);
+	} finally {
+		ds.AddObserver(aRDFObserver);
+	}
 }
 
 var rowTemplate =
@@ -271,7 +360,7 @@ var rowTemplate =
 				['h3', {}] 
 			]
 		],
-		['div', {class:'span5'},
+		['div', {class:'span5 stalled', 'data-handlerid':0, 'data-urlhandler':0},
 			['h3', {},
 				0, // replace with name
 				['a', {class:'hire-me act-toggle', key:'togAbil'},
@@ -535,6 +624,7 @@ function updatePersonalHandler() {
 	var color = document.getElementById('pcolor').value;
 	var img = document.getElementById('pimg').style.backgroundImage;
 	var url = document.getElementById('purl').value;
+	var id = document.getElementById('handler_id').value;
 	
 	if (name == '' || desc == '' || url == '') {
 		alert('Must fill out name, description, and url at the least');
@@ -561,6 +651,7 @@ function updatePersonalHandler() {
 		
 		appendPHandlerToDom(name, color, desc, url, img, HashStringHelper(url));
 	} else {
+		alert('user did edit');
 		gPArr[infoExists].name = name;
 		//gPArr[infoExists].uriTemplate = url;
 		gPArr[infoExists].color = color;
@@ -575,9 +666,9 @@ function updatePersonalHandler() {
 		console.info('elRow:', elRow)
 		console.info('circle:', circle)
 		console.info('inputs:', inputs)
-		var elName = inputs[1];
-		var elUrl = inputs[2];
-		var elDesc = inputs[3];
+		var elName = inputs[0];
+		var elUrl = inputs[1];
+		var elDesc = inputs[2];
 		
 		elName.value = name;
 		elDesc.value = desc;

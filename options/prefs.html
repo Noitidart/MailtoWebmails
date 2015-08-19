@@ -193,13 +193,14 @@
     <div class="container skills" id="pcontainer" style="margin-bottom:75px; padding-top:0;">
       <h2>Personal Services</h2>
       <div class="row" style="position:relative;">
-		<div id="tip" style="position: absolute; background-color: rgb(255, 255, 255); padding: 5px; width: 100px; height: 50px; color: rgb(0, 0, 0); border-radius: 4px; display: table; text-align: center; cursor: pointer; transition:opacity 200ms, margin-left 200ms cubic-bezier(.67,.39,.58,1.4); margin-left:-75px; opacity:0; top:calc(50% - 25px); pointer-events:none;"><div style="position: absolute; top: 20px; background-color: inherit; transform: rotate(45deg); right: -9px; border-width: 1px 1px 0px 0px; border-style: solid solid none none; -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; width: 16px; height: 16px;"></div><div style="display:table-cell;vertical-align:middle;">Click Here to Save</div></div>
+		<div id="tip" style="position: absolute; background-color: rgb(255, 255, 255); padding: 5px; width: 100px; height: 50px; color: rgb(0, 0, 0); border-radius: 4px; display: table; text-align: center; cursor: pointer; transition:opacity 200ms, margin-left 200ms cubic-bezier(.67,.39,.58,1.4); margin-left:-75px; opacity:0; top:calc(50% - 25px); pointer-events:none;"><div style="position: absolute; top: 20px; background-color: inherit; transform: rotate(45deg); right: -9px; border-width: 1px 1px 0px 0px; border-style: solid solid none none; -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; width: 16px; height: 16px;"></div><div style="display:table-cell;vertical-align:middle;">Click Here to Add & Install</div></div>
         <div class="span3" onclick="updatePersonalHandler()">
           <div class="custom-handler-add" style="cursor:pointer;">
             <h3></h3>
           </div>
         </div>
         <div class="span5">
+		  <input type="hidden" id="handler_id"></input>
 		  <a id="pimg" class="personal-btn browse-img no-custom-bg" style="margin-right:15px;margin-top:5px;" onclick="personal_img(this)"><i></i></a>
 		  <a class="personal-btn pick-color" style="margin-right:10px;margin-top:5px;" onclick="this.nextSibling.nextSibling.click()"><i></i></a>
 		  <input id="pcolor" value="#7AA2FF" type="color" style="display:none;" onchange="this.previousSibling.previousSibling.style.backgroundColor=this.value;">
