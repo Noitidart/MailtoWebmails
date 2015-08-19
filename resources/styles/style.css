@@ -64,7 +64,7 @@ a.hire-me {
 	border-radius: 40px;
 	transition: background-color 200ms;
 }
-a.hire-me:hover {
+a.hire-me:not(.edit-personal):hover {
 	text-decoration:none;
 	background:#11d170;
 }
@@ -110,7 +110,8 @@ a.stall-me {
 	text-decoration: none;
 	font-size: 1.4em;
 	padding: 10px 30px;
-	margin: 15px 0 0 50%;
+	/*margin: 15px 0 0 50%;*/
+	float: right;
 }
 
 a.stall-me:after {
@@ -187,14 +188,19 @@ a.personal-btn.pick-color i:before {
 }
 
 /*edit for personal*/
-#pcontainer a.stall-me {
-	margin: 15px 0 0 45%;
+a.edit-personal {
+	display: none;
 }
+
+#pcontainer .edit-personal {
+	display: inline-block;
+}
+
 a.edit-personal {
 	background-color: #7AA2FF;
-	position: absolute;
-	right: 10px;
+	margin-right: 10px;
 	padding:10px;
+	float:right;
 }
 a.edit-personal i:before {
 	content: '\e801';
@@ -252,38 +258,11 @@ ul.social-icons li a:hover {
 	transition: all 0.2s linear;
 }
 /* start - colors and background images of circles */
-.skills .ps {
+.skills .logo-ball {
 	background: rgb(0, 115, 198) url(../img/logo-outlook.png) center center no-repeat;
 }
-.skills .ai {
-	background: rgb(235, 42, 46) url(../img/logo-gmail2.png) center center no-repeat;
-}
-.skills .html {
-	background: rgb(65, 2, 143) url(../img/logo-y!mail3.png) center center no-repeat;
-}
-.skills .css {
-	background: rgb(255, 204, 0) url(../img/logo-aolmail.png) 47% center no-repeat;
-}
-.skills .lycos {
-	background: rgb(140, 140, 140) url(../img/logo-lycos.png) center center no-repeat;
-}
-.skills .fastmail {
-	background: rgb(68, 86, 127) url(../img/logo-fastmail.png) center center no-repeat;
-}
-.skills .yandex {
-	background: rgb(223, 78, 44) url(../img/logo-yandex.png) center center no-repeat;
-}
-.skills .zoho {
-	background: rgb(36, 160, 68) url(../img/logo-zoho.png) center center no-repeat;
-}
-.skills .gmx {
-	background: rgb(0, 190, 235) url(../img/logo-gmx.png) center center no-repeat;
-}
-.skills .qq {
-	background: rgb(255, 102, 0) url(../img/logo-qq.png) center center no-repeat;
-}
 .skills .custom-handler-add {
-	background: #7AA2FF url(../img/add.png) center center no-repeat;
+	background: #7AA2FF url(chrome://mailtowebmails/content/resources/images/add.png) center center no-repeat;
 }
 /* end - colors and background images of circles */
 

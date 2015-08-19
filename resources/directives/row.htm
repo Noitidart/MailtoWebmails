@@ -1,13 +1,13 @@
 <div class="row">
 	<div class="span3">
-		<div class="css" style="{{ps.icon_dataurl ? 'background-image:url(' + ps.icon_dataurl + ');' : ''}} {{ps.color ? 'background-color:' + ps.color + ';' : ''}}">
+		<div class="logo-ball" style="{{ps.icon_dataurl ? 'background-image:url(' + ps.icon_dataurl + ');' : ''}} {{ps.color ? 'background-color:' + ps.color + ';' : ''}}">
 			<h3/>
 		</div>
 	</div>
 	<div class="span5">
 		<h3>
 			{{ps.name}}
-			<a class="hire-me act-toggle" ng-click="">
+			<a class="hire-me act-toggle" ng-click="BC.toggle_active(ps)" ng-hide="!ps.installed">
 				<i class="icon-user" />
 			</a>
 		</h3>
@@ -21,9 +21,11 @@
 		</span>
 	</div>
 	-->
-	<a class="hire-me stall-me">
+	<a class="hire-me stall-me" ng-click="BC.toggle_install(ps)">
 		<i />
-		 
+	</a>
+	<a class="edit-personal hire-me stall-me" ng-click="BC.edit(ps)">
+		<i />
 	</a>
 	</div>
 </div>
