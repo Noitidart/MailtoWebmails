@@ -216,7 +216,7 @@ a.edit-personal i:before {
 	content: '\e801';
 }
 
-a.edit-personal:after {
+a.edit-personal.stall-me:after {
 	content: '';
 }
 /* end - buttons */
