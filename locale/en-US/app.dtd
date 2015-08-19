@@ -1,0 +1,6 @@
+<!ENTITY mailtowebmails.app.addon_name 'MailtoWebmails'>
+<!ENTITY mailtowebmails.app.addon_description 'Tool for adding and/or removing mailto service handlers to Firefox for popular webmail services.'>
+
+<!ENTITY mailtowebmails.app.title 'MailtoWebmails - Manage Services'>
+<!ENTITY mailtowebmails.app.desc 'From here you can install and uninstall webmail services that will handle eMail links when you click them.'>
+

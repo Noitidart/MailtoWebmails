@@ -27,6 +27,6 @@
 		<em:contributor>Lester Gonzales for HTML Design</em:contributor>
 		<em:contributor>nmaier for XPCOM Protocol Education</em:contributor>
 		<em:optionsType>3</em:optionsType>
-		<em:optionsURL>chrome://mailtowebmails/content/options/prefs.html</em:optionsURL>
+		<em:optionsURL>about:mailto</em:optionsURL>
 	  </Description>
 	</RDF>
