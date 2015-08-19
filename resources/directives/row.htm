@@ -4,10 +4,10 @@
 			<h3/>
 		</div>
 	</div>
-	<div class="span5">
+	<div class="span5 {{ps.installed ? 'stalled' : ''}}">
 		<h3>
 			{{ps.name}}
-			<a class="hire-me act-toggle" ng-click="BC.toggle_active(ps)" ng-hide="!ps.installed">
+			<a class="hire-me act-toggle {{ps.active ? 'active-me' : ''}}" ng-click="BC.toggle_active(ps)">
 				<i class="icon-user" />
 			</a>
 		</h3>

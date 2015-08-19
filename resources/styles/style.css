@@ -7,7 +7,7 @@ a.brand img {
 }
 
 a.brand:after {
-	content: 'MailtoWebmails';	
+	/*content: 'MailtoWebmails';*/
 	font-size: 2em;
 	color: white;
 	text-shadow: 1px 1px 2px rgba(0,0,0,.5);
@@ -71,6 +71,8 @@ a.hire-me:not(.edit-personal):hover {
 
 .span5:not(.stalled) a.act-toggle {
 	cursor: default;
+	opacity: 0;
+	pointer-events: none;
 }
 
 a.act-toggle {
@@ -80,30 +82,37 @@ a.act-toggle {
 	margin: -2px 0 0 10px;
 	position: absolute;
 	text-decoration: none;
+	opacity: 1;
+	transition: opacity 200ms;
 }
 
 a.active-me {
 	/*cursor: default;*/
 	background-color: #11d170;
 }
+/*
 a.active-me.active-me:after, a.active-me.active-me:hover:after {
 	content: 'Active';
 }
-
+*/
 a.act-toggle:not(.active-me), a.act-toggle:not(.active-me):hover {
 	background-color: #cccccc;
 }
+/*
 a.act-toggle:after {
 	content: 'Inactive';
 }
+*/
+/*
 .stalled a.act-toggle:not(.active-me):hover:after {
 	content: 'Set as Active';
 }
-
+*/
+/*
 .stalled a.act-toggle.active-me:hover:after {
 	content: 'Make Inactive - Enable Always Ask';
 }
-
+*/
 
 a.stall-me {
 	/*background-color: rgb(240, 73, 73);*/
@@ -113,18 +122,19 @@ a.stall-me {
 	/*margin: 15px 0 0 50%;*/
 	float: right;
 }
-
+/*
 a.stall-me:after {
 	content: 'Install';
 }
-
+*/
 .stalled a.stall-me:not(.edit-personal) {
 	background-color: rgb(240, 73, 73);
 }
+/*
 .stalled a.stall-me:not(.edit-personal):after {
 	content: 'Uninstall';
 }
-
+*/
 a.stall-me i:before {
 	content: '\e804';
 	font-family: 'fontello';
@@ -264,6 +274,55 @@ ul.social-icons li a:hover {
 .skills .custom-handler-add {
 	background: #7AA2FF url(chrome://mailtowebmails/content/resources/images/add.png) center center no-repeat;
 }
+
+.editing-handler .custom-handler-add  {
+	background-image: url(chrome://mailtowebmails/content/resources/images/disk.png);
+}
+
+.editing-handler #tip {
+	opacity: 1;
+}
+
+#tip {
+	position: absolute;
+	background-color: rgb(255, 255, 255);
+	padding: 5px;
+	width: 100px;
+	height: 50px;
+	color: rgb(0, 0, 0);
+	border-radius: 4px;
+	display: table;
+	text-align: center;
+	cursor: pointer;
+	transition:opacity 200ms, margin-left 200ms cubic-bezier(.67,.39,.58,1.4);
+	margin-left:-75px;
+	opacity:0;
+	top:calc(50% - 25px);
+	pointer-events:none;
+}
+
+#tip .arrow {
+	position: absolute;
+	top: 20px;
+	background-color: inherit;
+	transform: rotate(45deg);
+	right: -9px;
+	border-width: 1px 1px 0px 0px;
+	border-style: solid solid none none;
+	-moz-border-top-colors: none;
+	-moz-border-right-colors: none;
+	-moz-border-bottom-colors: none;
+	-moz-border-left-colors: none;
+	border-image: none;
+	width: 16px;
+	height: 16px;
+}
+
+#tip .discover-form-ready {
+	display:table-cell;
+	vertical-align:middle;
+}
+
 /* end - colors and background images of circles */
 
 .skills .span3 div:hover {
@@ -433,6 +492,7 @@ ul.work-images li img:hover {
 .footer p a {
 	color:#fff;
 	text-decoration:none;
+	font-weight: bold;
 }
 .footer p a:hover {
 	color:#39d084;

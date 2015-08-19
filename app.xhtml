@@ -13,6 +13,36 @@
 		
 		<script src="chrome://mailtowebmails/content/resources/scripts/angular.js"></script>
 		<script src="chrome://mailtowebmails/content/resources/scripts/app.js"></script>
+		<style>
+		/* styles that need localization */
+		.stalled a.act-toggle:not(.active-me):hover:after {
+			content: '&mailtowebmails.app.css.set-as-active;';
+		}
+		.stalled a.act-toggle.active-me:hover:after {
+			content: '&mailtowebmails.app.css.make-inactive;';
+		}
+		a.act-toggle:after {
+			content: '&mailtowebmails.app.css.inactive;';
+		}
+		a.active-me.active-me:after, a.active-me.active-me:hover:after {
+			content: '&mailtowebmails.app.css.active;';
+		}
+		a.brand:after {
+			content: '&mailtowebmails.app.addon-name;';
+		}
+		a.stall-me:after {
+			content: '&mailtowebmails.app.css.install;';
+		}
+		.stalled a.stall-me:not(.edit-personal):after {
+			content: '&mailtowebmails.app.css.uninstall;';
+		}
+		.editing-handler .discover-form-ready:before {
+			content: '&mailtowebmails.app.css.form-ready-save;';
+		}
+		.discover-form-ready:before {
+			content: '&mailtowebmails.app.css.form-ready-add;';
+		}
+		</style>
 	</head>
 	<body ng-controller="BodyController as BC">
 		<div class="navbar">
@@ -30,13 +60,13 @@
 						<li>
 							<a href="https://github.com/Noitidart/MailtoWebmails/issues/new">
 								<i class="icon-share"/>
-								 Discover
+								 &mailtowebmails.app.discover;
 							</a>
 						</li>
 						<li>
 							<a class="active">
 								<i class="icon-doc-text" />
-								 Manage
+								 &mailtowebmails.app.manage;
 							</a>
 						</li>
 					</ul>
@@ -50,19 +80,17 @@
 		</div>
 		<!--Skills container-->
 		<div class="container skills">
-			<h2>Popular Services</h2>
+			<h2>&mailtowebmails.app.popular-services;</h2>
 			<row ng-repeat="ps in BC.mailto_services | filter:{ group:0 }" />
 		</div>
 		<!--Custom container-->
 		<div class="container skills" id="pcontainer" style="margin-bottom:75px; padding-top:0;">
-			<h2>Discovered Services</h2>
+			<h2>&mailtowebmails.app.discovered-services;</h2>
 			<row class="row" ng-repeat="ps in BC.mailto_services | filter:{ group:1 }" />
-			<div id="create_personal_handler" class="row" style="position:relative;">
-				<div id="tip" style="position: absolute; background-color: rgb(255, 255, 255); padding: 5px; width: 100px; height: 50px; color: rgb(0, 0, 0); border-radius: 4px; display: table; text-align: center; cursor: pointer; transition:opacity 200ms, margin-left 200ms cubic-bezier(.67,.39,.58,1.4); margin-left:-75px; opacity:0; top:calc(50% - 25px); pointer-events:none;">
-					<div style="position: absolute; top: 20px; background-color: inherit; transform: rotate(45deg); right: -9px; border-width: 1px 1px 0px 0px; border-style: solid solid none none; -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; width: 16px; height: 16px;"></div>
-					<div style="display:table-cell;vertical-align:middle;">
-						Click Here to Add &amp; Install
-					</div>
+			<div id="add_service" class="row {{BC.editing_handler_id !== null ? 'editing-handler' : ''}}" style="position:relative;">
+				<div id="tip">
+					<div class="arrow" />
+					<div class="discover-form-ready" />
 				</div>
 				<div class="span3" ng-click="BC.add()">
 					<div class="custom-handler-add" style="cursor:pointer;">
@@ -79,13 +107,13 @@
 					</a>
 					<input id="pcolor" value="#7AA2FF" type="color" style="display:none;" onchange="this.previousSibling.previousSibling.style.backgroundColor=this.value;" />
 					<div class="sp5desc">
-						<input onkeyup="shouldShowTip()" id="pname" type="text" placeholder="Enter provider name"  style="width:60%;" />
+						<input onkeyup="shouldShowTip()" id="pname" type="text" placeholder="&mailtowebmails.app.enter-provider-name;"  style="width:60%;" />
 					</div>
 					<div class="sp5desc">
-						<input onkeyup="shouldShowTip()" id="purl" type="text" placeholder="Enter wildcard compose link"  style="width:60%;" />
+						<input onkeyup="shouldShowTip()" id="purl" type="text" placeholder="&mailtowebmails.app.enter-wildcard-url;"  style="width:60%;" />
 					</div>
 					<div class="sp5desc">
-						<textarea onkeyup="shouldShowTip()" id="pdesc" placeholder="Enter description of this webmail service" style="resize:none; width:calc(100% - 14px); margin-bottom:0;" />
+						<textarea onkeyup="shouldShowTip()" id="pdesc" placeholder="&mailtowebmails.app.enter-description;" style="resize:none; width:calc(100% - 14px); margin-bottom:0;" />
 					</div>
 					<!--
 					<div class="expand-bg"> <span class="expand css2"> &nbsp; </span> </div>
@@ -106,10 +134,7 @@
 				</p>
 				-->
 				<p align="center">
-					<a href="#">
-						<i class="icon-mail" />
-						 Didn't find a webmail you wanted? Browse community shared custom services details here...
-					</a>
+					&mailtowebmails.app.footer;
 				</p>
 			</div>
 		</div>
