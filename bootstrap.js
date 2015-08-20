@@ -2,7 +2,7 @@
 const {classes: Cc, interfaces: Ci, manager: Cm, results: Cr, utils: Cu, Constructor: CC} = Components;
 Cm.QueryInterface(Ci.nsIComponentRegistrar);
 Cu.import('resource://gre/modules/devtools/Console.jsm');
-Cu.import('resource://gre/modules/osfile.jsm');
+const {TextDecoder, TextEncoder, OS} = Cu.import('resource://gre/modules/osfile.jsm', {});
 Cu.import('resource://gre/modules/Services.jsm');
 Cu.import('resource://gre/modules/XPCOMUtils.jsm');
 
@@ -106,7 +106,7 @@ AboutMailto.prototype = Object.freeze({
 	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
 
 	getURIFlags: function(aURI) {
-		return Ci.nsIAboutModule.ALLOW_SCRIPT;
+		return Ci.nsIAboutModule.ALLOW_SCRIPT | Ci.nsIAboutModule.URI_MUST_LOAD_IN_CHILD;
 	},
 
 	newChannel: function(aURI) {
@@ -237,8 +237,154 @@ const fsComServer = {
 	}
 }
 /*end - framescriptlistener*/
+const OSPath_installedServices = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage', 'pop_and_disc-installed_services.json');
+const mailto_services_default = [ // installed and active are really unknown at this point
+	/*
+	{
+		name:
+		url_template:
+		old_url_templates:
+		description:
+		icon_dataurl:
+		icon_imugr_url:
+		color:
+		group: 0 for popular, 1, for personal/discovered/custom/social, 2 for native like outlook
+		update_time:
+		installed: bool // user based field all others are from server
+		active: bool // user based field all others are from server
+	}
+	*/
+	{
+		name: 'AIM Mail',
+		url_template: 'http://webmail.aol.com/Mail/ComposeMessage.aspx?to=%s',
+		old_url_templates: [],
+		description: 'This handles both AOL Mail and AIM Mail',
+		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-aolmail.png',
+		icon_imugr_url: null,
+		color: 'rgb(255, 204, 0)',
+		group: 0,
+		update_time: 0,
+		installed: false,
+		active: false
+	},
+	/*
+	{
+		name: 'FastMail',
+		url_template: 'https://www.fastmail.com/action/compose/?mailto=%s',
+		old_url_templates: [],
+		description: 'Handles the light weight FM service',
+		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-fastmail.png',
+		icon_imugr_url: null,
+		color: 'rgb(68, 86, 127)',
+		group: 1,
+		update_time: 1,
+		installed: false,
+		active: false
+	},
+	*/
+	{
+		name: 'GMail',
+		url_template: 'https://mail.google.com/mail/?extsrc=mailto&url=%s',
+		old_url_templates: [],
+		description: 'The GMail handler comes installed by default with Firefox',
+		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-gmail2.png',
+		icon_imugr_url: null,
+		color: 'rgb(235, 42, 46)',
+		group: 0,
+		update_time: 0,
+		installed: false,
+		active: false
+	},
+	/*
+	{
+		name: 'Lycos Mail',
+		url_template: '????????????',
+		description: 'Handles the popular Lycos webmail client',
+		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-lycos.png',
+		icon_imugr_url: null,
+		color: 'rgb(68, 86, 127)',
+		group: 1,
+		update_time: 0,
+		installed: false,
+		active: false
+	},
+	*/
+	{
+		name: 'Outlook Live',
+		url_template: 'https://mail.live.com/secure/start?action=compose&to=%s', //chrome mailto ext uses: `https://mail.live.com/default.aspx?rru=compose&to={to}&subject={subject}&body={body}&cc={cc}`
+		old_url_templates: [],
+		description: 'Service also for Hotmail and Live Mail',
+		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-outlook.png',
+		icon_imugr_url: null,
+		color: 'rgb(0, 115, 198)',
+		group: 0,
+		update_time: 0,
+		installed: false,
+		active: false
+	},
+	{
+		name: 'QQ邮箱 (QQMail)',
+		url_template: 'https://mail.google.com/mail/?extsrc=mailto&url=%s',
+		old_url_templates: [],
+		description: '常联系!',
+		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-qq.png',
+		icon_imugr_url: null,
+		color: 'rgb(255, 102, 0)',
+		group: 0,
+		update_time: 0,
+		installed: false,
+		active: false
+	},
+	{
+		name: 'Yahoo Mail',
+		url_template: 'https://compose.mail.yahoo.com/?To=%s',
+		old_url_templates: [],
+		description: 'Handles the light weight FM service',
+		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-y!mail3.png',
+		icon_imugr_url: null,
+		color: 'rgb(65, 2, 143)',
+		group: 0,
+		update_time: 0,
+		installed: false,
+		active: false
+	},
+	{
+		name: 'Yandex.Mail',
+		url_template: 'https://mail.yandex.com/compose?mailto=%s',
+		old_url_templates: [],
+		description: 'The largest search engine in Russia. Поиск информации в интернете с учетом русской морфологии!',
+		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-yandex.png',
+		icon_imugr_url: null,
+		color: 'rgb(223, 78, 44)',
+		group: 0,
+		update_time: 0,
+		installed: false,
+		active: false
+	},
+	/*
+	{
+		name: 'ZOHO Mail',
+		url_template: 'https://zmail.zoho.com/mail/compose.do?extsrc=mailto&mode=compose&tp=zb&ct=%s',
+		old_url_templates: [],
+		description: 'Email designed with business users in mind',
+		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-zoho.png',
+		icon_imugr_url: null,
+		color: 'rgb(36, 160, 68)',
+		group: 1,
+		update_time: 0,
+		installed: true,
+		active: false
+	}
+	*/
+];
 function install() {}
-function uninstall() {}
+function uninstall(aData, aReason) {
+	if (aReason == ADDON_UNINSTALL) {
+		
+		// delete simple storage
+		OS.File.remove(OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id));
+	}
+}
 
 function startup(aData, aReason) {
 	// core.addon.aData = aData;
@@ -247,6 +393,58 @@ function startup(aData, aReason) {
 	//framescriptlistener more
 	//fsComServer.register(core.addon.path.scripts + '_framescript-warn-on-submit.js');
 	//end framescriptlistener more
+	if ([ADDON_UPGRADE, ADDON_INSTALL, ADDON_DOWNGRADE].indexOf(aReason) > -1) {
+		var do_makeDirsToSimpleStorage = function() {
+			var promise_makeDirsToSimpleStorage = makeDir_Bug934283(OS.Path.dirname(OSPath_installedServices), {from:OS.Constants.Path.profileDir})
+			promise_makeDirsToSimpleStorage.then(
+				function(aVal) {
+					console.log('Fullfilled - promise_makeDirsToSimpleStorage - ', aVal);
+					// start - do stuff here - promise_makeDirsToSimpleStorage
+					do_writeDefaults();
+					// end - do stuff here - promise_makeDirsToSimpleStorage
+				},
+				function(aReason) {
+					var rejObj = {name:'promise_makeDirsToSimpleStorage', aReason:aReason};
+					console.error('Rejected - promise_makeDirsToSimpleStorage - ', rejObj);
+					// deferred_createProfile.reject(rejObj);
+				}
+			).catch(
+				function(aCaught) {
+					var rejObj = {name:'promise_makeDirsToSimpleStorage', aCaught:aCaught};
+					console.error('Caught - promise_makeDirsToSimpleStorage - ', rejObj);
+					// deferred_createProfile.reject(rejObj);
+				}
+			);
+		};
+		
+		var do_writeDefaults = function() {
+			var promise_writeDefault = OS.File.writeAtomic(OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(mailto_services_default), {
+				tmpPath: OSPath_installedServices + '.tmp',
+				encoding: 'utf-16',
+				noOverwrite: false
+			});
+			promise_writeDefault.then(
+				function(aVal) {
+					console.log('Fullfilled - promise_writeDefault - ', aVal);
+					// start - do stuff here - promise_writeDefault
+					// end - do stuff here - promise_writeDefault
+				},
+				function(aReason) {
+					var rejObj = {name:'promise_writeDefault', aReason:aReason};
+					console.error('Rejected - promise_writeDefault - ', rejObj);
+					// deferred_createProfile.reject(rejObj);
+				}
+			).catch(
+				function(aCaught) {
+					var rejObj = {name:'promise_writeDefault', aCaught:aCaught};
+					console.error('Caught - promise_writeDefault - ', rejObj);
+					// deferred_createProfile.reject(rejObj);
+				}
+			);
+		};
+		
+		do_makeDirsToSimpleStorage();
+	}
 	
 	aboutFactory_mailto = new AboutFactory(AboutMailto);
 }
@@ -263,4 +461,287 @@ function shutdown(aData, aReason) {
 }
 
 // start - common helper functions
+function makeDir_Bug934283(path, options) {
+	// pre FF31, using the `from` option would not work, so this fixes that so users on FF 29 and 30 can still use my addon
+	// the `from` option should be a string of a folder that you know exists for sure. then the dirs after that, in path will be created
+	// for example: path should be: `OS.Path.join('C:', 'thisDirExistsForSure', 'may exist', 'may exist2')`, and `from` should be `OS.Path.join('C:', 'thisDirExistsForSure')`
+	// options of like ignoreExisting is exercised on final dir
+	
+	if (!options || !('from' in options)) {
+		console.error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
+		throw new Error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
+	}
+
+	if (path.toLowerCase().indexOf(options.from.toLowerCase()) == -1) {
+		console.error('The `from` string was not found in `path` string');
+		throw new Error('The `from` string was not found in `path` string');
+	}
+
+	var options_from = options.from;
+	delete options.from;
+
+	var dirsToMake = OS.Path.split(path).components.slice(OS.Path.split(options_from).components.length);
+	console.log('dirsToMake:', dirsToMake);
+
+	var deferred_makeDir_Bug934283 = new Deferred();
+	var promise_makeDir_Bug934283 = deferred_makeDir_Bug934283.promise;
+
+	var pathExistsForCertain = options_from;
+	var makeDirRecurse = function() {
+		pathExistsForCertain = OS.Path.join(pathExistsForCertain, dirsToMake[0]);
+		dirsToMake.splice(0, 1);
+		var promise_makeDir = OS.File.makeDir(pathExistsForCertain, options);
+		promise_makeDir.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_makeDir - ', 'ensured/just made:', pathExistsForCertain, aVal);
+				if (dirsToMake.length > 0) {
+					makeDirRecurse();
+				} else {
+					deferred_makeDir_Bug934283.resolve('this path now exists for sure: "' + pathExistsForCertain + '"');
+				}
+			},
+			function(aReason) {
+				var rejObj = {
+					promiseName: 'promise_makeDir',
+					aReason: aReason,
+					curPath: pathExistsForCertain
+				};
+				console.error('Rejected - ' + rejObj.promiseName + ' - ', rejObj);
+				deferred_makeDir_Bug934283.reject(rejObj);
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_makeDir', aCaught:aCaught};
+				console.error('Caught - promise_makeDir - ', rejObj);
+				deferred_makeDir_Bug934283.reject(rejObj); // throw aCaught;
+			}
+		);
+	};
+	makeDirRecurse();
+
+	return promise_makeDir_Bug934283;
+}
+function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc, fromDir, aOptions={}) {
+	//last update: 061215 0303p - verified worker version didnt have the fix i needed to land here ALSO FIXED so it handles neutering of Fx37 for writeAtomic and I HAD TO implement this fix to worker version, fix was to introduce aOptions.causesNeutering
+	// aOptions:
+		// causesNeutering - default is false, if you use writeAtomic or another function and use an ArrayBuffer then set this to true, it will ensure directory exists first before trying. if it tries then fails the ArrayBuffer gets neutered and the retry will fail with "invalid arguments"
+		
+	// i use this with writeAtomic, copy, i havent tested with other things
+	// argsOfOsFileFunc is array of args
+	// will execute nameOfOsFileFunc with argsOfOsFileFunc, if rejected and reason is directories dont exist, then dirs are made then rexecute the nameOfOsFileFunc
+	// i added makeDir as i may want to create a dir with ignoreExisting on final dir as was the case in pickerIconset()
+	// returns promise
+	
+	var deferred_tryOsFile_ifDirsNoExistMakeThenRetry = new Deferred();
+	
+	if (['writeAtomic', 'copy', 'makeDir'].indexOf(nameOfOsFileFunc) == -1) {
+		deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject('nameOfOsFileFunc of "' + nameOfOsFileFunc + '" is not supported');
+		// not supported because i need to know the source path so i can get the toDir for makeDir on it
+		return deferred_tryOsFile_ifDirsNoExistMakeThenRetry.promise; //just to exit further execution
+	}
+	
+	// setup retry
+	var retryIt = function() {
+		console.info('tryosFile_ retryIt', 'nameOfOsFileFunc:', nameOfOsFileFunc, 'argsOfOsFileFunc:', argsOfOsFileFunc);
+		var promise_retryAttempt = OS.File[nameOfOsFileFunc].apply(OS.File, argsOfOsFileFunc);
+		promise_retryAttempt.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_retryAttempt - ', aVal);
+				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.resolve('retryAttempt succeeded');
+			},
+			function(aReason) {
+				var rejObj = {name:'promise_retryAttempt', aReason:aReason};
+				console.error('Rejected - promise_retryAttempt - ', rejObj);
+				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); //throw rejObj;
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_retryAttempt', aCaught:aCaught};
+				console.error('Caught - promise_retryAttempt - ', rejObj);
+				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
+			}
+		);
+	};
+	
+	// popToDir
+	var toDir;
+	var popToDir = function() {
+		switch (nameOfOsFileFunc) {
+			case 'writeAtomic':
+				toDir = OS.Path.dirname(argsOfOsFileFunc[0]);
+				break;
+				
+			case 'copy':
+				toDir = OS.Path.dirname(argsOfOsFileFunc[1]);
+				break;
+
+			case 'makeDir':
+				toDir = OS.Path.dirname(argsOfOsFileFunc[0]);
+				break;
+				
+			default:
+				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject('nameOfOsFileFunc of "' + nameOfOsFileFunc + '" is not supported');
+				return; // to prevent futher execution
+		}
+	};
+	
+	// setup recurse make dirs
+	var makeDirs = function() {
+		if (!toDir) {
+			popToDir();
+		}
+		var promise_makeDirsRecurse = makeDir_Bug934283(toDir, {from: fromDir});
+		promise_makeDirsRecurse.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_makeDirsRecurse - ', aVal);
+				retryIt();
+			},
+			function(aReason) {
+				var rejObj = {name:'promise_makeDirsRecurse', aReason:aReason};
+				console.error('Rejected - promise_makeDirsRecurse - ', rejObj);
+				/*
+				if (aReason.becauseNoSuchFile) {
+					console.log('make dirs then do retryAttempt');
+					makeDirs();
+				} else {
+					// did not get becauseNoSuchFile, which means the dirs exist (from my testing), so reject with this error
+				*/
+					deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); //throw rejObj;
+				/*
+				}
+				*/
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_makeDirsRecurse', aCaught:aCaught};
+				console.error('Caught - promise_makeDirsRecurse - ', rejObj);
+				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
+			}
+		);
+	};
+
+	var doInitialAttempt = function() {
+		var promise_initialAttempt = OS.File[nameOfOsFileFunc].apply(OS.File, argsOfOsFileFunc);
+		console.info('tryosFile_ initial', 'nameOfOsFileFunc:', nameOfOsFileFunc, 'argsOfOsFileFunc:', argsOfOsFileFunc);
+		promise_initialAttempt.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_initialAttempt - ', aVal);
+				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.resolve('initialAttempt succeeded');
+			},
+			function(aReason) {
+				var rejObj = {name:'promise_initialAttempt', aReason:aReason};
+				console.error('Rejected - promise_initialAttempt - ', rejObj);
+				if (aReason.becauseNoSuchFile) { // this is the flag that gets set to true if parent dir(s) dont exist, i saw this from experience
+					console.log('make dirs then do secondAttempt');
+					makeDirs();
+				} else {
+					deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); //throw rejObj;
+				}
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_initialAttempt', aCaught:aCaught};
+				console.error('Caught - promise_initialAttempt - ', rejObj);
+				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
+			}
+		);
+	};
+	
+	if (!aOptions.causesNeutering) {
+		doInitialAttempt();
+	} else {
+		// ensure dir exists, if it doesnt then go to makeDirs
+		popToDir();
+		var promise_checkDirExistsFirstAsCausesNeutering = OS.File.exists(toDir);
+		promise_checkDirExistsFirstAsCausesNeutering.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_checkDirExistsFirstAsCausesNeutering - ', aVal);
+				// start - do stuff here - promise_checkDirExistsFirstAsCausesNeutering
+				if (!aVal) {
+					makeDirs();
+				} else {
+					doInitialAttempt(); // this will never fail as we verified this folder exists
+				}
+				// end - do stuff here - promise_checkDirExistsFirstAsCausesNeutering
+			},
+			function(aReason) {
+				var rejObj = {name:'promise_checkDirExistsFirstAsCausesNeutering', aReason:aReason};
+				console.warn('Rejected - promise_checkDirExistsFirstAsCausesNeutering - ', rejObj);
+				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj);
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_checkDirExistsFirstAsCausesNeutering', aCaught:aCaught};
+				console.error('Caught - promise_checkDirExistsFirstAsCausesNeutering - ', rejObj);
+				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj);
+			}
+		);
+	}
+	
+	
+	return deferred_tryOsFile_ifDirsNoExistMakeThenRetry.promise;
+}
+function aReasonMax(aReason) {
+	var deepestReason = aReason;
+	while (deepestReason.hasOwnProperty('aReason') || deepestReason.hasOwnProperty()) {
+		if (deepestReason.hasOwnProperty('aReason')) {
+			deepestReason = deepestReason.aReason;
+		} else if (deepestReason.hasOwnProperty('aCaught')) {
+			deepestReason = deepestReason.aCaught;
+		}
+	}
+	return deepestReason;
+}
+
+var txtDecodr; // holds TextDecoder if created
+function getTxtDecodr() {
+	if (!txtDecodr) {
+		txtDecodr = new TextDecoder();
+	}
+	return txtDecodr;
+}
+var txtEncodr; // holds TextDecoder if created
+function getTxtEncodr() {
+	if (!txtEncodr) {
+		txtEncodr = new TextEncoder();
+	}
+	return txtEncodr;
+}
+function Deferred() {
+	// update 062115 for typeof
+	if (typeof(Promise) != 'undefined' && Promise.defer) {
+		//need import of Promise.jsm for example: Cu.import('resource:/gree/modules/Promise.jsm');
+		return Promise.defer();
+	} else if (typeof(PromiseUtils) != 'undefined'  && PromiseUtils.defer) {
+		//need import of PromiseUtils.jsm for example: Cu.import('resource:/gree/modules/PromiseUtils.jsm');
+		return PromiseUtils.defer();
+	} else {
+		/* A method to resolve the associated Promise with the value passed.
+		 * If the promise is already settled it does nothing.
+		 *
+		 * @param {anything} value : This value is used to resolve the promise
+		 * If the value is a Promise then the associated promise assumes the state
+		 * of Promise passed as value.
+		 */
+		this.resolve = null;
+
+		/* A method to reject the assocaited Promise with the value passed.
+		 * If the promise is already settled it does nothing.
+		 *
+		 * @param {anything} reason: The reason for the rejection of the Promise.
+		 * Generally its an Error object. If however a Promise is passed, then the Promise
+		 * itself will be the reason for rejection no matter the state of the Promise.
+		 */
+		this.reject = null;
+
+		/* A newly created Pomise object.
+		 * Initially in pending state.
+		 */
+		this.promise = new Promise(function(resolve, reject) {
+			this.resolve = resolve;
+			this.reject = reject;
+		}.bind(this));
+		Object.freeze(this);
+	}
+}
 // end - common helper functions

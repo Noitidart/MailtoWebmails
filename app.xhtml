@@ -78,15 +78,34 @@
 				</div>
 			</div>
 		</div>
+		<!-- notification area -->
+		<div class="container skills" style="padding:20px 0 0 0; text-align:center;" ng-show="BC.attention_msg">
+			<div class="row">
+				<div class="span5">
+					<h3>
+						&mailtowebmails.app.attention;
+						<span>
+							<i class="icon-bell" />
+						</span>
+					</h3>
+					<div class="expand-bg" style="margin-bottom:0; padding:10px; height:auto; color:#203748;">
+						<span class="expand css2" style="display:none;">
+						 
+						</span>
+						{{BC.attention_msg}}
+					</div>
+				</div>
+			</div>
+		</div>
 		<!--Skills container-->
 		<div class="container skills">
 			<h2>&mailtowebmails.app.popular-services;</h2>
-			<row ng-repeat="ps in BC.mailto_services | filter:{ group:0 }" />
+			<row ng-repeat="ps in BC.mailto_services | filter:{ group:0 } | orderBy:'name'" />
 		</div>
 		<!--Custom container-->
 		<div class="container skills" id="pcontainer" style="margin-bottom:75px; padding-top:0;">
 			<h2>&mailtowebmails.app.discovered-services;</h2>
-			<row class="row" ng-repeat="ps in BC.mailto_services | filter:{ group:1 }" />
+			<row class="row" ng-repeat="ps in BC.mailto_services | filter:{ group:1 }  | orderBy:'name' " />
 			<div id="add_service" class="row {{BC.editing_handler_id !== null ? 'editing-handler' : ''}}" style="position:relative;">
 				<div id="tip">
 					<div class="arrow" />

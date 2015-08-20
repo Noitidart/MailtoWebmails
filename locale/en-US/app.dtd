@@ -26,3 +26,5 @@
 
 <!ENTITY mailtowebmails.app.css.form-ready-save 'Click here to save edit'>
 <!ENTITY mailtowebmails.app.css.form-ready-add 'Click here to save and install'>
+
+<!ENTITY mailtowebmails.app.attention 'ATTENTION'>
