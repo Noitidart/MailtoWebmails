@@ -109,8 +109,14 @@ AboutMailto.prototype = Object.freeze({
 		return Ci.nsIAboutModule.ALLOW_SCRIPT | Ci.nsIAboutModule.URI_MUST_LOAD_IN_CHILD;
 	},
 
-	newChannel: function(aURI) {
-		let channel = Services.io.newChannel(core.addon.path.content + 'app.xhtml', null, null);
+	newChannel: function(aURI, aSecurity) {
+		console.info('aURI:', aURI);
+		var channel;
+		if (aURI.path.toLowerCase().indexOf('?discover') > -1) {
+			channel = Services.io.newChannel(core.addon.path.content + 'app_discover.xhtml', null, null);
+		} else {
+			channel = Services.io.newChannel(core.addon.path.content + 'app.xhtml', null, null);
+		}
 		channel.originalURI = aURI;
 		return channel;
 	}

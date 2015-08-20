@@ -10,6 +10,7 @@
 		<link rel="stylesheet" type="text/css" media="screen" href="chrome://mailtowebmails/content/resources/styles/fontello.css" />
 		<link rel="stylesheet" type="text/css" media="screen" href="chrome://mailtowebmails/content/resources/styles/font-family_droid-sans.css" />
 		<link rel="stylesheet" type="text/css" media="screen" href="chrome://mailtowebmails/content/resources/styles/style.css" />
+		<link rel="stylesheet" type="text/css" media="screen" href="chrome://mailtowebmails/content/resources/styles/app_discover.css" />
 		
 		<script src="chrome://mailtowebmails/content/resources/scripts/angular.js"></script>
 		<script src="chrome://mailtowebmails/content/resources/scripts/app.js"></script>
@@ -58,13 +59,13 @@
 					</a>
 					<ul class="nav nav-collapse pull-right">
 						<li>
-							<a href="about:mailto?discover">
+							<a class="active">
 								<i class="icon-share"/>
 								 &mailtowebmails.app.discover;
 							</a>
 						</li>
 						<li>
-							<a class="active">
+							<a href="about:mailto">
 								<i class="icon-doc-text" />
 								 &mailtowebmails.app.manage;
 							</a>
@@ -99,46 +100,8 @@
 		</div>
 		<!--Skills container-->
 		<div class="container skills">
-			<h2>&mailtowebmails.app.popular-services;</h2>
-			<row ng-repeat="ps in BC.mailto_services | filter:{ group:0 } | orderBy:'name'" />
-		</div>
-		<!--Custom container-->
-		<div class="container skills" id="pcontainer" style="margin-bottom:75px; padding-top:0;">
-			<h2>&mailtowebmails.app.discovered-services;</h2>
-			<row class="row" ng-repeat="ps in BC.mailto_services | filter:{ group:1 }  | orderBy:'name' " />
-			<div id="add_service" class="row {{BC.editing_handler_id !== null ? 'editing-handler' : ''}}" style="position:relative;">
-				<div id="tip">
-					<div class="arrow" />
-					<div class="discover-form-ready" />
-				</div>
-				<div class="span3" ng-click="BC.add()">
-					<div class="custom-handler-add" style="cursor:pointer;">
-						<h3 />
-					</div>
-				</div>
-				<div class="span5">
-					<input type="hidden" id="handler_id"></input>
-					<a id="pimg" class="personal-btn browse-img no-custom-bg" style="margin-right:15px;margin-top:5px;" onclick="personal_img(this)">
-						<i />
-					</a>
-					<a class="personal-btn pick-color" style="margin-right:10px;margin-top:5px;" onclick="this.nextSibling.nextSibling.click()">
-						<i />
-					</a>
-					<input id="pcolor" value="#7AA2FF" type="color" style="display:none;" onchange="this.previousSibling.previousSibling.style.backgroundColor=this.value;" />
-					<div class="sp5desc">
-						<input onkeyup="shouldShowTip()" id="pname" type="text" placeholder="&mailtowebmails.app.enter-provider-name;"  style="width:60%;" />
-					</div>
-					<div class="sp5desc">
-						<input onkeyup="shouldShowTip()" id="purl" type="text" placeholder="&mailtowebmails.app.enter-wildcard-url;"  style="width:60%;" />
-					</div>
-					<div class="sp5desc">
-						<textarea onkeyup="shouldShowTip()" id="pdesc" placeholder="&mailtowebmails.app.enter-description;" style="resize:none; width:calc(100% - 14px); margin-bottom:0;" />
-					</div>
-					<!--
-					<div class="expand-bg"> <span class="expand css2"> &nbsp; </span> </div>
-					-->
-				</div>
-			</div>
+			<h2>&mailtowebmails.app.discover.subheader;</h2>
+			<row ng-repeat="ps in BC.mailto_services | filter:{ installed:false, group:1 } | orderBy:'name'" />
 		</div>
 		<!--END: Custom container-->
 		<!-- Footer -->
@@ -153,7 +116,7 @@
 				</p>
 				-->
 				<p align="center">
-					&mailtowebmails.app.footer;
+					&mailtowebmails.app.discover.footer;
 				</p>
 			</div>
 		</div>

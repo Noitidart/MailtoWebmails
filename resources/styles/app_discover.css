@@ -1,0 +1,4 @@
+.skills row:last-of-type {
+	margin-bottom: 60px;
+	display: block;
+}
