@@ -278,17 +278,24 @@ ul.social-icons li a:hover {
 .editing-handler .custom-handler-add  {
 	background-image: url(chrome://mailtowebmails/content/resources/images/disk.png);
 }
-
-.editing-handler #tip {
-	opacity: 1;
+.row.editing-handler .tip-add {
+	display: none;
+}
+.row:not(.editing-handler) .tip-edit {
+	display: none;
 }
 
-#tip {
+#add_service:hover .tip {
+	opacity: 1;
+	margin-left: -25px;
+}
+
+.tip {
 	position: absolute;
-	background-color: rgb(255, 255, 255);
+	background-color: #EAEDF2;
 	padding: 5px;
 	width: 100px;
-	height: 50px;
+	height: 70px;
 	color: rgb(0, 0, 0);
 	border-radius: 4px;
 	display: table;
@@ -297,13 +304,14 @@ ul.social-icons li a:hover {
 	transition:opacity 200ms, margin-left 200ms cubic-bezier(.67,.39,.58,1.4);
 	margin-left:-75px;
 	opacity:0;
-	top:calc(50% - 25px);
+	top:calc(50% - 40px);
 	pointer-events:none;
+	color:#203748;
 }
 
-#tip .arrow {
+.tip .arrow {
 	position: absolute;
-	top: 20px;
+	top: calc(50% - 8px);
 	background-color: inherit;
 	transform: rotate(45deg);
 	right: -9px;
@@ -318,7 +326,7 @@ ul.social-icons li a:hover {
 	height: 16px;
 }
 
-#tip .discover-form-ready {
+.tip div:last-of-type {
 	display:table-cell;
 	vertical-align:middle;
 }
