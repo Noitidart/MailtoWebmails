@@ -313,7 +313,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		update_time: 0
 	},
 	{
-		name: 'QQ\u90ae\u7bb1 (QQMail))',
+		name: 'QQ\u90ae\u7bb1 (QQMail)',
 		url_template: 'http://www.mail.qq.com/cgi-bin/loginpage?delegate_url=%2Fcgi-bin%2Freadtemplate%3Ft%3Dcompose%26toemail%3D%s',
 		old_url_templates: [],
 		description: '\u5e38\u8054\u7cfb!',
@@ -323,7 +323,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		update_time: 0
 	},
 	{
-		name: 'Yahoo Mail',
+		name: 'Yahoo! Mail',
 		url_template: 'https://compose.mail.yahoo.com/?To=%s',
 		old_url_templates: [],
 		description: 'The Yahoo Mail handler comes installed by default with Firefox',
@@ -340,7 +340,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-yandex.png',
 		color: 'rgb(223, 78, 44)',
 		group: 0,
-		update_time: 1
+		update_time: 0
 	},
 	/*
 	{

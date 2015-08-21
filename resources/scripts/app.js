@@ -20,6 +20,8 @@ var core = {
 }
 
 var myServices = {};
+XPCOMUtils.defineLazyGetter(myServices, 'eps', function(){ return Cc['@mozilla.org/uriloader/external-protocol-service;1'].getService(Ci.nsIExternalProtocolService) });
+XPCOMUtils.defineLazyGetter(myServices, 'hs', function(){ return Cc['@mozilla.org/uriloader/handler-service;1'].getService(Ci.nsIHandlerService) });
 XPCOMUtils.defineLazyGetter(myServices, 'sb', function () { return Services.strings.createBundle(core.addon.path.locale + 'app.properties?' + core.addon.cache_key); /* Randomize URI to work around bug 719376 */ });
 
 const mailtoServicesObjEntryTemplate = {
@@ -28,18 +30,16 @@ const mailtoServicesObjEntryTemplate = {
 	old_url_templates: [],
 	description: '',
 	icon_dataurl: '',
-	icon_imugr_url: null,
 	color: '',
-	group: 0,
-	update_time: 0,
-	installed: false,
-	active: false
+	group: 1,
+	update_time: 0
 };
 
 const userBasedProps = {
 	installed: 1,
 	active: 1,
-	updated_or_new: 1, // 1 for updated, 2 for newly inserted
+	updated: 1,
+	new: 1
 };
 /*
 var runit = 'asdfasdf';
@@ -84,9 +84,34 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 					MODULE.mailto_services[i].active = false;
 				}
 				aServiceEntry.active = true;
+				
+				// find this handler and set it as active
+				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
+				var handlers = handlerInfoXPCOM.possibleApplicationHandlers.enumerate();
+				while (handlers.hasMoreElements()) {
+					var handler = handlers.getNext().QueryInterface(Ci.nsIWebHandlerApp);
+					if (handler.uriTemplate == aServiceEntry.url_template) {
+						// found it
+						handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
+						handlerInfoXPCOM.preferredApplicationHandler = handler;
+						handlerInfoXPCOM.alwaysAskBeforeHandling = false;
+						break;
+					}
+				}
+				// :todo: troubleshoot, if not found
 			} else {
 				aServiceEntry.active = false;
+				
+				// implement to firefox, to ask on next click, as this one was active
+				// ensure that this handler was active
+				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
+				if (handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
+					// yes it was active, lets unset it
+					handlerInfoXPCOM.alwaysAskBeforeHandling = true;
+					handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
+				} // :todo: troubleshoot, if it wasnt active maybe
 			}
+			myServices.hs.store(handlerInfoXPCOM);
 		};
 
 		MODULE.toggle_install = function(aServiceEntry) {
@@ -95,6 +120,35 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 			if (!aServiceEntry.installed) {
 				aServiceEntry.active = false;
 			}
+			
+			// implement update to firefox
+			var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
+			if (aServiceEntry.installed) {
+				var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
+				handler.name = aServiceEntry.name;
+				handler.uriTemplate = aServiceEntry.url_template;
+				handlerInfoXPCOM.possibleApplicationHandlers.appendElement(handler, false);
+			} else {
+				var nHandlers = handlerInfoXPCOM.possibleApplicationHandlers.length;
+				for (var i=0; i<nHandlers; i++) {
+					var handlerQI = handlerInfoXPCOM.possibleApplicationHandlers.queryElementAt(i, Ci.nsIWebHandlerApp);
+					// cant remove if its the curently preferred, so check that, and if it is, then unsert it as preferred
+					if (handlerQI.equals(handlerInfoXPCOM.preferredApplicationHandler)) {
+						console.error('yes it was active, so lets unactivate it');
+						handlerInfoXPCOM.preferredApplicationHandler = null;
+						if (handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp) {
+							//it looks like the preferredAction was to use this helper app, so now that its no longer there we will have to ask what the user wants to do next time the uesrs clicks a mailto: link
+							handlerInfoXPCOM.alwaysAskBeforeHandling = true;
+							handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
+						}
+					}
+					if (handlerQI.uriTemplate == aServiceEntry.url_template) {
+						handlerInfoXPCOM.possibleApplicationHandlers.removeElementAt(i);
+						break;
+					}
+				}
+			}
+			myServices.hs.store(handlerInfoXPCOM);
 		};
 		
 		MODULE.edit = function(aServiceEntry) {
@@ -121,6 +175,18 @@ function doOnLoad() {
 	var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-16'});
 	// :todo: while its reading we kick off getting the currently installed mailto handlers link9784703
 	
+	// check and get whats currently installed/active
+	var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
+
+    //start - find installed handlers
+    var handlersXPCOM = handlerInfoXPCOM.possibleApplicationHandlers.enumerate();
+	var handlers = [];
+    while (handlersXPCOM.hasMoreElements()) {
+        var handler = handlersXPCOM.getNext().QueryInterface(Ci.nsIWebHandlerApp);
+		handlers.push(handler);
+        console.log('handler', handler)
+    }
+	
 	promise_readInstalledServices.then(
 		function(aVal) {
 			console.log('Fullfilled - promise_readInstalledServices - ', aVal);
@@ -128,7 +194,69 @@ function doOnLoad() {
 			console.info('ANG_APP:', ANG_APP);
 			gAngScope.BC.mailto_services = JSON.parse(aVal);
 			
-			// :todo: add into mailto_services what i obtained from link9784703
+			// :todo: add into mailto_services what i obtained from link9784703, this is to figure out what is installed and active/inactive
+			var shouldSaveHandlersInfo = false;
+			var activeFoundAndSet = false;
+			var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
+			for (var i=0; i<handlers.length; i++) {
+				var installed_url_template_found = false; // if after loop its found, then this is newly inserted
+				var installed_url_template = handlers[i].uriTemplate;
+				var installed_name = handlers[i].name;
+				// find this handler in mailto_services obj
+				for (var j=0; j<gAngScope.BC.mailto_services.length; j++) {
+					var user_url_template = gAngScope.BC.mailto_services[j].url_template;
+					if (user_url_template == installed_url_template || gAngScope.BC.mailto_services[j].old_url_templates.indexOf(installed_url_template) > -1) {
+						// console.error('match on user and installed template:', user_url_template, installed_url_template)
+						installed_url_template_found = true;
+						
+						gAngScope.BC.mailto_services[j].installed = true;
+						// console.error('marking as installed for this guy:', gAngScope.BC.mailto_services[j]);
+						if (gAngScope.BC.mailto_services[j].old_url_templates.indexOf(installed_url_template) > -1) {
+							// console.error(':todo: update the handler to use the new url_template');
+							handlers[i].uriTemplate = gAngScope.BC.mailto_services[j].url_template; // :assuming: mailtowebmails is right, and the one installed is wrong // link98031409847
+							shouldSaveHandlersInfo = true;
+						}
+						/*
+						if (gAngScope.BC.mailto_services[j].name != installed_name) {
+							console.error('name of installed, doesnt match that in file, so fixing installed to be that of name in file');
+							handlers[i].name = gAngScope.BC.mailto_services[j].name; // :todo: this is not consistent, so will not do, i have to figure out how to do this. the only way that works right now is to remove it, then add it back
+							shouldSaveHandlersInfo = true;
+						}
+						*/
+						
+						if (!activeFoundAndSet && handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == gAngScope.BC.mailto_services[j].url_template) { // i use `gAngScope.BC.mailto_services[j].url_template` instead of installed_url_template because in case it was updated on link98031409847 and shouldSaveHandlersInfo has not been called yet
+							gAngScope.BC.mailto_services[j].active = true;
+						}
+						
+						break;
+					}
+				}
+				console.error('installed_url_template_found:', installed_url_template_found, installed_url_template);
+				if (!installed_url_template_found) {
+					console.log('not found so social that was installed from somewhere');
+					var pushObj = JSON.parse(JSON.stringify(mailtoServicesObjEntryTemplate));
+					pushObj.name = installed_name;
+					pushObj.url_template = installed_url_template;
+					pushObj.group = 1;
+					
+					pushObj.installed = true;
+					if (!activeFoundAndSet && handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == installed_url_template) {
+						pushObj.active = true;
+					}
+					
+					gAngScope.BC.mailto_services.push(pushObj);
+					console.log('gAngScope.BC.mailto_services:', gAngScope.BC.mailto_services);
+
+					
+					// :todo: write a function that goes through the mailto_services and submits to server stuff to share
+				}
+			}
+			
+			if (shouldSaveHandlersInfo) {
+				console.log('doing save');
+				myServices.hs.store(handlerInfoXPCOM);
+				console.log('save done');
+			}
 			
 			gAngScope.$digest();
 			tryUpdate();
