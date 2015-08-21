@@ -313,10 +313,10 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		update_time: 0
 	},
 	{
-		name: 'QQ邮箱 (QQMail)',
+		name: 'QQ\u90ae\u7bb1 (QQMail))',
 		url_template: 'http://www.mail.qq.com/cgi-bin/loginpage?delegate_url=%2Fcgi-bin%2Freadtemplate%3Ft%3Dcompose%26toemail%3D%s',
 		old_url_templates: [],
-		description: '常联系!',
+		description: '\u5e38\u8054\u7cfb!',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-qq.png',
 		color: 'rgb(255, 102, 0)',
 		group: 0,
@@ -326,7 +326,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		name: 'Yahoo Mail',
 		url_template: 'https://compose.mail.yahoo.com/?To=%s',
 		old_url_templates: [],
-		description: 'Handles the light weight FM service',
+		description: 'The Yahoo Mail handler comes installed by default with Firefox',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-y!mail3.png',
 		color: 'rgb(65, 2, 143)',
 		group: 0,
@@ -336,11 +336,11 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		name: 'Yandex.Mail',
 		url_template: 'https://mail.yandex.com/compose?mailto=%s',
 		old_url_templates: [],
-		description: 'The largest search engine in Russia. Поиск информации в интернете с учетом русской морфологии!',
+		description: 'The largest search engine in Russia. \u041f\u043e\u0438\u0441\u043a \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 \u0432 \u0438\u043d\u0442\u0435\u0440\u043d\u0435\u0442\u0435 \u0441 \u0443\u0447\u0435\u0442\u043e\u043c \u0440\u0443\u0441\u0441\u043a\u043e\u0439 \u043c\u043e\u0440\u0444\u043e\u043b\u043e\u0433\u0438\u0438!',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-yandex.png',
 		color: 'rgb(223, 78, 44)',
 		group: 0,
-		update_time: 0
+		update_time: 1
 	},
 	/*
 	{
