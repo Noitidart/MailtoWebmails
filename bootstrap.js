@@ -252,7 +252,6 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		old_url_templates:
 		description:
 		icon_dataurl:
-		icon_imugr_url:
 		color:
 		group: 0 for popular, 1, for personal/discovered/custom/social, 2 for native like outlook
 		update_time:
@@ -266,12 +265,9 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		old_url_templates: [],
 		description: 'This handles both AOL Mail and AIM Mail',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-aolmail.png',
-		icon_imugr_url: null,
 		color: 'rgb(255, 204, 0)',
 		group: 0,
-		update_time: 0,
-		installed: false,
-		active: false
+		update_time: 0
 	},
 	/*
 	{
@@ -280,12 +276,9 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		old_url_templates: [],
 		description: 'Handles the light weight FM service',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-fastmail.png',
-		icon_imugr_url: null,
 		color: 'rgb(68, 86, 127)',
 		group: 1,
-		update_time: 1,
-		installed: false,
-		active: false
+		update_time: 1
 	},
 	*/
 	{
@@ -294,12 +287,9 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		old_url_templates: [],
 		description: 'The GMail handler comes installed by default with Firefox',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-gmail2.png',
-		icon_imugr_url: null,
 		color: 'rgb(235, 42, 46)',
 		group: 0,
-		update_time: 0,
-		installed: false,
-		active: false
+		update_time: 0
 	},
 	/*
 	{
@@ -307,12 +297,9 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		url_template: '????????????',
 		description: 'Handles the popular Lycos webmail client',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-lycos.png',
-		icon_imugr_url: null,
 		color: 'rgb(68, 86, 127)',
 		group: 1,
-		update_time: 0,
-		installed: false,
-		active: false
+		update_time: 0
 	},
 	*/
 	{
@@ -321,25 +308,19 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		old_url_templates: [],
 		description: 'Service also for Hotmail and Live Mail',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-outlook.png',
-		icon_imugr_url: null,
 		color: 'rgb(0, 115, 198)',
 		group: 0,
-		update_time: 0,
-		installed: false,
-		active: false
+		update_time: 0
 	},
 	{
 		name: 'QQ邮箱 (QQMail)',
-		url_template: 'https://mail.google.com/mail/?extsrc=mailto&url=%s',
+		url_template: 'http://www.mail.qq.com/cgi-bin/loginpage?delegate_url=%2Fcgi-bin%2Freadtemplate%3Ft%3Dcompose%26toemail%3D%s',
 		old_url_templates: [],
 		description: '常联系!',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-qq.png',
-		icon_imugr_url: null,
 		color: 'rgb(255, 102, 0)',
 		group: 0,
-		update_time: 0,
-		installed: false,
-		active: false
+		update_time: 0
 	},
 	{
 		name: 'Yahoo Mail',
@@ -347,12 +328,9 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		old_url_templates: [],
 		description: 'Handles the light weight FM service',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-y!mail3.png',
-		icon_imugr_url: null,
 		color: 'rgb(65, 2, 143)',
 		group: 0,
-		update_time: 0,
-		installed: false,
-		active: false
+		update_time: 0
 	},
 	{
 		name: 'Yandex.Mail',
@@ -360,12 +338,9 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		old_url_templates: [],
 		description: 'The largest search engine in Russia. Поиск информации в интернете с учетом русской морфологии!',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-yandex.png',
-		icon_imugr_url: null,
 		color: 'rgb(223, 78, 44)',
 		group: 0,
-		update_time: 0,
-		installed: false,
-		active: false
+		update_time: 0
 	},
 	/*
 	{
@@ -377,9 +352,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		icon_imugr_url: null,
 		color: 'rgb(36, 160, 68)',
 		group: 1,
-		update_time: 0,
-		installed: true,
-		active: false
+		update_time: 0
 	}
 	*/
 ];
