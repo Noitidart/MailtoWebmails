@@ -23,6 +23,8 @@
 <!ENTITY mailtowebmails.app.css.active 'Active'>
 <!ENTITY mailtowebmails.app.css.install 'Install'>
 <!ENTITY mailtowebmails.app.css.uninstall 'Uninstall'>
+<!ENTITY mailtowebmails.app.css.new 'New'>
+<!ENTITY mailtowebmails.app.css.updated 'Updated'>
 
 <!ENTITY mailtowebmails.app.css.form-ready-edit 'Click here to save edit or hit "Esc" to cancel'>
 <!ENTITY mailtowebmails.app.css.form-ready-add 'Click here to install or hit "Esc" to cancel'>

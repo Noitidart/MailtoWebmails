@@ -10,6 +10,8 @@
 			<a class="hire-me act-toggle {{ps.active ? 'active-me' : ''}}" ng-click="BC.toggle_active(ps)">
 				<i class="icon-user" />
 			</a>
+			<a class="hire-me act-toggle lbl-handler-new {{ps.new ? 'me-new-true' : ''}}" />
+			<a class="hire-me act-toggle lbl-handler-updated {{ps.updated ? 'me-updated-true' : ''}}" />
 		</h3>
 	<div class="sp5desc">
 		{{ps.description}}

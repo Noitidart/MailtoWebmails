@@ -267,6 +267,26 @@ ul.social-icons li a:hover {
 	float:right;
 	transition: all 0.2s linear;
 }
+/* updated new stuff*/
+a.lbl-handler-updated,
+a.lbl-handler-new {
+	display: none;
+	right: 0;
+	background-color: #FE2E64 !important;
+}
+
+a.lbl-handler-updated {
+	background-color: #FF8000 !important;
+}
+
+a.me-new-true,
+a.me-updated-true {
+	display: inline-block;
+	cursor: default;
+	opacity: 1 !important;
+	pointer-events: none;
+}
+
 /* start - colors and background images of circles */
 .skills .logo-ball {
 	background: rgb(0, 115, 198) url(../img/logo-outlook.png) center center no-repeat;
@@ -362,6 +382,7 @@ ul.social-icons li a:hover {
 	line-height: 15px;
 	font-weight:normal;
 	text-transform:uppercase;
+	position: relative;
 }
 .skills .span5 h3 span {
 	float:right;
