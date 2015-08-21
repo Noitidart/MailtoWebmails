@@ -133,7 +133,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				for (var i=0; i<nHandlers; i++) {
 					var handlerQI = handlerInfoXPCOM.possibleApplicationHandlers.queryElementAt(i, Ci.nsIWebHandlerApp);
 					// cant remove if its the curently preferred, so check that, and if it is, then unsert it as preferred
-					if (handlerQI.equals(handlerInfoXPCOM.preferredApplicationHandler)) {
+					if (handlerInfoXPCOM.preferredApplicationHandler && handlerQI.equals(handlerInfoXPCOM.preferredApplicationHandler)) { // this will throw // Exception { message: "Illegal value'Illegal value' when c…", result: 2147942487, name: "NS_ERROR_ILLEGAL_VALUE", filename: "chrome://mailtowebmails/content/res…", lineNumber: 136, columnNumber: 0, inner: null, data: null, stack: "ANG_APP</MODULE.toggle_install@chro…", location: XPCWrappedNative_NoHelper } // if its a bad uri //:todo: ensure no bad uris are given in url_template // handlerInfoXPCOM.preferredApplicationHandler must not be null
 						console.error('yes it was active, so lets unactivate it');
 						handlerInfoXPCOM.preferredApplicationHandler = null;
 						if (handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp) {
