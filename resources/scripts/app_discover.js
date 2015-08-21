@@ -617,6 +617,7 @@ function Deferred() {
 	}
 }
 function xhr(aStr, aOptions={}) {
+	// update 082115 - was not listening to timeout event, added that in
 	// update on 082015 - fixed that aTimeout was not setting right
 	// update 072615 - added support for aOptions.aMethod
 	// currently only setup to support GET and POST
@@ -715,7 +716,7 @@ function xhr(aStr, aOptions={}) {
 		}
 	};
 
-	var evf = f => ['load', 'error', 'abort'].forEach(f);
+	var evf = f => ['load', 'error', 'abort', 'timeout'].forEach(f);
 	evf(m => xhr.addEventListener(m, handler, false));
 
 	if (aOptions.isBackgroundReq) {
