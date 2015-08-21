@@ -13,7 +13,7 @@
 		<link rel="stylesheet" type="text/css" media="screen" href="chrome://mailtowebmails/content/resources/styles/app_discover.css" />
 		
 		<script src="chrome://mailtowebmails/content/resources/scripts/angular.js"></script>
-		<script src="chrome://mailtowebmails/content/resources/scripts/app.js"></script>
+		<script src="chrome://mailtowebmails/content/resources/scripts/app_discover.js"></script>
 		<style>
 		/* styles that need localization */
 		.stalled a.act-toggle:not(.active-me):hover:after {
@@ -36,6 +36,12 @@
 		}
 		.stalled a.stall-me:not(.edit-personal):after {
 			content: '&mailtowebmails.app.css.uninstall;';
+		}
+		a.lbl-handler-updated:after {
+			content: '&mailtowebmails.app.css.updated;' !important;
+		}
+		a.lbl-handler-new:after {
+			content: '&mailtowebmails.app.css.new;' !important;
 		}
 		</style>
 	</head>
@@ -74,7 +80,7 @@
 			</div>
 		</div>
 		<!-- notification area -->
-		<div class="container skills" style="padding:20px 0 0 0; text-align:center;" ng-show="BC.attention_msg">
+		<div class="container skills" style="padding:20px 0 0 0; text-align:center;" ng-show="BC.attn_msg">
 			<div class="row">
 				<div class="span5">
 					<h3>
@@ -83,21 +89,15 @@
 							<i class="icon-bell" />
 						</span>
 					</h3>
-					<div class="expand-bg" style="margin-bottom:0; padding:10px; height:auto; color:#203748;">
-						<span class="expand css2" style="display:none;">
-						 
-						</span>
-						{{BC.attention_msg}}
-					</div>
+					<div class="expand-bg" style="margin-bottom:0; padding:15px; height:auto; color:#203748;" ng-bind-html="BC.attn_msg" />
 				</div>
 			</div>
 		</div>
 		<!--Skills container-->
 		<div class="container skills">
 			<h2>&mailtowebmails.app.discover.subheader;</h2>
-			<row ng-repeat="ps in BC.mailto_services | filter:{ installed:false, group:1 } | orderBy:'name'" />
+			<row ng-repeat="ps in BC.mailto_services | filter:{ group:1 } | orderBy:'name'" />
 		</div>
-		<!--END: Custom container-->
 		<!-- Footer -->
 		<div class="footer">
 			<div class="container">
