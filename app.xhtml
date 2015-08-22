@@ -123,15 +123,15 @@
 					<a class="personal-btn pick-color" style="margin-right:10px;margin-top:5px;" onclick="this.nextSibling.nextSibling.click()">
 						<i />
 					</a>
-					<input id="pcolor" value="#7AA2FF" type="color" style="display:none;" onchange="this.previousSibling.previousSibling.style.backgroundColor=this.value;" />
+					<input id="pcolor" ng-model="BC.form_color" value="#7AA2FF" type="color" style="display:none;" onchange="this.previousSibling.previousSibling.style.backgroundColor=this.value;" />
 					<div class="sp5desc">
-						<input id="pname" type="text" placeholder="&mailtowebmails.app.enter-provider-name;"  style="width:60%;" />
+						<input id="pname" ng-model="BC.form_name" type="text" placeholder="&mailtowebmails.app.enter-provider-name;"  style="width:60%;" />
 					</div>
 					<div class="sp5desc">
-						<input id="purl" type="text" placeholder="&mailtowebmails.app.enter-wildcard-url;"  style="width:60%;" />
+						<input id="purl" ng-model="BC.form_url_template" type="text" placeholder="&mailtowebmails.app.enter-wildcard-url;"  style="width:60%;" />
 					</div>
 					<div class="sp5desc">
-						<textarea id="pdesc" placeholder="&mailtowebmails.app.enter-description;" style="resize:none; width:calc(100% - 14px); margin-bottom:0;" />
+						<textarea id="pdesc" ng-model="BC.form_description" placeholder="&mailtowebmails.app.enter-description;" style="resize:none; width:calc(100% - 14px); margin-bottom:0;" />
 					</div>
 					<!--
 					<div class="expand-bg"> <span class="expand css2"> &nbsp; </span> </div>

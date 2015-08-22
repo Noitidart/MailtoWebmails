@@ -156,7 +156,36 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 		};
 		
 		MODULE.add = function() {
+			alert('here ' + MODULE.form_url_template);
+			try {
+				Services.io.newURI(MODULE.form_url_template, null, null);
+			} catch (ex) {
+				alert('URL template is in invalid form, please correct');
+				return;
+			}
 			
+			if (MODULE.form_url_template.indexOf('%s') == -1) {
+				alert('URL template must include a wildcard of "%s", please correct');
+				return;
+			}
+			
+			var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
+			var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
+			handler.name = MODULE.form_name;
+			handler.uriTemplate = MODULE.form_url_template;
+			handlerInfoXPCOM.possibleApplicationHandlers.appendElement(handler, false);
+			
+			var pushObj = JSON.parse(JSON.stringify(mailtoServicesObjEntryTemplate));
+			pushObj.name = MODULE.form_name;
+			pushObj.url_template = MODULE.form_url_template;
+			pushObj.description = MODULE.form_description;
+			pushObj.color = MODULE.form_color;
+			pushObj.group = 1;
+			pushObj.installed = true;
+			
+			MODULE.mailto_services.push(pushObj);
+			
+			myServices.hs.store(handlerInfoXPCOM);
 		};
 
 		MODULE.info = function() {
@@ -197,8 +226,9 @@ function doOnLoad() {
 			// :todo: add into mailto_services what i obtained from link9784703, this is to figure out what is installed and active/inactive
 			var shouldSaveHandlersInfo = false;
 			var activeFoundAndSet = false;
-			var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
+			// var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
 			for (var i=0; i<handlers.length; i++) {
+				console.error('checking handler:', handlers[i]);
 				var installed_url_template_found = false; // if after loop its found, then this is newly inserted
 				var installed_url_template = handlers[i].uriTemplate;
 				var installed_name = handlers[i].name;
@@ -223,8 +253,8 @@ function doOnLoad() {
 							shouldSaveHandlersInfo = true;
 						}
 						*/
-						
-						if (!activeFoundAndSet && handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == gAngScope.BC.mailto_services[j].url_template) { // i use `gAngScope.BC.mailto_services[j].url_template` instead of installed_url_template because in case it was updated on link98031409847 and shouldSaveHandlersInfo has not been called yet
+						console.info('handlerInfoXPCOM.preferredApplicationHandler:', handlerInfoXPCOM.preferredApplicationHandler);
+						if (!activeFoundAndSet && handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == gAngScope.BC.mailto_services[j].url_template) { // i use `gAngScope.BC.mailto_services[j].url_template` instead of installed_url_template because in case it was updated on link98031409847 and shouldSaveHandlersInfo has not been called yet
 							gAngScope.BC.mailto_services[j].active = true;
 						}
 						
@@ -250,15 +280,19 @@ function doOnLoad() {
 					
 					// :todo: write a function that goes through the mailto_services and submits to server stuff to share
 				}
+				// console.error('ok end of inner for');
 			}
 			
+			// console.error('out of for');
 			if (shouldSaveHandlersInfo) {
 				console.log('doing save');
 				myServices.hs.store(handlerInfoXPCOM);
 				console.log('save done');
 			}
 			
+			// console.error('digesting, mailto_services', gAngScope.BC.mailto_services);
 			gAngScope.$digest();
+			// console.error('digested');
 			tryUpdate();
 			// end - do stuff here - promise_readInstalledServices
 		},
