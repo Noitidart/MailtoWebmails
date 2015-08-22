@@ -24,6 +24,7 @@ XPCOMUtils.defineLazyGetter(myServices, 'eps', function(){ return Cc['@mozilla.o
 XPCOMUtils.defineLazyGetter(myServices, 'hs', function(){ return Cc['@mozilla.org/uriloader/handler-service;1'].getService(Ci.nsIHandlerService) });
 XPCOMUtils.defineLazyGetter(myServices, 'sb', function () { return Services.strings.createBundle(core.addon.path.locale + 'app.properties?' + core.addon.cache_key); /* Randomize URI to work around bug 719376 */ });
 
+const defaultColor = '#7AA2FF';
 const mailtoServicesObjEntryTemplate = {
 	name: '',
 	url_template: '',
@@ -155,17 +156,19 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 			
 		};
 		
+		MODULE.form_color = defaultColor;
+		document.getElementById('pcolor').value = defaultColor;
+		
 		MODULE.add = function() {
-			alert('here ' + MODULE.form_url_template);
 			try {
 				Services.io.newURI(MODULE.form_url_template, null, null);
 			} catch (ex) {
-				alert('URL template is in invalid form, please correct');
+				alert(myServices.sb.GetStringFromName('url_template-bad-uri'));
 				return;
 			}
 			
 			if (MODULE.form_url_template.indexOf('%s') == -1) {
-				alert('URL template must include a wildcard of "%s", please correct');
+				alert(myServices.sb.GetStringFromName('url_template-no-wildcard'));
 				return;
 			}
 			
@@ -180,19 +183,50 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 			pushObj.url_template = MODULE.form_url_template;
 			pushObj.description = MODULE.form_description;
 			pushObj.color = MODULE.form_color;
+			pushObj.icon_dataurl = MODULE.form_img;
 			pushObj.group = 1;
 			pushObj.installed = true;
 			
 			MODULE.mailto_services.push(pushObj);
 			
 			myServices.hs.store(handlerInfoXPCOM);
+			
+			
+			MODULE.form_name = '';
+			MODULE.form_url_template = '';
+			MODULE.form_description = '';
+			MODULE.form_img = '';
+			MODULE.form_color = defaultColor;
+			document.getElementById('pcolor').value = defaultColor;
 		};
-
-		MODULE.info = function() {
-			console.info(MODULE.mailto_services);
+		
+		MODULE.choose_img = function() {
+			var fp = Cc['@mozilla.org/filepicker;1'].createInstance(Ci.nsIFilePicker);
+			fp.init(Services.wm.getMostRecentWindow(null), myServices.sb.GetStringFromName('pick_img'), Ci.nsIFilePicker.modeOpen);
+			fp.appendFilters(Ci.nsIFilePicker.filterImages);
+			
+			var rv = fp.show();
+			if (rv == Ci.nsIFilePicker.returnOK) {
+				//console.log('fp.file:', fp.file);
+				// MODULE.form_img = Services.io.newFileURI(fp.file).spec;
+				
+				var img = new Image();
+				img.onload = function() {
+					if (img.width > 80 || img.height > 80) {
+						alert(myServices.sb.formatStringFromName('img_bad-dimensions', [img.width, img.height], 2));
+						return;
+					}
+					var can = document.createElement('canvas');
+					can.width = img.width;
+					can.height = img.height;
+					var ctx = can.getContext('2d');
+					ctx.drawImage(img, 0, 0);
+					MODULE.form_img = can.toDataURL('image/png', '');
+					gAngScope.$digest();
+				};
+				img.src = Services.io.newFileURI(fp.file).spec;
+			}// else { // cancelled	}
 		};
-
-		MODULE.info();
 	}]);
 var gAngScope
 var gAngInjector;

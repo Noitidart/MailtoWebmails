@@ -116,14 +116,13 @@
 					</div>
 				</div>
 				<div class="span5">
-					<input type="hidden" id="handler_id"></input>
-					<a id="pimg" class="personal-btn browse-img no-custom-bg" style="margin-right:15px;margin-top:5px;" onclick="personal_img(this)">
+					<a id="pimg" class="personal-btn browse-img {{BC.form_img ? '' : 'no-custom-bg'}}" style="margin-right:15px; margin-top:5px; {{BC.form_img ? 'background-image:url(' + BC.form_img + ');' : ''}}" ng-click="BC.choose_img()">
 						<i />
 					</a>
-					<a class="personal-btn pick-color" style="margin-right:10px;margin-top:5px;" onclick="this.nextSibling.nextSibling.click()">
+					<a class="personal-btn pick-color" style="margin-right:10px;margin-top:5px;background-color:{{BC.form_color}};" onclick="document.getElementById('pcolor').click();">
 						<i />
 					</a>
-					<input id="pcolor" ng-model="BC.form_color" value="#7AA2FF" type="color" style="display:none;" onchange="this.previousSibling.previousSibling.style.backgroundColor=this.value;" />
+					<input id="pcolor" value="#7AA2FF" type="color" style="display:none;" onchange="gAngScope.BC.form_color=this.value; gAngScope.$digest();" />
 					<div class="sp5desc">
 						<input id="pname" ng-model="BC.form_name" type="text" placeholder="&mailtowebmails.app.enter-provider-name;"  style="width:60%;" />
 					</div>
