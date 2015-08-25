@@ -26,8 +26,8 @@
 <!ENTITY mailtowebmails.app.css.new 'New'>
 <!ENTITY mailtowebmails.app.css.updated 'Updated'>
 
-<!ENTITY mailtowebmails.app.css.form-ready-edit 'Click here to save edit or hit "Esc" to cancel'>
-<!ENTITY mailtowebmails.app.css.form-ready-add 'Click here to install or hit "Esc" to cancel'>
+<!ENTITY mailtowebmails.app.css.form-ready-edit 'Click to save edit or hit "Esc" to cancel edit'>
+<!ENTITY mailtowebmails.app.css.form-ready-add 'Click to install or hit "Esc" to clear'>
 
 <!ENTITY mailtowebmails.app.attention 'ATTENTION'>
 

@@ -153,7 +153,14 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 		};
 		
 		MODULE.edit = function(aServiceEntry) {
+			MODULE.editing_handler_id = aServiceEntry.url_template;
 			
+			MODULE.form_name = aServiceEntry.name;
+			MODULE.form_url_template = aServiceEntry.url_template;
+			MODULE.form_description = aServiceEntry.description;
+			MODULE.form_img = aServiceEntry.icon_dataurl;
+			MODULE.form_color = aServiceEntry.color;
+			document.getElementById('pcolor').value = aServiceEntry.color;
 		};
 		
 		MODULE.form_color = defaultColor;
@@ -172,32 +179,81 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				return;
 			}
 			
-			var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
-			var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
-			handler.name = MODULE.form_name;
-			handler.uriTemplate = MODULE.form_url_template;
-			handlerInfoXPCOM.possibleApplicationHandlers.appendElement(handler, false);
 			
-			var pushObj = JSON.parse(JSON.stringify(mailtoServicesObjEntryTemplate));
-			pushObj.name = MODULE.form_name;
-			pushObj.url_template = MODULE.form_url_template;
-			pushObj.description = MODULE.form_description;
-			pushObj.color = MODULE.form_color;
-			pushObj.icon_dataurl = MODULE.form_img;
-			pushObj.group = 1;
-			pushObj.installed = true;
+			if (MODULE.editing_handler_id) {
+				// user wants edit
+				alert('user wants edit');
+				
+				var foundServiceEntry = false;
+				for (var i=0; i<MODULE.mailto_services.length; i++) {
+					if (MODULE.mailto_services[i].url_template == MODULE.editing_handler_id) {
+						foundServiceEntry = true;
+						break;
+					}
+				}
+				if (!foundServiceEntry) {
+					alert('error occured: could not find service entry for this service you are editing, this is bad, developer made an error, this should never happen');
+					throw new Error('error occured: could not find service entry for this service you are editing, this is bad, developer made an error, this should never happen');
+				}
+				if (MODULE.mailto_services[i].url_template != MODULE.form_url_template) {
+					MODULE.mailto_services[i].old_url_templates.push(MODULE.form_url_template);
+				}
+				
+				MODULE.mailto_services[i].url_template = MODULE.form_url_template;
+				MODULE.mailto_services[i].color = MODULE.form_color;
+				MODULE.mailto_services[i].icon_dataurl = MODULE.form_img;
+				MODULE.mailto_services[i].name = MODULE.form_name;
+				MODULE.mailto_services[i].description = MODULE.form_description;
+			} else {
+				// user wants add
+				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
+				var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
+				handler.name = MODULE.form_name;
+				handler.uriTemplate = MODULE.form_url_template;
+				handlerInfoXPCOM.possibleApplicationHandlers.appendElement(handler, false);
+				
+				var pushObj = JSON.parse(JSON.stringify(mailtoServicesObjEntryTemplate));
+				pushObj.name = MODULE.form_name;
+				pushObj.url_template = MODULE.form_url_template;
+				pushObj.description = MODULE.form_description;
+				pushObj.color = MODULE.form_color;
+				pushObj.icon_dataurl = MODULE.form_img;
+				pushObj.group = 1;
+				pushObj.installed = true;
+				
+				MODULE.mailto_services.push(pushObj);
+				
+				myServices.hs.store(handlerInfoXPCOM);
+			}			
 			
-			MODULE.mailto_services.push(pushObj);
-			
-			myServices.hs.store(handlerInfoXPCOM);
-			
-			
-			MODULE.form_name = '';
-			MODULE.form_url_template = '';
-			MODULE.form_description = '';
-			MODULE.form_img = '';
+			MODULE.form_name = null;
+			MODULE.form_url_template = null;
+			MODULE.form_description = null;
+			MODULE.form_img = null;
 			MODULE.form_color = defaultColor;
 			document.getElementById('pcolor').value = defaultColor;
+		};
+		
+		MODULE.clear_form = function(aEvent) {
+			if (aEvent.keyCode == 27) {
+				console.info('aEvent:', aEvent)
+				//alert('clearing form');
+				// user hit escape key
+				if (MODULE.editing_handler_id) {
+					// cancel edit
+					alert('cancelling edit');
+					MODULE.editing_handler_id = null;
+				} else if (MODULE.form_name || MODULE.form_url_template || MODULE.form_description || MODULE.form_img || MODULE.form_color != defaultColor) {
+					// clear form
+					alert('clearing form');
+					MODULE.form_name = '';
+					MODULE.form_url_template = '';
+					MODULE.form_description = '';
+					MODULE.form_img = '';
+					MODULE.form_color = defaultColor;
+					document.getElementById('pcolor').value = defaultColor;
+				}
+			}
 		};
 		
 		MODULE.choose_img = function() {

@@ -44,7 +44,7 @@
 		}
 		</style>
 	</head>
-	<body ng-controller="BodyController as BC">
+	<body ng-controller="BodyController as BC" ng-keypress="BC.clear_form($event)">
 		<div class="navbar">
 			<div class="navbar-inner">
 				<div class="container">
