@@ -113,7 +113,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				}
 				console.info('handlerInfoXPCOM.preferredApplicationHandler:', handlerInfoXPCOM.preferredApplicationHandler);
 				//console.info('intance of nsiwebapp', handlerInfoXPCOM.preferredApplicationHandler instanceof Ci.nsIWebHandlerApp)
-				if (handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
+				if (handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
 					// yes it was active, lets unset it
 					handlerInfoXPCOM.alwaysAskBeforeHandling = true;
 					handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice

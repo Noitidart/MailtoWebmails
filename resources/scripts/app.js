@@ -114,7 +114,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				}
 				console.info('handlerInfoXPCOM.preferredApplicationHandler:', handlerInfoXPCOM.preferredApplicationHandler);
 				//console.info('intance of nsiwebapp', handlerInfoXPCOM.preferredApplicationHandler instanceof Ci.nsIWebHandlerApp)
-				if (handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
+				if (handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
 					// yes it was active, lets unset it
 					handlerInfoXPCOM.alwaysAskBeforeHandling = true;
 					handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
@@ -175,6 +175,8 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 			MODULE.form_img = aServiceEntry.icon_dataurl;
 			MODULE.form_color = aServiceEntry.color;
 			document.getElementById('pcolor').value = aServiceEntry.color;
+			
+			window.location.hash = '#add_service';
 		};
 		
 		MODULE.form_color = defaultColor;
@@ -209,8 +211,17 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 					alert('error occured: could not find service entry for this service you are editing, this is bad, developer made an error, this should never happen');
 					throw new Error('error occured: could not find service entry for this service you are editing, this is bad, developer made an error, this should never happen');
 				}
+				
+				var ifInstalled_url_template = MODULE.mailto_services[i].url_template;
+				var uriTemplateUpdated = false;
+				var nameUpdated = false;
 				if (MODULE.mailto_services[i].url_template != MODULE.form_url_template) {
+					uriTemplateUpdated = true;
 					MODULE.mailto_services[i].old_url_templates.push(MODULE.form_url_template);
+				}
+				
+				if (MODULE.mailto_services[i].name != MODULE.form_name) {
+					nameUpdated = true;
 				}
 				
 				MODULE.mailto_services[i].url_template = MODULE.form_url_template;
@@ -219,7 +230,80 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				MODULE.mailto_services[i].name = MODULE.form_name;
 				MODULE.mailto_services[i].description = MODULE.form_description;
 				
+				MODULE.editing_handler_id = null;
+				
 				writeCleanedObjToDisk();
+				
+				// do work on firefox backend if name or url_template was updated
+				if (uriTemplateUpdated || nameUpdated) {
+					
+					var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
+					
+					// see if its installed
+					var isInstalled = false;
+					var isIntalledAtIndex = null;
+					var isActive = false;
+					var nHandlers = handlerInfoXPCOM.possibleApplicationHandlers.length;
+					for (var j=0; j<nHandlers; j++) {
+						var handlerQI = handlerInfoXPCOM.possibleApplicationHandlers.queryElementAt(j, Ci.nsIWebHandlerApp);
+						if (handlerQI.uriTemplate == ifInstalled_url_template) {
+							isInstalled = true;
+							isIntalledAtIndex = j;
+							console.warn('yes the edited handler was found installed');
+							
+							// check if it is active
+							console.info('handlerInfoXPCOM:', handlerInfoXPCOM);
+							if (handlerInfoXPCOM.preferredApplicationHandler) {
+								try {
+									handlerInfoXPCOM.preferredApplicationHandler.QueryInterface(Ci.nsIWebHandlerApp); // so it gets the uriTemplate property
+								} catch (ignore) {}
+							}
+							if (handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == ifInstalled_url_template) {
+								console.warn('yes edited handler was found active');
+								isActive = true;
+								// yes it was active, lets unset it
+								handlerInfoXPCOM.alwaysAskBeforeHandling = true;
+								handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
+								handlerInfoXPCOM.preferredApplicationHandler = null;
+							}
+
+							if (isInstalled) { // we are in the same for block so obviously its installed
+								// uninstall it
+								console.warn('uninstalling the edited handler');
+								handlerInfoXPCOM.possibleApplicationHandlers.removeElementAt(isIntalledAtIndex);
+								
+								console.warn('calling store for uninstalled handler');
+								myServices.hs.store(handlerInfoXPCOM);
+								
+								// install it back
+								console.warn('installing back the edited handler');
+								var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
+								handler.name = MODULE.mailto_services[i].name;
+								handler.uriTemplate = MODULE.mailto_services[i].url_template;
+								handlerInfoXPCOM.possibleApplicationHandlers.appendElement(handler, false);
+								
+								if (isActive) {
+									// set it back to active
+									console.warn('setting edited handler back to active');
+									handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
+									handlerInfoXPCOM.preferredApplicationHandler = handler;
+									handlerInfoXPCOM.alwaysAskBeforeHandling = false;
+								}
+								
+								console.warn('calling store for edited handler');
+								myServices.hs.store(handlerInfoXPCOM);
+							}
+							
+							break;
+						}
+					}
+					
+					if (!isInstalled) {
+						console.error('found that it was not installed so didnt do anything');
+					}
+				}
+
+				
 			} else {
 				// user wants add
 				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
