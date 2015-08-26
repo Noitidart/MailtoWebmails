@@ -58,7 +58,7 @@ gCFMM.sendAsyncMessage(core.addon.id, {aTopic:'clientRequest_adoptMeAndInit'});
 */
 
 const JETPACK_DIR_BASENAME = 'jetpack';
-const OSPath_installedServices = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage', 'pop_and_disc-installed_services.json');
+const OSPath_installedServices = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage', 'pop_or_stalled.json');
 
 var	ANG_APP = angular.module('mailtowebmails', [])
 	.config(['$sceDelegateProvider', function($sceDelegateProvider) {
@@ -149,6 +149,11 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 					}
 				}
 			}
+			
+			if (aServiceEntry.group != 0) {
+				writeCleanedObjToDisk(); // because if its a discovered one, then i want to remove from file on uninstall, and add to file on install
+			}
+			
 			myServices.hs.store(handlerInfoXPCOM);
 		};
 		
@@ -204,6 +209,8 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				MODULE.mailto_services[i].icon_dataurl = MODULE.form_img;
 				MODULE.mailto_services[i].name = MODULE.form_name;
 				MODULE.mailto_services[i].description = MODULE.form_description;
+				
+				writeCleanedObjToDisk();
 			} else {
 				// user wants add
 				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
@@ -222,6 +229,8 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				pushObj.installed = true;
 				
 				MODULE.mailto_services.push(pushObj);
+				
+				writeCleanedObjToDisk();
 				
 				myServices.hs.store(handlerInfoXPCOM);
 			}			
@@ -481,7 +490,7 @@ function tryUpdate() {
 							}
 						}
 						
-						// :todo: update OSPath_installedServices with the newly updated JSON.stringify(gAngScope.BC.mailto_services)
+						writeCleanedObjToDisk();
 					}
 				}			
 				
@@ -500,6 +509,48 @@ function tryUpdate() {
 		function(aCaught) {
 			var rejObj = {name:'promise_fetchUpdates', aCaught:aCaught};
 			console.error('Caught - promise_fetchUpdates - ', rejObj);
+			// deferred_createProfile.reject(rejObj);
+		}
+	);
+}
+
+function writeCleanedObjToDisk() {
+	// goes through ANG_APP.mailto_services and removes keys that are not needed for the file
+	// but before cleaning out these keys, it will first only take what is popular or installed for writing
+	
+	var arrOfPopOrInstalled = [];
+	for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
+		if (gAngScope.BC.mailto_services[i].group == 0 || gAngScope.BC.mailto_services[i].installed) {
+			var pushObj = {};
+			for (var p in mailtoServicesObjEntryTemplate) {
+				pushObj[p] = gAngScope.BC.mailto_services[i][p];
+			}
+			arrOfPopOrInstalled.push(pushObj);
+		}
+	}
+
+	var stringified = JSON.stringify(arrOfPopOrInstalled);
+	
+	var promise_overwrite = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + stringified, {
+		tmpPath: OSPath_installedServices + '.tmp',
+		encoding: 'utf-16',
+		noOverwrite: false
+	}], OS.Constants.Path.profileDir);
+	promise_overwrite.then(
+		function(aVal) {
+			console.log('Fullfilled - promise_overwrite - ', aVal);
+			// start - do stuff here - promise_overwrite
+			// end - do stuff here - promise_overwrite
+		},
+		function(aReason) {
+			var rejObj = {name:'promise_overwrite', aReason:aReason};
+			console.warn('Rejected - promise_overwrite - ', rejObj);
+			// deferred_createProfile.reject(rejObj);
+		}
+	).catch(
+		function(aCaught) {
+			var rejObj = {name:'promise_overwrite', aCaught:aCaught};
+			console.error('Caught - promise_overwrite - ', rejObj);
 			// deferred_createProfile.reject(rejObj);
 		}
 	);

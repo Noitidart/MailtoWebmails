@@ -57,7 +57,7 @@ gCFMM.sendAsyncMessage(core.addon.id, {aTopic:'clientRequest_adoptMeAndInit'});
 */
 
 const JETPACK_DIR_BASENAME = 'jetpack';
-const OSPath_installedServices = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage', 'pop_and_disc-installed_services.json');
+const OSPath_installedServices = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage', 'pop_or_stalled.json');
 
 var	ANG_APP = angular.module('mailtowebmails', [])
 	.config(['$sceDelegateProvider', function($sceDelegateProvider) {
@@ -148,6 +148,11 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 					}
 				}
 			}
+			
+			if (aServiceEntry.group != 0) {
+				writeCleanedObjToDisk(); // because if its a discovered one, then i want to remove from file on uninstall, and add to file on install
+			}
+			
 			myServices.hs.store(handlerInfoXPCOM);
 		};
 		
@@ -174,6 +179,27 @@ function doOnLoad() {
 	gAngInjector = gAngBody.injector();
 	
 	// :todo: while its reading we kick off getting the currently installed mailto handlers link9784703
+	var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-16'});
+	promise_readInstalledServices.then(
+		function(aVal) {
+			console.log('Fullfilled - promise_readInstalledServices - ', aVal);
+			// start - do stuff here - promise_readInstalledServices
+			gAngScope.BC.mailto_services = JSON.parse(aVal);
+			
+			// gAngScope.$digest(); no need for digest, as the only point of reading in the file for app_discover, is for writeCleanedObjToDisk
+		},
+		function(aReason) {
+			var rejObj = {name:'promise_readInstalledServices', aReason:aReason};
+			console.error('Rejected - promise_readInstalledServices - ', rejObj);
+			// deferred_createProfile.reject(rejObj);
+		}
+	).catch(
+		function(aCaught) {
+			var rejObj = {name:'promise_readInstalledServices', aCaught:aCaught};
+			console.error('Caught - promise_readInstalledServices - ', rejObj);
+			// deferred_createProfile.reject(rejObj);
+		}
+	);
 	
 	// check and get whats currently installed/active
 	var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
@@ -273,6 +299,49 @@ function tryUpdate() {
 		function(aCaught) {
 			var rejObj = {name:'promise_fetchUpdates', aCaught:aCaught};
 			console.error('Caught - promise_fetchUpdates - ', rejObj);
+			// deferred_createProfile.reject(rejObj);
+		}
+	);
+}
+
+
+function writeCleanedObjToDisk() {
+	// goes through ANG_APP.mailto_services and removes keys that are not needed for the file
+	// but before cleaning out these keys, it will first only take what is popular or installed for writing
+	
+	var arrOfPopOrInstalled = [];
+	for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
+		if (gAngScope.BC.mailto_services[i].group == 0 || gAngScope.BC.mailto_services[i].installed) {
+			var pushObj = {};
+			for (var p in mailtoServicesObjEntryTemplate) {
+				pushObj[p] = gAngScope.BC.mailto_services[i][p];
+			}
+			arrOfPopOrInstalled.push(pushObj);
+		}
+	}
+
+	var stringified = JSON.stringify(arrOfPopOrInstalled);
+	
+	var promise_overwrite = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + stringified, {
+		tmpPath: OSPath_installedServices + '.tmp',
+		encoding: 'utf-16',
+		noOverwrite: false
+	}], OS.Constants.Path.profileDir);
+	promise_overwrite.then(
+		function(aVal) {
+			console.log('Fullfilled - promise_overwrite - ', aVal);
+			// start - do stuff here - promise_overwrite
+			// end - do stuff here - promise_overwrite
+		},
+		function(aReason) {
+			var rejObj = {name:'promise_overwrite', aReason:aReason};
+			console.warn('Rejected - promise_overwrite - ', rejObj);
+			// deferred_createProfile.reject(rejObj);
+		}
+	).catch(
+		function(aCaught) {
+			var rejObj = {name:'promise_overwrite', aCaught:aCaught};
+			console.error('Caught - promise_overwrite - ', rejObj);
 			// deferred_createProfile.reject(rejObj);
 		}
 	);

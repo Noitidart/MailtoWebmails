@@ -243,7 +243,7 @@ const fsComServer = {
 	}
 }
 /*end - framescriptlistener*/
-const OSPath_installedServices = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage', 'pop_and_disc-installed_services.json');
+const OSPath_installedServices = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage', 'pop_or_stalled.json');
 const mailto_services_default = [ // installed and active are really unknown at this point
 	/*
 	{
@@ -373,6 +373,8 @@ function startup(aData, aReason) {
 	//fsComServer.register(core.addon.path.scripts + '_framescript-warn-on-submit.js');
 	//end framescriptlistener more
 	if ([ADDON_UPGRADE, ADDON_INSTALL, ADDON_DOWNGRADE].indexOf(aReason) > -1) {
+		
+		/*
 		var do_makeDirsToSimpleStorage = function() {
 			var promise_makeDirsToSimpleStorage = makeDir_Bug934283(OS.Path.dirname(OSPath_installedServices), {from:OS.Constants.Path.profileDir})
 			promise_makeDirsToSimpleStorage.then(
@@ -421,8 +423,32 @@ function startup(aData, aReason) {
 				}
 			);
 		};
-		
+
 		do_makeDirsToSimpleStorage();
+		*/
+		var promise_writeDefault = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(mailto_services_default), {
+			tmpPath: OSPath_installedServices + '.tmp',
+			encoding: 'utf-16',
+			noOverwrite: false
+		}], OS.Constants.Path.profileDir);
+		promise_writeDefault.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_writeDefault - ', aVal);
+				// start - do stuff here - promise_writeDefault
+				// end - do stuff here - promise_writeDefault
+			},
+			function(aReason) {
+				var rejObj = {name:'promise_writeDefault', aReason:aReason};
+				console.error('Rejected - promise_writeDefault - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_writeDefault', aCaught:aCaught};
+				console.error('Caught - promise_writeDefault - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+			}
+		);
 	}
 	
 	aboutFactory_mailto = new AboutFactory(AboutMailto);
