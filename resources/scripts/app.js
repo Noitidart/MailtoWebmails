@@ -173,8 +173,8 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 			MODULE.form_url_template = aServiceEntry.url_template;
 			MODULE.form_description = aServiceEntry.description;
 			MODULE.form_img = aServiceEntry.icon_dataurl;
-			MODULE.form_color = aServiceEntry.color;
-			document.getElementById('pcolor').value = aServiceEntry.color;
+			MODULE.form_color = aServiceEntry.color ? aServiceEntry.color : defaultColor;
+			document.getElementById('pcolor').value = aServiceEntry.color ? aServiceEntry.color : defaultColor;
 			
 			window.location.hash = '#add_service';
 		};

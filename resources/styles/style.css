@@ -63,6 +63,7 @@ a.hire-me {
 	-moz-border-radius: 40px;
 	border-radius: 40px;
 	transition: background-color 200ms;
+	white-space: nowrap;
 }
 a.hire-me:not(.edit-personal):hover {
 	text-decoration:none;
