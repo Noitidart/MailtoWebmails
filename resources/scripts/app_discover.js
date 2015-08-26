@@ -105,7 +105,15 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				// implement to firefox, to ask on next click, as this one was active
 				// ensure that this handler was active
 				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
-				if (handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
+				console.info('handlerInfoXPCOM:', handlerInfoXPCOM);
+				if (handlerInfoXPCOM.preferredApplicationHandler) {
+					try {
+						handlerInfoXPCOM.preferredApplicationHandler.QueryInterface(Ci.nsIWebHandlerApp); // so it gets the uriTemplate property
+					} catch (ignore) {}
+				}
+				console.info('handlerInfoXPCOM.preferredApplicationHandler:', handlerInfoXPCOM.preferredApplicationHandler);
+				//console.info('intance of nsiwebapp', handlerInfoXPCOM.preferredApplicationHandler instanceof Ci.nsIWebHandlerApp)
+				if (handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
 					// yes it was active, lets unset it
 					handlerInfoXPCOM.alwaysAskBeforeHandling = true;
 					handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
@@ -128,6 +136,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				handler.name = aServiceEntry.name;
 				handler.uriTemplate = aServiceEntry.url_template;
 				handlerInfoXPCOM.possibleApplicationHandlers.appendElement(handler, false);
+				toggleServiceFromFile(1, aServiceEntry);
 			} else {
 				var nHandlers = handlerInfoXPCOM.possibleApplicationHandlers.length;
 				for (var i=0; i<nHandlers; i++) {
@@ -147,12 +156,8 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 						break;
 					}
 				}
+				toggleServiceFromFile(0, aServiceEntry);
 			}
-			
-			if (aServiceEntry.group != 0) {
-				writeCleanedObjToDisk(); // because if its a discovered one, then i want to remove from file on uninstall, and add to file on install
-			}
-			
 			myServices.hs.store(handlerInfoXPCOM);
 		};
 		
@@ -177,29 +182,6 @@ function doOnLoad() {
 	var gAngBody = angular.element(document.body);
 	gAngScope = gAngBody.scope();
 	gAngInjector = gAngBody.injector();
-	
-	// :todo: while its reading we kick off getting the currently installed mailto handlers link9784703
-	var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-16'});
-	promise_readInstalledServices.then(
-		function(aVal) {
-			console.log('Fullfilled - promise_readInstalledServices - ', aVal);
-			// start - do stuff here - promise_readInstalledServices
-			gAngScope.BC.mailto_services = JSON.parse(aVal);
-			
-			// gAngScope.$digest(); no need for digest, as the only point of reading in the file for app_discover, is for writeCleanedObjToDisk
-		},
-		function(aReason) {
-			var rejObj = {name:'promise_readInstalledServices', aReason:aReason};
-			console.error('Rejected - promise_readInstalledServices - ', rejObj);
-			// deferred_createProfile.reject(rejObj);
-		}
-	).catch(
-		function(aCaught) {
-			var rejObj = {name:'promise_readInstalledServices', aCaught:aCaught};
-			console.error('Caught - promise_readInstalledServices - ', rejObj);
-			// deferred_createProfile.reject(rejObj);
-		}
-	);
 	
 	// check and get whats currently installed/active
 	var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
@@ -304,47 +286,111 @@ function tryUpdate() {
 	);
 }
 
-
-function writeCleanedObjToDisk() {
-	// goes through ANG_APP.mailto_services and removes keys that are not needed for the file
-	// but before cleaning out these keys, it will first only take what is popular or installed for writing
+function toggleServiceFromFile(aAddOrRemove, aServiceEntry) {
+	// set aAddOrRemove to 0 for removing, and to 1 for adding
+	// if 0 and not there, it wont do anything as its already not there - same goes for 1
+	var file_json;
 	
-	var arrOfPopOrInstalled = [];
-	for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
-		if (gAngScope.BC.mailto_services[i].group == 0 || gAngScope.BC.mailto_services[i].installed) {
-			var pushObj = {};
-			for (var p in mailtoServicesObjEntryTemplate) {
-				pushObj[p] = gAngScope.BC.mailto_services[i][p];
+	var do_readFile = function() {
+		var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-16'});
+		promise_readInstalledServices.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_readInstalledServices - ', aVal);
+				// start - do stuff here - promise_readInstalledServices
+				file_json = JSON.parse(aVal);
+
+				do_checkFileJson();
+				// end - do stuff here - promise_readInstalledServices
+			},
+			function(aReason) {
+				if (aReasonMax(aReason).becauseNoSuchFile) {
+					file_json = [];
+					do_checkFileJson();
+				} else {
+					var rejObj = {name:'promise_readInstalledServices', aReason:aReason};
+					console.error('Rejected - promise_readInstalledServices - ', rejObj);
+					// deferred_createProfile.reject(rejObj);
+				}
 			}
-			arrOfPopOrInstalled.push(pushObj);
-		}
-	}
-
-	var stringified = JSON.stringify(arrOfPopOrInstalled);
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_readInstalledServices', aCaught:aCaught};
+				console.error('Caught - promise_readInstalledServices - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+			}
+		);
+	};
 	
-	var promise_overwrite = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + stringified, {
-		tmpPath: OSPath_installedServices + '.tmp',
-		encoding: 'utf-16',
-		noOverwrite: false
-	}], OS.Constants.Path.profileDir);
-	promise_overwrite.then(
-		function(aVal) {
-			console.log('Fullfilled - promise_overwrite - ', aVal);
-			// start - do stuff here - promise_overwrite
-			// end - do stuff here - promise_overwrite
-		},
-		function(aReason) {
-			var rejObj = {name:'promise_overwrite', aReason:aReason};
-			console.warn('Rejected - promise_overwrite - ', rejObj);
-			// deferred_createProfile.reject(rejObj);
+	var do_checkFileJson = function() {
+		
+		var itFound = false;
+		var itUpdated = false;
+		for (var i=0; i<file_json.length; i++) {
+			if (file_json[i].url_template == aServiceEntry.url_template) {
+				itFound = true;
+				break;
+			}
 		}
-	).catch(
-		function(aCaught) {
-			var rejObj = {name:'promise_overwrite', aCaught:aCaught};
-			console.error('Caught - promise_overwrite - ', rejObj);
-			// deferred_createProfile.reject(rejObj);
+		
+		if (aAddOrRemove) {
+			// devuser wants add
+			if (itFound) {
+				// its already there, so do nothing
+			} else {
+				// add it
+				itUpdated = true;
+				var pushObj = {};
+				for (var p in mailtoServicesObjEntryTemplate) {
+					pushObj[p] = aServiceEntry[p];
+				}
+				file_json.push(pushObj);
+			}
+		} else {
+			// devuser wants remove
+			if (!itFound) {
+				// its already not there, so do nothing
+			} else {
+				// remove it
+				itUpdated = true;
+				file_json.splice(i, 1);
+			}
 		}
-	);
+		
+		if (itUpdated) {
+			do_writeUpdated();
+		}
+	};
+	
+	var do_writeUpdated = function() {
+		// only called if json was updated
+		var stringified = JSON.stringify(file_json);
+		
+		var promise_overwrite = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + stringified, {
+			tmpPath: OSPath_installedServices + '.tmp',
+			encoding: 'utf-16',
+			noOverwrite: false
+		}], OS.Constants.Path.profileDir);
+		promise_overwrite.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_overwrite - ', aVal);
+				// start - do stuff here - promise_overwrite
+				// end - do stuff here - promise_overwrite
+			},
+			function(aReason) {
+				var rejObj = {name:'promise_overwrite', aReason:aReason};
+				console.warn('Rejected - promise_overwrite - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_overwrite', aCaught:aCaught};
+				console.error('Caught - promise_overwrite - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+			}
+		);
+	};
+	
+	do_readFile();
 }
 
 document.addEventListener('DOMContentLoaded', doOnLoad, false);
