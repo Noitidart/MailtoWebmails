@@ -42,6 +42,7 @@ const userBasedProps = {
 	updated: 1,
 	new: 1
 };
+const myPrefBranch = 'extensions.' + core.addon.id + '.';
 /*
 var runit = 'asdfasdf';
 while (runit != '') {
@@ -59,6 +60,7 @@ gCFMM.sendAsyncMessage(core.addon.id, {aTopic:'clientRequest_adoptMeAndInit'});
 
 const JETPACK_DIR_BASENAME = 'jetpack';
 const OSPath_installedServices = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage', 'pop_or_stalled.json');
+const OSPath_pendingSubmit = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage', 'pendingSubmit.bool');
 
 var	ANG_APP = angular.module('mailtowebmails', [])
 	.config(['$sceDelegateProvider', function($sceDelegateProvider) {
@@ -229,10 +231,13 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				MODULE.mailto_services[i].icon_dataurl = MODULE.form_img;
 				MODULE.mailto_services[i].name = MODULE.form_name;
 				MODULE.mailto_services[i].description = MODULE.form_description;
+				MODULE.mailto_services[i].submit = 2; // 1 for add, 2 for edit
+				MODULE.mailto_services[i].update_time++;
 				
 				MODULE.editing_handler_id = null;
 				
 				writeCleanedObjToDisk();
+				markPendingServerSubmit();
 				
 				// do work on firefox backend if name or url_template was updated
 				if (uriTemplateUpdated || nameUpdated) {
@@ -320,10 +325,11 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				pushObj.icon_dataurl = MODULE.form_img;
 				pushObj.group = 1;
 				pushObj.installed = true;
-				
+				pushObj.submit = 1; // 1 for add, 2 for edit
 				MODULE.mailto_services.push(pushObj);
 				
 				writeCleanedObjToDisk();
+				markPendingServerSubmit();
 				
 				myServices.hs.store(handlerInfoXPCOM);
 			}			
@@ -624,6 +630,9 @@ function writeCleanedObjToDisk() {
 			for (var p in mailtoServicesObjEntryTemplate) {
 				pushObj[p] = gAngScope.BC.mailto_services[i][p];
 			}
+			if ('submit' in gAngScope.BC.mailto_services[i]) {
+				pushObj.submit = gAngScope.BC.mailto_services[i].submit; // because submit is not a required key it is not in the mailtoServicesObjEntryTemplate so i check and add it in
+			}
 			arrOfPopOrInstalled.push(pushObj);
 		}
 	}
@@ -653,6 +662,34 @@ function writeCleanedObjToDisk() {
 			// deferred_createProfile.reject(rejObj);
 		}
 	);
+}
+
+const serverSubmitInterval = 5; // in minutes
+const serverSubmitIntervalMS = serverSubmitInterval * 60 * 1000;
+function markPendingServerSubmit() {
+	/*
+	tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_pendingSubmit, new Uint8Array(), {
+		noOverwrite: true
+	}], OS.Constants.Path.profileDir);
+	*/
+	var cPrefVal;
+	try {
+		cPrefVal = Services.prefs.getCharPref(myPrefBranch + 'pending_submit');
+	} catch(ex) {
+		// pref probably doesnt exist
+		cPrefVal = undefined;
+	}
+	if (cPrefVal === undefined) {
+		console.error('sending cfmm message to bootstrap');
+		Services.prefs.setCharPref(myPrefBranch + 'pending_submit', (new Date().getTime() - serverSubmitIntervalMS)); // note: this pref holds last time (in ms) tried, it will try every 5 minutes till submits
+		// :todo: notify bootstrap checkIfShouldSubmit()
+		var CFMM = contentMMFromContentWindow_Method2(window);
+		console.info('CFMM:', CFMM);
+		CFMM.sendAsyncMessage(core.addon.id, {aTopic:core.addon.id + '::' + 'notifyBootstrapThereIsPossibleServerSubmitPending'});
+	} else {
+		// else assume that its already running
+		console.error('cprefval is not undefined so will not send message to bootstrap as im assuming its already in a timer for checking if updated');
+	}
 }
 
 document.addEventListener('DOMContentLoaded', doOnLoad, false);

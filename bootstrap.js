@@ -34,6 +34,17 @@ const core = {
 };
 
 const JETPACK_DIR_BASENAME = 'jetpack';
+const myPrefBranch = 'extensions.' + core.addon.id + '.';
+const mailtoServicesObjEntryTemplate = {
+	name: '',
+	url_template: '',
+	old_url_templates: [],
+	description: '',
+	icon_dataurl: '',
+	color: '',
+	group: 1,
+	update_time: 0
+};
 
 // Lazy Imports
 const myServices = {};
@@ -142,6 +153,7 @@ function AboutFactory(component) {
 // END - Addon Functionalities
 
 /*start - framescriptlistener*/
+/*
 const fsComServer = {
 	aArrClientIds: [], // holds ids of registered clients
 	fsUrl: '', //string of the randomized fsUrl
@@ -177,7 +189,7 @@ const fsComServer = {
 		}
 		
 		fsComServer.registered = true;
-		fsComServer.fsUrl = fsComServer.devuserSpecifiedFsUrl + '?' + Math.random(); /* Randomize URI to work around bug 1051238 - otherwise it will be a cached version*/
+		fsComServer.fsUrl = fsComServer.devuserSpecifiedFsUrl + '?' + core.addon.cache_key;
 		Services.mm.loadFrameScript(fsComServer.fsUrl, true);
 	},
 	unregister: function() {
@@ -242,6 +254,7 @@ const fsComServer = {
 		}
 	}
 }
+*/
 /*end - framescriptlistener*/
 const OSPath_installedServices = OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id, 'simple-storage', 'pop_or_stalled.json');
 const mailto_services_default = [ // installed and active are really unknown at this point
@@ -356,12 +369,231 @@ const mailto_services_default = [ // installed and active are really unknown at 
 	}
 	*/
 ];
+
+const serverSubmitInterval = 5; // in minutes
+const serverSubmitIntervalMS = serverSubmitInterval * 60 * 1000;
+var gServerSubmitTimer = {
+	instance: null,
+	running: false,
+	callback: {
+		notify: function() {
+			console.log('triggered notif callback');
+			gServerSubmitTimer.running = false;
+			checkIfShouldSubmit();
+		}
+	}
+}
+
+function checkIfShouldSubmit() {
+	// called by messagemanager from about:mailto informing bootstrap there is a possible edit/add to submit to server
+	// this function checks if it has already checked in last X min, if it hasnt then it will check the pref, then see if it hasnt submit in the last X min, it will then try to submit, if it fails it will set up a timer to try again in X min, if it succeeds it will delete the pref
+	var cPrefVal;
+	try {
+		cPrefVal = parseInt(Services.prefs.getCharPref(myPrefBranch + 'pending_submit'));
+	} catch(ex) {
+		// pref probably doesnt exist
+		cPrefVal = undefined;
+	}
+	if (cPrefVal === undefined) {
+		// no need, so if timer was running dont renew it
+		if (gServerSubmitTimer.instance) { // equivalent of testing gServerSubmitTimer.running
+			gServerSubmitTimer.instance.cancel();
+			gServerSubmitTimer.instance = null;
+		}
+		gServerSubmitTimer.running = false;
+	} else {
+		// need to maybe submit, or need to just wait as timer is running
+		var nowTime = new Date().getTime();
+		if (nowTime - cPrefVal >= serverSubmitIntervalMS) {
+			if (gServerSubmitTimer.running) {
+				gServerSubmitTimer.instance.cancel();
+				gServerSubmitTimer.running = false;
+			}
+			// attempt submit
+			Services.prefs.setCharPref(myPrefBranch + 'pending_submit', new Date().getTime()); // set it now, in case someone else sends a message to do server update, but the server upate process is already in process
+			readFile_ifNeedSubmit_doSubmit_onFail_startTimer();
+		} else {
+			console.info('its been since last server submit:', (nowTime - cPrefVal), 'which is not >= serverSubmitInterval:', serverSubmitIntervalMS);
+			// start timer if it wasnt running
+			if (!gServerSubmitTimer.running) { // equivalent of testing gServerSubmitTimer.running
+				reKickOffServerSubmitTimer();
+			} // else assume its already running
+		}
+	}
+}
+
+function reKickOffServerSubmitTimer() {
+	// start timer, if it was already running, it restarts it for another serverSubmitIntervalMS
+	console.error('restarting timer');
+	if (!gServerSubmitTimer.instance) { // equivalent of testing gServerSubmitTimer.running
+		gServerSubmitTimer.instance = Cc['@mozilla.org/timer;1'].createInstance(Ci.nsITimer);
+	}
+	if (gServerSubmitTimer.running) {
+		gServerSubmitTimer.instance.cancel();
+		gServerSubmitTimer.running = false;
+	}
+	gServerSubmitTimer.running = true;
+	gServerSubmitTimer.instance.initWithCallback(gServerSubmitTimer.callback, serverSubmitIntervalMS, Ci.nsITimer.TYPE_ONE_SHOT);
+}
+
+function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
+
+	var fileJson = [];
+	var submitJson = [];
+	
+	var step1 = function() {
+		// read file
+		var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-16'});
+		promise_readInstalledServices.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_readInstalledServices - ', aVal);
+				// start - do stuff here - promise_readInstalledServices
+				fileJson = JSON.parse(aVal);
+				step2();
+				// end - do stuff here - promise_readInstalledServices
+			},
+			function(aReason) {
+				var rejObj = {name:'promise_readInstalledServices', aReason:aReason};
+				console.warn('Rejected - promise_readInstalledServices - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+				console.warn('re kicking off timer');
+				reKickOffServerSubmitTimer();
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_readInstalledServices', aCaught:aCaught};
+				console.error('Caught - promise_readInstalledServices - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+			}
+		);
+	};
+	
+	var step2 = function() {
+		// check if file holds anything needing submit
+			// .submit == 1 == add
+			// .submit == 2 == edit
+		submitJson = []; // time is determined on server side
+		for (var i=0; i<fileJson.length; i++) {
+			if ('submit' in fileJson[i]) {
+				var pushObj = {};
+				for (var p in mailtoServicesObjEntryTemplate) {
+					pushObj[p] = fileJson[i][p];
+				}
+				delete fileJson[i].submit;
+				submitJson.push(pushObj);
+			}
+		}
+		
+		if (submitJson.length > 0) {
+			step3()
+		} else {
+			// if nothing, then clear the pref, destroy the timer
+			console.warn('nothing in submitJson, destory timer nad clear pref');
+			Services.prefs.clearUserPref(myPrefBranch + 'pending_submit');
+			gServerSubmitTimer.instance = null;
+		}
+	};
+	
+	var step3 = function() {
+		// if step2 decides server submit is needed, then this does the xhr
+			// and on fail it will resetup timer
+			// or on success it will delete timer AND clear pref AND update fileJson AND write it to disk
+		console.info('submitting json:', submitJson);
+		var promise_submitToServer = xhr('http://mailtowebmails.site40.net/ajax/submit_edit_or_new.php', {
+			aResponseType: 'json',
+			aPostData: {
+				json: JSON.stringify(submitJson)
+			},
+			Headers: {
+				'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+			},
+			aTimeout: 30000 // 30s
+		});
+		promise_submitToServer.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_submitToServer - ', aVal);
+				// start - do stuff here - promise_submitToServer
+				if (aVal && aVal.status && aVal.status == 'ok) {
+					step4();
+				} else {
+					console.error('submission failed, re-kick');
+					reKickOffServerSubmitTimer();
+				}
+				// end - do stuff here - promise_submitToServer
+			},
+			function(aReason) {
+				var rejObj = {name:'promise_submitToServer', aReason:aReason};
+				console.warn('Rejected - promise_submitToServer - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+				reKickOffServerSubmitTimer();
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_submitToServer', aCaught:aCaught};
+				console.error('Caught - promise_submitToServer - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+			}
+		);
+	};
+	
+	var step4 = function() {
+		// wrap up on success
+		// clear the pref, destroy the timer, and update to file that no more submits pending
+		Services.prefs.clearUserPref(myPrefBranch + 'pending_submit');
+		gServerSubmitTimer.instance = null;
+		
+		var promise_updateFile = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(fileJson), {
+			tmpPath: OSPath_installedServices + '.tmp',
+			encoding: 'utf-16',
+			noOverwrite: false
+		}], OS.Constants.Path.profileDir);
+		promise_updateFile.then(
+			function(aVal) {
+				console.log('Fullfilled - promise_updateFile - ', aVal);
+				// start - do stuff here - promise_updateFile
+				// end - do stuff here - promise_updateFile
+			},
+			function(aReason) {
+				var rejObj = {name:'promise_updateFile', aReason:aReason};
+				console.error('Rejected - promise_updateFile - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+			}
+		).catch(
+			function(aCaught) {
+				var rejObj = {name:'promise_updateFile', aCaught:aCaught};
+				console.error('Caught - promise_updateFile - ', rejObj);
+				// deferred_createProfile.reject(rejObj);
+			}
+		);
+	};
+	
+	step1();
+}
+
+var gClientMessageListener = {
+	receiveMessage: function(aMsg) {
+		console.error('SERVER recieving msg:', aMsg);
+		switch (aMsg.json.aTopic) {
+			case core.addon.id + '::' + 'notifyBootstrapThereIsPossibleServerSubmitPending':
+					
+					checkIfShouldSubmit();
+					
+				break;
+			default:
+				console.error('SERVER unrecognized aTopic:', aMsg.json.aTopic, aMsg);
+		}
+	}
+}
+
 function install() {}
 function uninstall(aData, aReason) {
 	if (aReason == ADDON_UNINSTALL) {
 		
 		// delete simple storage
 		OS.File.remove(OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id));
+		
+		// delete pref if it was there
+		Services.prefs.clearUserPref(myPrefBranch + 'pending_submit');
 	}
 }
 
@@ -435,6 +667,7 @@ function startup(aData, aReason) {
 			function(aVal) {
 				console.log('Fullfilled - promise_writeDefault - ', aVal);
 				// start - do stuff here - promise_writeDefault
+				checkIfShouldSubmit(); // :debug:
 				// end - do stuff here - promise_writeDefault
 			},
 			function(aReason) {
@@ -449,20 +682,33 @@ function startup(aData, aReason) {
 				// deferred_createProfile.reject(rejObj);
 			}
 		);
+	} else {
+		checkIfShouldSubmit(); // check if pending submit from last addon/browser session
 	}
 	
 	aboutFactory_mailto = new AboutFactory(AboutMailto);
+	
+	Services.mm.addMessageListener(core.addon.id, gClientMessageListener);
+	
 }
 
 function shutdown(aData, aReason) {
 	if (aReason == APP_SHUTDOWN) { return }
 
 	//framescriptlistener more
-	fsComServer.unregister();
+	// fsComServer.unregister();
 	//end framescriptlistener more
+
+	Services.mm.removeMessageListener(core.addon.id, gClientMessageListener);
 	
 	// an issue with this unload is that framescripts are left over, i want to destory them eventually
 	aboutFactory_mailto.unregister();
+	
+	if (gServerSubmitTimer.instance) { // equivalent of testing gServerSubmitTimer.running
+		gServerSubmitTimer.instance.cancel();
+		gServerSubmitTimer.instance = null;
+		gServerSubmitTimer.running = false;
+	}
 }
 
 // start - common helper functions
@@ -712,6 +958,52 @@ function getTxtEncodr() {
 	}
 	return txtEncodr;
 }
+function read_encoded(path, options) {
+	// because the options.encoding was introduced only in Fx30, this function enables previous Fx to use it
+	// must pass encoding to options object, same syntax as OS.File.read >= Fx30
+	// TextDecoder must have been imported with Cu.importGlobalProperties(['TextDecoder']);
+	
+	var deferred_read_encoded = new Deferred();
+	
+	if (options && !('encoding' in options)) {
+		deferred_read_encoded.reject('Must pass encoding in options object, otherwise just use OS.File.read');
+		return deferred_read_encoded.promise;
+	}
+	
+	if (options && Services.vc.compare(Services.appinfo.version, 30) < 0) { // tests if version is less then 30
+		//var encoding = options.encoding; // looks like i dont need to pass encoding to TextDecoder, not sure though for non-utf-8 though
+		delete options.encoding;
+	}
+	var promise_readIt = OS.File.read(path, options);
+	
+	promise_readIt.then(
+		function(aVal) {
+			console.log('Fullfilled - promise_readIt - ', {a:{a:aVal}});
+			// start - do stuff here - promise_readIt
+			var readStr;
+			if (Services.vc.compare(Services.appinfo.version, 30) < 0) { // tests if version is less then 30
+				readStr = getTxtDecodr().decode(aVal); // Convert this array to a text
+			} else {
+				readStr = aVal;
+			}
+			deferred_read_encoded.resolve(readStr);
+			// end - do stuff here - promise_readIt
+		},
+		function(aReason) {
+			var rejObj = {name:'promise_readIt', aReason:aReason};
+			console.error('Rejected - promise_readIt - ', rejObj);
+			deferred_read_encoded.reject(rejObj);
+		}
+	).catch(
+		function(aCaught) {
+			var rejObj = {name:'promise_readIt', aCaught:aCaught};
+			console.error('Caught - promise_readIt - ', rejObj);
+			deferred_read_encoded.reject(rejObj);
+		}
+	);
+	
+	return deferred_read_encoded.promise;
+}
 function Deferred() {
 	// update 062115 for typeof
 	if (typeof(Promise) != 'undefined' && Promise.defer) {
@@ -748,5 +1040,154 @@ function Deferred() {
 		}.bind(this));
 		Object.freeze(this);
 	}
+}
+function xhr(aStr, aOptions={}) {
+	// update 082115 - was not listening to timeout event, added that in
+	// update on 082015 - fixed that aTimeout was not setting right
+	// update 072615 - added support for aOptions.aMethod
+	// currently only setup to support GET and POST
+	// does an async request
+	// aStr is either a string of a FileURI such as `OS.Path.toFileURI(OS.Path.join(OS.Constants.Path.desktopDir, 'test.png'));` or a URL such as `http://github.com/wet-boew/wet-boew/archive/master.zip`
+	// Returns a promise
+		// resolves with xhr object
+		// rejects with object holding property "xhr" which holds the xhr object
+	
+	/*** aOptions
+	{
+		aLoadFlags: flags, // https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/NsIRequest#Constants
+		aTiemout: integer (ms)
+		isBackgroundReq: boolean, // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#Non-standard_properties
+		aResponseType: string, // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#Browser_Compatibility
+		aPostData: string
+	}
+	*/
+	
+	var aOptions_DEFAULT = {
+		aLoadFlags: Ci.nsIRequest.LOAD_ANONYMOUS | Ci.nsIRequest.LOAD_BYPASS_CACHE | Ci.nsIRequest.INHIBIT_PERSISTENT_CACHING,
+		aPostData: null,
+		aResponseType: 'text',
+		isBackgroundReq: true, // If true, no load group is associated with the request, and security dialogs are prevented from being shown to the user
+		aTimeout: 0, // 0 means never timeout, value is in milliseconds
+		Headers: null
+	}
+	
+	for (var opt in aOptions_DEFAULT) {
+		if (!(opt in aOptions)) {
+			aOptions[opt] = aOptions_DEFAULT[opt];
+		}
+	}
+	
+	// Note: When using XMLHttpRequest to access a file:// URL the request.status is not properly set to 200 to indicate success. In such cases, request.readyState == 4, request.status == 0 and request.response will evaluate to true.
+	
+	var deferredMain_xhr = new Deferred();
+	console.log('here222');
+	var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
+
+	var handler = ev => {
+		evf(m => xhr.removeEventListener(m, handler, !1));
+
+		switch (ev.type) {
+			case 'load':
+			
+					if (xhr.readyState == 4) {
+						if (xhr.status == 200) {
+							deferredMain_xhr.resolve(xhr);
+						} else {
+							var rejObj = {
+								name: 'deferredMain_xhr.promise',
+								aReason: 'Load Not Success', // loaded but status is not success status
+								xhr: xhr,
+								message: xhr.statusText + ' [' + ev.type + ':' + xhr.status + ']'
+							};
+							deferredMain_xhr.reject(rejObj);
+						}
+					} else if (xhr.readyState == 0) {
+						var uritest = Services.io.newURI(aStr, null, null);
+						if (uritest.schemeIs('file')) {
+							deferredMain_xhr.resolve(xhr);
+						} else {
+							var rejObj = {
+								name: 'deferredMain_xhr.promise',
+								aReason: 'Load Failed', // didnt even load
+								xhr: xhr,
+								message: xhr.statusText + ' [' + ev.type + ':' + xhr.status + ']'
+							};
+							deferredMain_xhr.reject(rejObj);
+						}
+					}
+					
+				break;
+			case 'abort':
+			case 'error':
+			case 'timeout':
+				
+					var rejObj = {
+						name: 'deferredMain_xhr.promise',
+						aReason: ev.type[0].toUpperCase() + ev.type.substr(1),
+						xhr: xhr,
+						message: xhr.statusText + ' [' + ev.type + ':' + xhr.status + ']'
+					};
+					deferredMain_xhr.reject(rejObj);
+				
+				break;
+			default:
+				var rejObj = {
+					name: 'deferredMain_xhr.promise',
+					aReason: 'Unknown',
+					xhr: xhr,
+					message: xhr.statusText + ' [' + ev.type + ':' + xhr.status + ']'
+				};
+				deferredMain_xhr.reject(rejObj);
+		}
+	};
+
+	var evf = f => ['load', 'error', 'abort', 'timeout'].forEach(f);
+	evf(m => xhr.addEventListener(m, handler, false));
+
+	if (aOptions.isBackgroundReq) {
+		xhr.mozBackgroundRequest = true;
+	}
+	
+	if (aOptions.aTimeout) {
+		console.error('setting timeout to:', aOptions.aTimeout)
+		xhr.timeout = aOptions.aTimeout;
+	}
+	
+	var do_setHeaders = function() {
+		if (aOptions.Headers) {
+			for (var h in aOptions.Headers) {
+				xhr.setRequestHeader(h, aOptions.Headers[h]);
+			}
+		}
+	};
+	
+	if (aOptions.aPostData) {
+		xhr.open('POST', aStr, true);
+		do_setHeaders();
+		xhr.channel.loadFlags |= aOptions.aLoadFlags;
+		xhr.responseType = aOptions.aResponseType;
+		
+		/*
+		var aFormData = Cc['@mozilla.org/files/formdata;1'].createInstance(Ci.nsIDOMFormData);
+		for (var pd in aOptions.aPostData) {
+			aFormData.append(pd, aOptions.aPostData[pd]);
+		}
+		xhr.send(aFormData);
+		*/
+		var aPostStr = [];
+		for (var pd in aOptions.aPostData) {
+			aPostStr.push(pd + '=' + encodeURIComponent(aOptions.aPostData[pd])); // :todo: figure out if should encodeURIComponent `pd` also figure out if encodeURIComponent is the right way to do this
+		}
+		console.info('aPostStr:', aPostStr.join('&'));
+		xhr.send(aPostStr.join('&'));
+	} else {
+		xhr.open(aOptions.aMethod ? aOptions.aMethod : 'GET', aStr, true);
+		do_setHeaders();
+		xhr.channel.loadFlags |= aOptions.aLoadFlags;
+		xhr.responseType = aOptions.aResponseType;
+		xhr.send(null);
+	}
+	
+	return deferredMain_xhr.promise;
 }
 // end - common helper functions
