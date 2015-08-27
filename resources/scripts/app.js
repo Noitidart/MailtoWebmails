@@ -516,17 +516,18 @@ function retryUpdate() {
 
 function tryUpdate() {
 	var postJson = {
-		latestUpdateTime: 0,
-		discoveredServices: []
+		latestPopUpdateTime: 0,
+		discoveredServices: {}
 	};
 	for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
-		if (gAngScope.BC.mailto_services[i].group == 0 && gAngScope.BC.mailto_services[i].update_time > postJson.latestUpdateTime) {
-			postJson.latestUpdateTime = gAngScope.BC.mailto_services[i].update_time;
+		if (gAngScope.BC.mailto_services[i].group == 0 && gAngScope.BC.mailto_services[i].update_time > postJson.latestPopUpdateTime) {
+			postJson.latestPopUpdateTime = gAngScope.BC.mailto_services[i].update_time;
 		}
 		if (gAngScope.BC.mailto_services[i].group == 1) {
-			postJson.discoveredServices.push(gAngScope.BC.mailto_services[i].url_template);
+			postJson.discoveredServices[gAngScope.BC.mailto_services[i].url_template] = gAngScope.BC.mailto_services[i].update_time; // :todo: keep checking, what if updte_time is undefined? ensure it goes through as 0, right now i think it will always defalut to 0 so thats why i dont do a tertiary here
 		}
 	}
+	console.info('postJson:', postJson);
 	var promise_fetchUpdates = xhr('http://mailtowebmails.site40.net/ajax/fetch_updates.php', {
 		aResponseType: 'json',
 		aPostData: {
@@ -552,21 +553,14 @@ function tryUpdate() {
 				if (aVal.response.status != 'ok') {
 					gAngScope.BC.attn_msg = gAngInjector.get('$sce').trustAsHtml(aVal.response.reason);
 				} else {
-					if (aVal.response.num_handlers_updated > 0) { // num_handlers_updated is really POSSIBLY updated, because it may be that user went to discover page first, and installed some brand new custom handler which has update_time like NOW NOW, and then latest update time of popular was before this, but some new popular services were added
+					if (aVal.response.num_handlers_updated > 0) {
 						// :todo: update mailto_services, if find any that are alreayd installed were updated, then update it. (:todo: consider if any installed were deleted then move it to social maybe)
 						for (var updated_url_template in responseJson.social_handlers) {
 							var updated_url_template_found = false; // if after loop its found, then this is newly inserted
-							var not_really_updated = false;
 							for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
 								var user_url_template = gAngScope.BC.mailto_services[i].url_template;
 								if (user_url_template == updated_url_template || gAngScope.BC.mailto_services[i].old_url_templates.indexOf(updated_url_template) > -1) {
 									updated_url_template_found = true;
-									if (gAngScope.BC.mailto_services[i].update_time < responseJson.social_handlers[updated_url_template].update_time) {
-										// yes was really updated
-									} else {
-										// was not really updated, but this is possible for non-popular, because i fetched by latest update_time of popular services
-										not_really_updated = true;
-									}
 									// update user properties, and record what was updated so i can show in gui
 									gAngScope.BC.mailto_services[i].updated = {};
 									for (var possibly_updated_p in responseJson.social_handlers[updated_url_template]) {
@@ -585,10 +579,6 @@ function tryUpdate() {
 									
 									break;
 								}
-							}
-							if (not_really_updated) {
-								console.warn('url_template of was not really updated, so do nothing on this guy, url_template is:', updated_url_template);
-								continue;
 							}
 							console.error('updated_url_template_found:', updated_url_template_found, updated_url_template);
 							if (!updated_url_template_found) {
