@@ -513,7 +513,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			function(aVal) {
 				console.log('Fullfilled - promise_submitToServer - ', aVal);
 				// start - do stuff here - promise_submitToServer
-				if (aVal && aVal.status && aVal.status == 'ok) {
+				if (aVal && aVal.status && aVal.status == 'ok') {
 					step4();
 				} else {
 					console.error('submission failed, re-kick');
