@@ -502,7 +502,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 		var promise_submitToServer = xhr('http://mailtowebmails.site40.net/ajax/submit_edit_or_new.php', {
 			aResponseType: 'json',
 			aPostData: {
-				json: JSON.stringify(submitJson)
+				json: encodeURIComponent(JSON.stringify(submitJson))
 			},
 			Headers: {
 				'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
@@ -513,7 +513,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			function(aVal) {
 				console.log('Fullfilled - promise_submitToServer - ', aVal);
 				// start - do stuff here - promise_submitToServer
-				if (aVal && aVal.status && aVal.status == 'ok') {
+				if (aVal && aVal.response && aVal.response.status && aVal.response.status == 'ok') {
 					step4();
 				} else {
 					console.error('submission failed, re-kick');
@@ -1177,9 +1177,11 @@ function xhr(aStr, aOptions={}) {
 		var aPostStr = [];
 		for (var pd in aOptions.aPostData) {
 			aPostStr.push(pd + '=' + encodeURIComponent(aOptions.aPostData[pd])); // :todo: figure out if should encodeURIComponent `pd` also figure out if encodeURIComponent is the right way to do this
+			console.info(aPostStr[aPostStr.length-1]);
 		}
-		console.info('aPostStr:', aPostStr.join('&'));
-		xhr.send(aPostStr.join('&'));
+		aPostStr = aPostStr.join('&');
+		console.info('aPostStr:', aPostStr);
+		xhr.send(aPostStr);
 	} else {
 		xhr.open(aOptions.aMethod ? aOptions.aMethod : 'GET', aStr, true);
 		do_setHeaders();
