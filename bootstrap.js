@@ -280,7 +280,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-aolmail.png',
 		color: 'rgb(255, 204, 0)',
 		group: 0,
-		update_time: 0
+		update_time: 1
 	},
 	/*
 	{
@@ -295,14 +295,14 @@ const mailto_services_default = [ // installed and active are really unknown at 
 	},
 	*/
 	{
-		name: 'GMail',
+		name: 'Gmail',
 		url_template: 'https://mail.google.com/mail/?extsrc=mailto&url=%s',
 		old_url_templates: [],
-		description: 'The GMail handler comes installed by default with Firefox',
+		description: 'The Gmail handler comes installed by default with Firefox',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-gmail2.png',
 		color: 'rgb(235, 42, 46)',
 		group: 0,
-		update_time: 0
+		update_time: 1
 	},
 	/*
 	{
@@ -312,7 +312,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-lycos.png',
 		color: 'rgb(68, 86, 127)',
 		group: 1,
-		update_time: 0
+		update_time: 1
 	},
 	*/
 	{
@@ -323,7 +323,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-outlook.png',
 		color: 'rgb(0, 115, 198)',
 		group: 0,
-		update_time: 0
+		update_time: 1
 	},
 	{
 		name: 'QQ\u90ae\u7bb1 (QQMail)',
@@ -333,7 +333,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-qq.png',
 		color: 'rgb(255, 102, 0)',
 		group: 0,
-		update_time: 0
+		update_time: 1
 	},
 	{
 		name: 'Yahoo! Mail',
@@ -343,7 +343,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-y!mail3.png',
 		color: 'rgb(65, 2, 143)',
 		group: 0,
-		update_time: 0
+		update_time: 1
 	},
 	{
 		name: 'Yandex.Mail',
@@ -353,7 +353,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-yandex.png',
 		color: 'rgb(223, 78, 44)',
 		group: 0,
-		update_time: 0
+		update_time: 1
 	},
 	/*
 	{
@@ -365,7 +365,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 		icon_imugr_url: null,
 		color: 'rgb(36, 160, 68)',
 		group: 1,
-		update_time: 0
+		update_time: 1
 	}
 	*/
 ];

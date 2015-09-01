@@ -219,7 +219,11 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				var nameUpdated = false;
 				if (MODULE.mailto_services[i].url_template != MODULE.form_url_template) {
 					uriTemplateUpdated = true;
-					MODULE.mailto_services[i].old_url_templates.push(MODULE.form_url_template);
+					if (!('submit' in MODULE.mailto_services[i])) {
+						// as if submit == 1, then we just want to update the url_template
+						// if submit == 2, then it was last edited, so that hasnt reached server yet, so just update the url_template
+						MODULE.mailto_services[i].old_url_templates.push(MODULE.form_url_template);
+					}
 				}
 				
 				if (MODULE.mailto_services[i].name != MODULE.form_name) {
@@ -231,7 +235,11 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				MODULE.mailto_services[i].icon_dataurl = MODULE.form_img;
 				MODULE.mailto_services[i].name = MODULE.form_name;
 				MODULE.mailto_services[i].description = MODULE.form_description;
-				MODULE.mailto_services[i].submit = 2; // 1 for add, 2 for edit
+				if ('submit' in MODULE.mailto_services[i] && MODULE.mailto_services[i].submit == 1) {
+					// do nothing as its an add, but hasnt been added to server yet
+				} else {
+					MODULE.mailto_services[i].submit = 2; // 1 for add, 2 for edit
+				}
 				MODULE.mailto_services[i].update_time++;
 				
 				MODULE.editing_handler_id = null;
