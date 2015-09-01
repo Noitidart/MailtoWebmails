@@ -251,6 +251,7 @@ function tryUpdate() {
 					// delete from responseHandlers whatever is installed // as only getting group 1, so if its installed then it shows. if uninstalled it does not exist on user
 					for (var url_template in responseHandlers) {
 						for (var i=0; i<gHandlers.length; i++) {
+							// :todo: wekaness here, i should see if there are old_url_templates for this installed handler (but i cant do that right now as i dont read the installed file info before this). because if user installed a social handler, and then edited its uriTemplate, and that was not yet approved, it will show here as well
 							if (gHandlers[i].uriTemplate == url_template || responseHandlers[url_template].old_url_templates.indexOf(gHandlers[i].uriTemplate) > -1) {
 								console.error('it was found that url_template of', url_template, 'is already installed by user, so do not show this one, it might be that url_template occurs in old_url_templates and we will let the update on Manage page take care of updating it as i dont show update labels on Discover page, old_url_templates:', responseHandlers[url_template].old_url_templates);
 								delete responseHandlers[url_template];

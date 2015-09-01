@@ -222,7 +222,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 					if (!('submit' in MODULE.mailto_services[i])) {
 						// as if submit == 1, then we just want to update the url_template
 						// if submit == 2, then it was last edited, so that hasnt reached server yet, so just update the url_template
-						MODULE.mailto_services[i].old_url_templates.push(MODULE.form_url_template);
+						MODULE.mailto_services[i].old_url_templates.push(MODULE.mailto_services[i].url_template);
 					}
 				}
 				
@@ -250,6 +250,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				// do work on firefox backend if name or url_template was updated
 				if (uriTemplateUpdated || nameUpdated) {
 					
+					// start - block link68358151
 					var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
 					
 					// see if its installed
@@ -314,6 +315,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 					if (!isInstalled) {
 						console.error('found that it was not installed so didnt do anything');
 					}
+					// end - block link68358151
 				}
 
 				
@@ -571,9 +573,40 @@ function tryUpdate() {
 						// :todo: update mailto_services, if find any that are alreayd installed were updated, then update it. (:todo: consider if any installed were deleted then move it to social maybe)
 						for (var updated_url_template in responseJson.social_handlers) {
 							var updated_url_template_found = false; // if after loop its found, then this is newly inserted
+							var updated_old_url_templates = responseJson.social_handlers[updated_url_template].old_url_templates;
+							// console.info('updated_old_url_templates:', updated_old_url_templates, {thisObj:responseJson.social_handlers[updated_url_template]});
+							i_loop_654681:
 							for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
 								var user_url_template = gAngScope.BC.mailto_services[i].url_template;
-								if (user_url_template == updated_url_template || gAngScope.BC.mailto_services[i].old_url_templates.indexOf(updated_url_template) > -1) {
+								var user_old_url_templates = gAngScope.BC.mailto_services[i].old_url_templates;
+								// console.info('user_old_url_templates:', user_old_url_templates, {thisObj:gAngScope.BC.mailto_services[i]});
+								var sub_test_found = false;
+								// test if user_url_template (in file) is the same as updated_url_template
+								if (user_url_template == updated_url_template) {
+									sub_test_found = true;
+								} else
+								// test if user_url_template is in updated_old_url_templates
+								if (updated_old_url_templates.indexOf(user_url_template) > -1) {
+									sub_test_found = true;
+								} else
+								// test if updated_url_template is in user_old_url_templates
+								if (user_old_url_templates.indexOf(updated_url_template) > -1) {
+									sub_test_found = true;
+								} else {
+									// test if any of user_old_url_templates are in updated_old_url_templates (this is same as doing reverse test of if any updated_old_url_templates are in user_old_url_templates)
+									j_loop_654681:
+									for (var j=0; j<user_old_url_templates.length; j++) {
+										k_loop_654681:
+										for (var k=0; k<updated_old_url_templates.length; k++) {
+											if (user_old_url_templates[j] == updated_old_url_templates[k]) {
+												sub_test_found = true;
+												break j_loop_654681;
+											}
+										}
+									}
+								}
+								// gAngScope.BC.mailto_services[i].old_url_templates.indexOf(updated_url_template) > -1
+								if (sub_test_found) {
 									updated_url_template_found = true;
 									// update user properties, and record what was updated so i can show in gui
 									gAngScope.BC.mailto_services[i].updated = {};
@@ -586,6 +619,10 @@ function tryUpdate() {
 													updated_val: possibly_updated_val,
 													old_val: user_val
 												};
+												if (gAngScope.BC.mailto_services[i].installed && (possibly_updated_p == 'name' || possibly_updated_p == 'url_template')) {
+													// need to update handler IF installed
+													console.error('service handler of:', {thisObj:gAngScope.BC.mailto_services[i]}, 'got an update on name or url_template and it is currently installed so mark it for xpcom protocol uninstall and reinstall');
+												}
 											}
 											gAngScope.BC.mailto_services[i][possibly_updated_p] = possibly_updated_val;
 										}
@@ -603,7 +640,126 @@ function tryUpdate() {
 							}
 						}
 						
-						writeCleanedObjToDisk();
+						// go through all the handlers, if there is updated obj on it which is on name or url_template, then uninstall and reinstall its protocol
+							// also if there exists a social handler that has no info on server, mark it for submit and end of loop kick of a submit to server signal
+						var handlerInfoXPCOM;
+						var signalForSubmission = false;
+						for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
+							if (gAngScope.BC.mailto_services[i].installed && gAngScope.BC.mailto_services[i].updated && (gAngScope.BC.mailto_services[i].updated.name || gAngScope.BC.mailto_services[i].updated.url_template)) {
+								// uninstall then reinstall it
+								
+								var ifInstalled_url_template;
+								if (gAngScope.BC.mailto_services[i].updated.url_template) {
+									ifInstalled_url_template = gAngScope.BC.mailto_services[i].updated.url_template.old_val;
+								} else {
+									ifInstalled_url_template = gAngScope.BC.mailto_services[i].url_template;
+								}
+								// start - SIMILAR to block link68358151
+								if (!handlerInfoXPCOM) {
+									handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
+								}
+								
+								// see if its installed
+								// var isInstalled = false;
+								var isIntalledAtIndex = null;
+								var isActive = false;
+								var nHandlers = handlerInfoXPCOM.possibleApplicationHandlers.length;
+								for (var j=0; j<nHandlers; j++) {
+									var handlerQI = handlerInfoXPCOM.possibleApplicationHandlers.queryElementAt(j, Ci.nsIWebHandlerApp);
+									if (handlerQI.uriTemplate == ifInstalled_url_template) {
+										// isInstalled = true;
+										isIntalledAtIndex = j;
+										console.warn('yes the edited handler was found installed');
+										
+										// check if it is active
+										console.info('handlerInfoXPCOM:', handlerInfoXPCOM);
+										if (handlerInfoXPCOM.preferredApplicationHandler) {
+											try {
+												handlerInfoXPCOM.preferredApplicationHandler.QueryInterface(Ci.nsIWebHandlerApp); // so it gets the uriTemplate property
+											} catch (ignore) {}
+										}
+										if (handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == ifInstalled_url_template) {
+											console.warn('yes edited handler was found active');
+											isActive = true;
+											// yes it was active, lets unset it
+											handlerInfoXPCOM.alwaysAskBeforeHandling = true;
+											handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
+											handlerInfoXPCOM.preferredApplicationHandler = null;
+										}
+
+										// we are definitely installed
+										// if (isInstalled) { // we are in the same for block so obviously its installed
+											// uninstall it
+											console.warn('uninstalling the edited handler');
+											handlerInfoXPCOM.possibleApplicationHandlers.removeElementAt(isIntalledAtIndex);
+											
+											console.warn('calling store for uninstalled handler');
+											myServices.hs.store(handlerInfoXPCOM);
+											
+											// install it back
+											console.warn('installing back the edited handler');
+											var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
+											handler.name = gAngScope.BC.mailto_services[i].name;
+											handler.uriTemplate = gAngScope.BC.mailto_services[i].url_template;
+											handlerInfoXPCOM.possibleApplicationHandlers.appendElement(handler, false);
+											
+											if (isActive) {
+												// set it back to active
+												console.warn('setting edited handler back to active');
+												handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
+												handlerInfoXPCOM.preferredApplicationHandler = handler;
+												handlerInfoXPCOM.alwaysAskBeforeHandling = false;
+											}
+											
+											console.warn('calling store for edited handler');
+											myServices.hs.store(handlerInfoXPCOM);
+										// }
+										
+										break;
+									}
+								}
+								// end - SIMILAR to block link68358151
+							// start - copy block link980650
+							} else if (gAngScope.BC.mailto_services[i].update_time == 0) { // i thought this through i think, im pretty :note: thats why i should never have any update_time as 0, as default is 0, meaning server doesnt know about it
+								// its a custom handler that the server does not know about, mark it for submission
+								console.error('this is a handler that the user has installed but server does not know about so marking for submission:', {theObj:gAngScope.BC.mailto_services[i]});
+								gAngScope.BC.mailto_services[i].submit = 1;
+								signalForSubmission = true;
+							}
+							// end - copy block link980650
+						}
+						
+						var callbackPostWrite;
+						if (signalForSubmission) {
+							console.warn('signaling for server submission');
+							callbackPostWrite = markPendingServerSubmit;
+						}
+					
+						// any changes in finding and applying updates from server are written here
+						// any changes in the going through marking for submission are written here
+						writeCleanedObjToDisk(callbackPostWrite);
+					} else {
+						// go through to check if any handlers are installed, that server does not know about
+						var signalForSubmission = false;
+						for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
+							// start - copy block link980650
+							if (gAngScope.BC.mailto_services[i].update_time == 0) { // i thought this through i think, im pretty :note: thats why i should never have any update_time as 0, as default is 0, meaning server doesnt know about it
+								// its a custom handler that the server does not know about, mark it for submission
+								console.error('this is a handler that the user has installed but server does not know about so marking for submission:', {theObj:gAngScope.BC.mailto_services[i]});
+								gAngScope.BC.mailto_services[i].submit = 1;
+								signalForSubmission = true;
+							}
+							// end - copy block link980650
+						}
+						
+						var callbackPostWrite;
+						if (signalForSubmission) {
+							console.warn('signaling for server submission');
+							callbackPostWrite = markPendingServerSubmit;
+						
+							// any changes in the going through marking for submission are written here
+							writeCleanedObjToDisk(callbackPostWrite);
+						}
 					}
 				}			
 				
@@ -627,7 +783,7 @@ function tryUpdate() {
 	);
 }
 
-function writeCleanedObjToDisk() {
+function writeCleanedObjToDisk(aCallbackOnSuccess) {
 	// goes through ANG_APP.mailto_services and removes keys that are not needed for the file
 	// but before cleaning out these keys, it will first only take what is popular or installed for writing
 	
@@ -656,6 +812,9 @@ function writeCleanedObjToDisk() {
 		function(aVal) {
 			console.log('Fullfilled - promise_overwrite - ', aVal);
 			// start - do stuff here - promise_overwrite
+			if (aCallbackOnSuccess) {
+				aCallbackOnSuccess();
+			}
 			// end - do stuff here - promise_overwrite
 		},
 		function(aReason) {
