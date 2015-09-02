@@ -142,9 +142,13 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 			var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
 			if (aServiceEntry.installed) {
 				var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
+				console.log('h0');
 				handler.name = aServiceEntry.name;
+				console.log('h1');
 				handler.uriTemplate = aServiceEntry.url_template;
+				console.log('h2');
 				handlerInfoXPCOM.possibleApplicationHandlers.appendElement(handler, false);
+				console.log('h3');
 			} else {
 				var nHandlers = handlerInfoXPCOM.possibleApplicationHandlers.length;
 				for (var i=0; i<nHandlers; i++) {
@@ -170,7 +174,9 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				writeCleanedObjToDisk(); // because if its a discovered one, then i want to remove from file on uninstall, and add to file on install
 			}
 			
+			console.log('h4');
 			myServices.hs.store(handlerInfoXPCOM);
+			console.log('h5');
 		};
 		
 		MODULE.edit = function(aServiceEntry) {
