@@ -590,7 +590,7 @@ function uninstall(aData, aReason) {
 	if (aReason == ADDON_UNINSTALL) {
 		
 		// delete simple storage
-		OS.File.remove(OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id));
+		OS.File.removeDir(OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id));
 		
 		// delete pref if it was there
 		Services.prefs.clearUserPref(myPrefBranch + 'pending_submit');
@@ -612,7 +612,7 @@ function startup(aData, aReason) {
 				upgradeFromPre2 = true;
 			}
 		}
-		if (upgradeFromPre2) {
+		if (upgradeFromPre2 || aReason == ADDON_INSTALL) {
 			var promise_writeDefault = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(mailto_services_default), {
 				tmpPath: OSPath_installedServices + '.tmp',
 				encoding: 'utf-16',
