@@ -575,38 +575,12 @@ function tryUpdate() {
 							var updated_url_template_found = false; // if after loop its found, then this is newly inserted
 							var updated_old_url_templates = responseJson.social_handlers[updated_url_template].old_url_templates;
 							// console.info('updated_old_url_templates:', updated_old_url_templates, {thisObj:responseJson.social_handlers[updated_url_template]});
-							i_loop_654681:
 							for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
 								var user_url_template = gAngScope.BC.mailto_services[i].url_template;
 								var user_old_url_templates = gAngScope.BC.mailto_services[i].old_url_templates;
 								// console.info('user_old_url_templates:', user_old_url_templates, {thisObj:gAngScope.BC.mailto_services[i]});
-								var sub_test_found = false;
-								// test if user_url_template (in file) is the same as updated_url_template
-								if (user_url_template == updated_url_template) {
-									sub_test_found = true;
-								} else
-								// test if user_url_template is in updated_old_url_templates
-								if (updated_old_url_templates.indexOf(user_url_template) > -1) {
-									sub_test_found = true;
-								} else
-								// test if updated_url_template is in user_old_url_templates
-								if (user_old_url_templates.indexOf(updated_url_template) > -1) {
-									sub_test_found = true;
-								} else {
-									// test if any of user_old_url_templates are in updated_old_url_templates (this is same as doing reverse test of if any updated_old_url_templates are in user_old_url_templates)
-									j_loop_654681:
-									for (var j=0; j<user_old_url_templates.length; j++) {
-										k_loop_654681:
-										for (var k=0; k<updated_old_url_templates.length; k++) {
-											if (user_old_url_templates[j] == updated_old_url_templates[k]) {
-												sub_test_found = true;
-												break j_loop_654681;
-											}
-										}
-									}
-								}
-								// gAngScope.BC.mailto_services[i].old_url_templates.indexOf(updated_url_template) > -1
-								if (sub_test_found) {
+								
+								if (areUrlTemplatesOfSame(user_url_template, user_old_url_templates, updated_url_template, updated_old_url_templates)) {
 									updated_url_template_found = true;
 									// update user properties, and record what was updated so i can show in gui
 									gAngScope.BC.mailto_services[i].updated = {};
@@ -781,6 +755,36 @@ function tryUpdate() {
 			// deferred_createProfile.reject(rejObj);
 		}
 	);
+}
+
+function areUrlTemplatesOfSame(aUrlTemplate_1, aOldUrlTemplates_1, aUrlTemplate_2, aOldUrlTemplates_2) {
+	// tests if handler 1 is same as handler 2 by checking url_template and old_url_templates
+	
+	// test if aUrlTemplate_1 is the same as aUrlTemplate_2
+	if (aUrlTemplate_1 == aUrlTemplate_2) {
+		return true;
+	}
+	
+	// test if aUrlTemplate_1 is in aOldUrlTemplates_2
+	if (aOldUrlTemplates_2.indexOf(aUrlTemplate_1) > -1) {
+		return true;
+	}
+	
+	// test if aUrlTemplate_2 is in aOldUrlTemplates_1
+	if (aOldUrlTemplates_1.indexOf(aUrlTemplate_2) > -1) {
+		return true;
+	}
+	
+	// test if any of aOldUrlTemplates_1 are in aOldUrlTemplates_2 (this is same as doing reverse test of if any aOldUrlTemplates_2 are in aOldUrlTemplates_1)
+	for (var l=0; l<aOldUrlTemplates_1.length; l++) {
+		for (var m=0; m<aOldUrlTemplates_2.length; m++) {
+			if (aOldUrlTemplates_1[l] == aOldUrlTemplates_2[m]) {
+				return true;
+			}
+		}
+	}
+	
+	return false;
 }
 
 function writeCleanedObjToDisk(aCallbackOnSuccess) {

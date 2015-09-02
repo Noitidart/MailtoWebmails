@@ -178,10 +178,13 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 var gAngScope
 var gAngInjector;
 var gHandlers = [];
+var gFileJson;
 function doOnLoad() {
 	var gAngBody = angular.element(document.body);
 	gAngScope = gAngBody.scope();
 	gAngInjector = gAngBody.injector();
+	
+	var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-16'});
 	
 	// check and get whats currently installed/active
 	var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
@@ -197,7 +200,26 @@ function doOnLoad() {
     }
 	gHandlers = handlers;
 
-	tryUpdate();
+	promise_readInstalledServices.then(
+		function(aVal) {
+			console.log('Fullfilled - promise_readInstalledServices - ', aVal);
+			// start - do stuff here - promise_readInstalledServices
+			gFileJson = JSON.parse(aVal);
+			tryUpdate();
+			// end - do stuff here - promise_readInstalledServices
+		},
+		function(aReason) {
+			var rejObj = {name:'promise_readInstalledServices', aReason:aReason};
+			console.error('Rejected - promise_readInstalledServices - ', rejObj);
+			// deferred_createProfile.reject(rejObj);
+		}
+	).catch(
+		function(aCaught) {
+			var rejObj = {name:'promise_readInstalledServices', aCaught:aCaught};
+			console.error('Caught - promise_readInstalledServices - ', rejObj);
+			// deferred_createProfile.reject(rejObj);
+		}
+	);
 
 }
 
@@ -249,12 +271,29 @@ function tryUpdate() {
 					var responseHandlers = responseJson.social_handlers;
 					
 					// delete from responseHandlers whatever is installed // as only getting group 1, so if its installed then it shows. if uninstalled it does not exist on user
-					for (var url_template in responseHandlers) {
+					for (var server_url_template in responseHandlers) {
+						var server_old_url_templates = responseHandlers[server_url_template].old_url_templates;
 						for (var i=0; i<gHandlers.length; i++) {
 							// :todo: wekaness here, i should see if there are old_url_templates for this installed handler (but i cant do that right now as i dont read the installed file info before this). because if user installed a social handler, and then edited its uriTemplate, and that was not yet approved, it will show here as well
-							if (gHandlers[i].uriTemplate == url_template || responseHandlers[url_template].old_url_templates.indexOf(gHandlers[i].uriTemplate) > -1) {
-								console.error('it was found that url_template of', url_template, 'is already installed by user, so do not show this one, it might be that url_template occurs in old_url_templates and we will let the update on Manage page take care of updating it as i dont show update labels on Discover page, old_url_templates:', responseHandlers[url_template].old_url_templates);
-								delete responseHandlers[url_template];
+							var installed_url_template = gHandlers[i].uriTemplate;
+							var installed_old_url_templates = [];
+							// get installed_old_url_templates from file
+							for (var j=0; j<gFileJson.length; j++) {
+								var gFileJsonOldUrlTemplates = gFileJson[j].old_url_templates;
+								if (gFileJson[j].url_template == installed_url_template) {
+									installed_old_url_templates = gFileJson[j].old_url_templates;
+									break;
+								} else if (gFileJsonOldUrlTemplates.indexOf(installed_url_template) > -1) {
+									installed_old_url_templates = gFileJson[j].old_url_templates;
+									break;
+								}
+							}
+							// end - get installed_old_url_templates from file
+							
+							// now test if its installed
+							if (areUrlTemplatesOfSame(installed_url_template, installed_old_url_templates, server_url_template, server_old_url_templates)) {
+								console.error('it was found that url_template of', server_url_template, 'is already installed by user, so do not show this one, it might be that server_url_template occurs in old_url_templates and we will let the update on Manage page take care of updating it as i dont show update labels on Discover page, old_url_templates:', responseHandlers[server_url_template].old_url_templates);
+								delete responseHandlers[server_url_template];
 								break;
 							}
 						}
@@ -285,6 +324,36 @@ function tryUpdate() {
 			// deferred_createProfile.reject(rejObj);
 		}
 	);
+}
+
+function areUrlTemplatesOfSame(aUrlTemplate_1, aOldUrlTemplates_1, aUrlTemplate_2, aOldUrlTemplates_2) {
+	// tests if handler 1 is same as handler 2 by checking url_template and old_url_templates
+	
+	// test if aUrlTemplate_1 is the same as aUrlTemplate_2
+	if (aUrlTemplate_1 == aUrlTemplate_2) {
+		return true;
+	}
+	
+	// test if aUrlTemplate_1 is in aOldUrlTemplates_2
+	if (aOldUrlTemplates_2.indexOf(aUrlTemplate_1) > -1) {
+		return true;
+	}
+	
+	// test if aUrlTemplate_2 is in aOldUrlTemplates_1
+	if (aOldUrlTemplates_1.indexOf(aUrlTemplate_2) > -1) {
+		return true;
+	}
+	
+	// test if any of aOldUrlTemplates_1 are in aOldUrlTemplates_2 (this is same as doing reverse test of if any aOldUrlTemplates_2 are in aOldUrlTemplates_1)
+	for (var l=0; l<aOldUrlTemplates_1.length; l++) {
+		for (var m=0; m<aOldUrlTemplates_2.length; m++) {
+			if (aOldUrlTemplates_1[l] == aOldUrlTemplates_2[m]) {
+				return true;
+			}
+		}
+	}
+	
+	return false;
 }
 
 function toggleServiceFromFile(aAddOrRemove, aServiceEntry) {
