@@ -103,7 +103,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 							break;
 						}
 					} catch (ex)  {
-						console.warn('this one is not a nsIWebHandlerApp,' handler);
+						console.warn('this one is not a nsIWebHandlerApp:', handler);
 					}
 				}
 				// :todo: troubleshoot, if not found
