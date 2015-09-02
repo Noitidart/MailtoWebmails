@@ -435,7 +435,7 @@ function doOnLoad() {
 			handler.QueryInterface(Ci.nsIWebHandlerApp);
 			handlers.push(handler);
 		} catch (ex)  {
-			console.warn('this one is not a nsIWebHandlerApp,' handler);
+			console.warn('this one is not a nsIWebHandlerApp:', handler);
 		}
         console.log('handler', handler)
     }
