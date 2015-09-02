@@ -622,7 +622,6 @@ function startup(aData, aReason) {
 				function(aVal) {
 					console.log('Fullfilled - promise_writeDefault - ', aVal);
 					// start - do stuff here - promise_writeDefault
-					checkIfShouldSubmit(); // :debug:
 					if (aReason == ADDON_INSTALL) {
 						var cWin = Services.wm.getMostRecentWindow('navigator:browser');
 						if (cWin) {
@@ -643,7 +642,7 @@ function startup(aData, aReason) {
 					// deferred_createProfile.reject(rejObj);
 				}
 			);
-		} else {
+		} else if (!upgradeFromPre2) {
 			checkIfShouldSubmit(); // check if pending submit from last addon/browser session
 		}
 	} else {
