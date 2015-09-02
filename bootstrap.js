@@ -625,7 +625,12 @@ function startup(aData, aReason) {
 					if (aReason == ADDON_INSTALL) {
 						var cWin = Services.wm.getMostRecentWindow('navigator:browser');
 						if (cWin) {
-							cWin.gBrowser.loadOneTab('about:mailto', {inBackground:false});
+							if (core.os.name == 'android') {
+								cWin.BrowserApp.addTab('about:mailto');
+							} else {
+								// assume desktop
+								cWin.gBrowser.loadOneTab('about:mailto', {inBackground:false});
+							}
 						}
 					}
 					// end - do stuff here - promise_writeDefault
