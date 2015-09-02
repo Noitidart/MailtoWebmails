@@ -386,15 +386,16 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				
 				var img = new Image();
 				img.onload = function() {
+					var scaleFactor = 1;
 					if (img.width > 80 || img.height > 80) {
-						alert(myServices.sb.formatStringFromName('img_bad-dimensions', [img.width, img.height], 2));
-						return;
+						scaleFactor = Math.min(80 / img.width, 80 / img.height);
+						alert(myServices.sb.formatStringFromName('img_bad-dimensions', [img.width, img.height, Math.floor(img.width * scaleFactor), Math.floor(img.height * scaleFactor)], 4));
 					}
 					var can = document.createElement('canvas');
-					can.width = img.width;
-					can.height = img.height;
+					can.width = Math.floor(img.width * scaleFactor);
+					can.height = Math.floor(img.height * scaleFactor);
 					var ctx = can.getContext('2d');
-					ctx.drawImage(img, 0, 0);
+					ctx.drawImage(img, 0, 0, can.width, can.height);
 					MODULE.form_img = can.toDataURL('image/png', '');
 					gAngScope.$digest();
 				};
