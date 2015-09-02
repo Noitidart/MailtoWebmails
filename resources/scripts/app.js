@@ -335,6 +335,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				pushObj.icon_dataurl = MODULE.form_img;
 				pushObj.group = 1;
 				pushObj.installed = true;
+				pushObj.update_time = 1; // as im alreayd marking it submit, i dont want it to think update_time==0 so its server unknown
 				pushObj.submit = 1; // 1 for add, 2 for edit
 				MODULE.mailto_services.push(pushObj);
 				
