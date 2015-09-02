@@ -197,6 +197,11 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				return;
 			}
 			
+			if (!MODULE.form_name || MODULE.form_name.length == 0) {
+				alert(myServices.sb.GetStringFromName('url_template-no-name'));
+				return;
+			}
+			
 			
 			if (MODULE.editing_handler_id) {
 				// user wants edit
