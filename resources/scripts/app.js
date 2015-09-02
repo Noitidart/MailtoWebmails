@@ -92,7 +92,12 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
 				var handlers = handlerInfoXPCOM.possibleApplicationHandlers.enumerate();
 				while (handlers.hasMoreElements()) {
-					var handler = handlers.getNext().QueryInterface(Ci.nsIWebHandlerApp);
+					var handler = handlers.getNext();
+					try {
+						handler.QueryInterface(Ci.nsIWebHandlerApp);
+					} catch (ex)  {
+						console.warn('this one is not a nsIWebHandlerApp');
+					}
 					if (handler.uriTemplate == aServiceEntry.url_template) {
 						// found it
 						handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
