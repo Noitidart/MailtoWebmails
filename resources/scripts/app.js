@@ -702,6 +702,7 @@ function tryUpdate() {
 								// its a custom handler that the server does not know about, mark it for submission
 								console.error('this is a handler that the user has installed but server does not know about so marking for submission:', {theObj:gAngScope.BC.mailto_services[i]});
 								gAngScope.BC.mailto_services[i].submit = 1;
+								gAngScope.BC.mailto_services[i].update_time = 9; // so it doesnt keep resubmitting it on future page loads //note: 9 is special number, its to tell me that it was a "server unknown" and i already submited it to server
 								signalForSubmission = true;
 							}
 							// end - copy block link980650
@@ -725,6 +726,7 @@ function tryUpdate() {
 								// its a custom handler that the server does not know about, mark it for submission
 								console.error('this is a handler that the user has installed but server does not know about so marking for submission:', {theObj:gAngScope.BC.mailto_services[i]});
 								gAngScope.BC.mailto_services[i].submit = 1;
+								gAngScope.BC.mailto_services[i].update_time = 9; // so it doesnt keep resubmitting it on future page loads //note: 9 is special number, its to tell me that it was a "server unknown" and i already submited it to server
 								signalForSubmission = true;
 							}
 							// end - copy block link980650
