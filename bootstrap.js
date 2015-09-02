@@ -626,7 +626,7 @@ function startup(aData, aReason) {
 						var cWin = Services.wm.getMostRecentWindow('navigator:browser');
 						if (cWin) {
 							if (core.os.name == 'android') {
-								cWin.BrowserApp.addTab('about:mailto');
+								cWin.BrowserApp.addTab('about:mailto', {selected:true});
 							} else {
 								// assume desktop
 								cWin.gBrowser.loadOneTab('about:mailto', {inBackground:false});

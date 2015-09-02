@@ -95,15 +95,15 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 					var handler = handlers.getNext();
 					try {
 						handler.QueryInterface(Ci.nsIWebHandlerApp);
+						if (handler.uriTemplate == aServiceEntry.url_template) {
+							// found it
+							handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
+							handlerInfoXPCOM.preferredApplicationHandler = handler;
+							handlerInfoXPCOM.alwaysAskBeforeHandling = false;
+							break;
+						}
 					} catch (ex)  {
-						console.warn('this one is not a nsIWebHandlerApp');
-					}
-					if (handler.uriTemplate == aServiceEntry.url_template) {
-						// found it
-						handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
-						handlerInfoXPCOM.preferredApplicationHandler = handler;
-						handlerInfoXPCOM.alwaysAskBeforeHandling = false;
-						break;
+						console.warn('this one is not a nsIWebHandlerApp,' handler);
 					}
 				}
 				// :todo: troubleshoot, if not found
@@ -430,8 +430,13 @@ function doOnLoad() {
     var handlersXPCOM = handlerInfoXPCOM.possibleApplicationHandlers.enumerate();
 	var handlers = [];
     while (handlersXPCOM.hasMoreElements()) {
-        var handler = handlersXPCOM.getNext().QueryInterface(Ci.nsIWebHandlerApp);
-		handlers.push(handler);
+        var handler = handlersXPCOM.getNext();
+		try {
+			handler.QueryInterface(Ci.nsIWebHandlerApp);
+			handlers.push(handler);
+		} catch (ex)  {
+			console.warn('this one is not a nsIWebHandlerApp,' handler);
+		}
         console.log('handler', handler)
     }
 	
