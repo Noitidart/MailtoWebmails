@@ -200,7 +200,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 			
 			if (MODULE.editing_handler_id) {
 				// user wants edit
-				alert('user wants edit');
+				// alert('user wants edit');
 				
 				var foundServiceEntry = false;
 				for (var i=0; i<MODULE.mailto_services.length; i++) {
@@ -359,11 +359,11 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				// user hit escape key
 				if (MODULE.editing_handler_id) {
 					// cancel edit
-					alert('cancelling edit');
+					// alert('cancelling edit');
 					MODULE.editing_handler_id = null;
 				} else if (MODULE.form_name || MODULE.form_url_template || MODULE.form_description || MODULE.form_img || MODULE.form_color != defaultColor) {
 					// clear form
-					alert('clearing form');
+					// alert('clearing form');
 					MODULE.form_name = '';
 					MODULE.form_url_template = '';
 					MODULE.form_description = '';
@@ -540,7 +540,10 @@ function tryUpdate() {
 			postJson.latestPopUpdateTime = gAngScope.BC.mailto_services[i].update_time;
 		}
 		if (gAngScope.BC.mailto_services[i].group == 1) {
-			postJson.discoveredServices[gAngScope.BC.mailto_services[i].url_template] = gAngScope.BC.mailto_services[i].update_time; // :todo: keep checking, what if updte_time is undefined? ensure it goes through as 0, right now i think it will always defalut to 0 so thats why i dont do a tertiary here
+			postJson.discoveredServices[gAngScope.BC.mailto_services[i].url_template] = {
+				last_update_time: gAngScope.BC.mailto_services[i].update_time, // :todo: keep checking, what if updte_time is undefined? ensure it goes through as 0, right now i think it will always defalut to 0 so thats why i dont do a tertiary here
+				old_url_templates: gAngScope.BC.mailto_services[i].old_url_templates
+			};
 		}
 	}
 	console.info('postJson:', postJson);

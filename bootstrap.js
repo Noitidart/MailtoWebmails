@@ -605,41 +605,30 @@ function startup(aData, aReason) {
 	//fsComServer.register(core.addon.path.scripts + '_framescript-warn-on-submit.js');
 	//end framescriptlistener more
 	if ([ADDON_UPGRADE, ADDON_INSTALL, ADDON_DOWNGRADE].indexOf(aReason) > -1) {
-		
-		/*
-		var do_makeDirsToSimpleStorage = function() {
-			var promise_makeDirsToSimpleStorage = makeDir_Bug934283(OS.Path.dirname(OSPath_installedServices), {from:OS.Constants.Path.profileDir})
-			promise_makeDirsToSimpleStorage.then(
-				function(aVal) {
-					console.log('Fullfilled - promise_makeDirsToSimpleStorage - ', aVal);
-					// start - do stuff here - promise_makeDirsToSimpleStorage
-					do_writeDefaults();
-					// end - do stuff here - promise_makeDirsToSimpleStorage
-				},
-				function(aReason) {
-					var rejObj = {name:'promise_makeDirsToSimpleStorage', aReason:aReason};
-					console.error('Rejected - promise_makeDirsToSimpleStorage - ', rejObj);
-					// deferred_createProfile.reject(rejObj);
-				}
-			).catch(
-				function(aCaught) {
-					var rejObj = {name:'promise_makeDirsToSimpleStorage', aCaught:aCaught};
-					console.error('Caught - promise_makeDirsToSimpleStorage - ', rejObj);
-					// deferred_createProfile.reject(rejObj);
-				}
-			);
-		};
-		
-		var do_writeDefaults = function() {
-			var promise_writeDefault = OS.File.writeAtomic(OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(mailto_services_default), {
+		var upgradeFromPre2 = false;
+		if ([ADDON_UPGRADE, ADDON_DOWNGRADE].indexOf(aReason) > -1) {
+			// if old version is pre 2.0 then continue, else dont
+			if (Services.vc.compare(aData.oldVersion, '2.0-night') < 0) { // tests if old version is less then 2.0-night
+				upgradeFromPre2 = true;
+			}
+		}
+		if (upgradeFromPre2) {
+			var promise_writeDefault = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(mailto_services_default), {
 				tmpPath: OSPath_installedServices + '.tmp',
 				encoding: 'utf-16',
 				noOverwrite: false
-			});
+			}], OS.Constants.Path.profileDir);
 			promise_writeDefault.then(
 				function(aVal) {
 					console.log('Fullfilled - promise_writeDefault - ', aVal);
 					// start - do stuff here - promise_writeDefault
+					checkIfShouldSubmit(); // :debug:
+					if (aReason == ADDON_INSTALL) {
+						var cWin = Services.wm.getMostRecentWindow('navigator:browser');
+						if (cWin) {
+							cWin.gBrowser.loadOneTab('about:mailto', {inBackground:false});
+						}
+					}
 					// end - do stuff here - promise_writeDefault
 				},
 				function(aReason) {
@@ -654,34 +643,9 @@ function startup(aData, aReason) {
 					// deferred_createProfile.reject(rejObj);
 				}
 			);
-		};
-
-		do_makeDirsToSimpleStorage();
-		*/
-		var promise_writeDefault = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(mailto_services_default), {
-			tmpPath: OSPath_installedServices + '.tmp',
-			encoding: 'utf-16',
-			noOverwrite: false
-		}], OS.Constants.Path.profileDir);
-		promise_writeDefault.then(
-			function(aVal) {
-				console.log('Fullfilled - promise_writeDefault - ', aVal);
-				// start - do stuff here - promise_writeDefault
-				checkIfShouldSubmit(); // :debug:
-				// end - do stuff here - promise_writeDefault
-			},
-			function(aReason) {
-				var rejObj = {name:'promise_writeDefault', aReason:aReason};
-				console.error('Rejected - promise_writeDefault - ', rejObj);
-				// deferred_createProfile.reject(rejObj);
-			}
-		).catch(
-			function(aCaught) {
-				var rejObj = {name:'promise_writeDefault', aCaught:aCaught};
-				console.error('Caught - promise_writeDefault - ', rejObj);
-				// deferred_createProfile.reject(rejObj);
-			}
-		);
+		} else {
+			checkIfShouldSubmit(); // check if pending submit from last addon/browser session
+		}
 	} else {
 		checkIfShouldSubmit(); // check if pending submit from last addon/browser session
 	}
