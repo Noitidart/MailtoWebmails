@@ -597,6 +597,35 @@ function uninstall(aData, aReason) {
 	}
 }
 
+function writeDefaultsFile(aNoOverwrite, aCBSuccess) {
+	var promise_writeDefault = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(mailto_services_default), {
+		tmpPath: OSPath_installedServices + '.tmp',
+		encoding: 'utf-16',
+		noOverwrite: aNoOverwrite
+	}], OS.Constants.Path.profileDir);
+	promise_writeDefault.then(
+		function(aVal) {
+			console.log('Fullfilled - promise_writeDefault - ', aVal);
+			// start - do stuff here - promise_writeDefault
+			if (aCBSuccess) {
+				aCBSuccess();
+			}
+			// end - do stuff here - promise_writeDefault
+		},
+		function(aReason) {
+			var rejObj = {name:'promise_writeDefault', aReason:aReason};
+			console.error('Rejected - promise_writeDefault - ', rejObj);
+			// deferred_createProfile.reject(rejObj);
+		}
+	).catch(
+		function(aCaught) {
+			var rejObj = {name:'promise_writeDefault', aCaught:aCaught};
+			console.error('Caught - promise_writeDefault - ', rejObj);
+			// deferred_createProfile.reject(rejObj);
+		}
+	);
+}
+
 function startup(aData, aReason) {
 	// core.addon.aData = aData;
 	extendCore();
@@ -604,49 +633,23 @@ function startup(aData, aReason) {
 	//framescriptlistener more
 	//fsComServer.register(core.addon.path.scripts + '_framescript-warn-on-submit.js');
 	//end framescriptlistener more
-	if ([ADDON_UPGRADE, ADDON_INSTALL, ADDON_DOWNGRADE].indexOf(aReason) > -1) {
-		var upgradeFromPre2 = false;
-		if ([ADDON_UPGRADE, ADDON_DOWNGRADE].indexOf(aReason) > -1) {
-			// if old version is pre 2.0 then continue, else dont
-			if (Services.vc.compare(aData.oldVersion, '2.0-night') < 0) { // tests if old version is less then 2.0-night
-				upgradeFromPre2 = true;
+	
+	if (aReason == ADDON_INSTALL) {
+		// overwrite, then open tab
+		writeDefaultsFile(false, function() {
+			var cWin = Services.wm.getMostRecentWindow('navigator:browser');
+			if (cWin) {
+				cWin.gBrowser.loadOneTab('about:mailto', {inBackground:false});
 			}
-		}
-		if (upgradeFromPre2 || aReason == ADDON_INSTALL) {
-			var promise_writeDefault = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(mailto_services_default), {
-				tmpPath: OSPath_installedServices + '.tmp',
-				encoding: 'utf-16',
-				noOverwrite: false
-			}], OS.Constants.Path.profileDir);
-			promise_writeDefault.then(
-				function(aVal) {
-					console.log('Fullfilled - promise_writeDefault - ', aVal);
-					// start - do stuff here - promise_writeDefault
-					if (aReason == ADDON_INSTALL) {
-						var cWin = Services.wm.getMostRecentWindow('navigator:browser');
-						if (cWin) {
-							cWin.gBrowser.loadOneTab('about:mailto', {inBackground:false});
-						}
-					}
-					// end - do stuff here - promise_writeDefault
-				},
-				function(aReason) {
-					var rejObj = {name:'promise_writeDefault', aReason:aReason};
-					console.error('Rejected - promise_writeDefault - ', rejObj);
-					// deferred_createProfile.reject(rejObj);
-				}
-			).catch(
-				function(aCaught) {
-					var rejObj = {name:'promise_writeDefault', aCaught:aCaught};
-					console.error('Caught - promise_writeDefault - ', rejObj);
-					// deferred_createProfile.reject(rejObj);
-				}
-			);
-		} else if (!upgradeFromPre2) {
-			checkIfShouldSubmit(); // check if pending submit from last addon/browser session
-		}
+		});
+	} else if ([ADDON_DOWNGRADE, ADDON_UPGRADE, APP_STARTUP, ADDON_ENABLE].indexOf(aReason) > -1) {
+		// dont overwrite
+		// then do check
+		
+		writeDefaultsFile(true, checkIfShouldSubmit);
 	} else {
-		checkIfShouldSubmit(); // check if pending submit from last addon/browser session
+		// just do check
+		checkIfShouldSubmit();
 	}
 	
 	aboutFactory_mailto = new AboutFactory(AboutMailto);
