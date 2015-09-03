@@ -551,6 +551,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			function(aVal) {
 				console.log('Fullfilled - promise_updateFile - ', aVal);
 				// start - do stuff here - promise_updateFile
+				Services.mm.broadcastAsyncMessage(core.addon.id, {aTopic:'serverCommand_refreshFileJson', fileJson:fileJson});
 				// end - do stuff here - promise_updateFile
 			},
 			function(aReason) {

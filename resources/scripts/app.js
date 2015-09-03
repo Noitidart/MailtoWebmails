@@ -411,6 +411,30 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 	}]);
 var gAngScope
 var gAngInjector;
+
+var serverMessageListener = {
+	// listens to messages sent from clients (child framescripts) to me/server
+	receiveMessage: function(aMsg) {
+		switch (aMsg.json.aTopic) {
+			case 'serverCommand_refreshFileJson':
+					
+					gAngScope.BC.mailto_services = aMsg.json.fileJson;
+					gAngScope.$digest();
+					console.log('file json updated within client');
+					
+				break;
+			default:
+				console.error('CLIENT unrecognized aTopic:', aMsg.json.aTopic, 'aMsg:', aMsg);
+		}
+	}
+};
+
+function doOnBeforeUnload() {
+	console.log('going to remove msg listener on client');
+	contentMMFromContentWindow_Method2(window).removeMessageListener(core.addon.id, serverMessageListener);
+	console.error('client message listener removed, good');
+}
+
 function doOnLoad() {
 	var gAngBody = angular.element(document.body);
 	gAngScope = gAngBody.scope();
@@ -513,6 +537,7 @@ function doOnLoad() {
 			
 			// console.error('digesting, mailto_services', gAngScope.BC.mailto_services);
 			gAngScope.$digest();
+			contentMMFromContentWindow_Method2(window).addMessageListener(core.addon.id, serverMessageListener);
 			// console.error('digested');
 			tryUpdate();
 			// end - do stuff here - promise_readInstalledServices
@@ -866,9 +891,7 @@ function markPendingServerSubmit() {
 		console.error('sending cfmm message to bootstrap');
 		Services.prefs.setCharPref(myPrefBranch + 'pending_submit', (new Date().getTime() - serverSubmitIntervalMS)); // note: this pref holds last time (in ms) tried, it will try every 5 minutes till submits
 		// :todo: notify bootstrap checkIfShouldSubmit()
-		var CFMM = contentMMFromContentWindow_Method2(window);
-		console.info('CFMM:', CFMM);
-		CFMM.sendAsyncMessage(core.addon.id, {aTopic:core.addon.id + '::' + 'notifyBootstrapThereIsPossibleServerSubmitPending'});
+		contentMMFromContentWindow_Method2(window).sendAsyncMessage(core.addon.id, {aTopic:core.addon.id + '::' + 'notifyBootstrapThereIsPossibleServerSubmitPending'});
 	} else {
 		// else assume that its already running
 		console.error('cprefval is not undefined so will not send message to bootstrap as im assuming its already in a timer for checking if updated');
@@ -876,13 +899,19 @@ function markPendingServerSubmit() {
 }
 
 document.addEventListener('DOMContentLoaded', doOnLoad, false);
+window.addEventListener('beforeunload', doOnBeforeUnload, false);
 
 // start - common helper functions
+var gCFMM;
 function contentMMFromContentWindow_Method2(aContentWindow) {
-	return aContentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
-                         .getInterface(Ci.nsIDocShell)
-                         .QueryInterface(Ci.nsIInterfaceRequestor)
-                         .getInterface(Ci.nsIContentFrameMessageManager);
+	if (!gCFMM) {
+		gCFMM = aContentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
+							  .getInterface(Ci.nsIDocShell)
+							  .QueryInterface(Ci.nsIInterfaceRequestor)
+							  .getInterface(Ci.nsIContentFrameMessageManager);
+	}
+	return gCFMM;
+
 }
 function read_encoded(path, options) {
 	// because the options.encoding was introduced only in Fx30, this function enables previous Fx to use it
