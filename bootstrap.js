@@ -436,10 +436,16 @@ function reKickOffServerSubmitTimer() {
 	gServerSubmitTimer.instance.initWithCallback(gServerSubmitTimer.callback, serverSubmitIntervalMS, Ci.nsITimer.TYPE_ONE_SHOT);
 }
 
+function aCBTemplateForRemSubFlag(submittedUrlTemplate, submittedOldUrlTemplates) {
+	// console.warn('submittedUrlTemplate:', submittedUrlTemplate, 'submittedOldUrlTemplates:', submittedOldUrlTemplates);
+	Services.mm.broadcastAsyncMessage(core.addon.id, {aTopic:'serverCommand_removeSubmitFlag', submittedUrlTemplate:submittedUrlTemplate, submittedOldUrlTemplates:submittedOldUrlTemplates});
+}
+
 function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 
 	var fileJson = [];
 	var submitJson = [];
+	var removeSubmittedFlag_CBArr = [];
 	
 	var step1 = function() {
 		// read file
@@ -481,6 +487,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 				}
 				delete fileJson[i].submit;
 				submitJson.push(pushObj);
+				removeSubmittedFlag_CBArr.push(aCBTemplateForRemSubFlag.bind(null, fileJson[i].url_template, fileJson[i].old_url_templates));
 			}
 		}
 		
@@ -551,7 +558,9 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			function(aVal) {
 				console.log('Fullfilled - promise_updateFile - ', aVal);
 				// start - do stuff here - promise_updateFile
-				Services.mm.broadcastAsyncMessage(core.addon.id, {aTopic:'serverCommand_refreshFileJson', fileJson:fileJson});
+				for (var i=0; i<removeSubmittedFlag_CBArr.length; i++) {
+					removeSubmittedFlag_CBArr[i]();
+				}
 				// end - do stuff here - promise_updateFile
 			},
 			function(aReason) {

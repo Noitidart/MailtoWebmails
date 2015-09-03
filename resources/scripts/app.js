@@ -416,11 +416,15 @@ var serverMessageListener = {
 	// listens to messages sent from clients (child framescripts) to me/server
 	receiveMessage: function(aMsg) {
 		switch (aMsg.json.aTopic) {
-			case 'serverCommand_refreshFileJson':
+			case 'serverCommand_removeSubmitFlag':
 					
-					gAngScope.BC.mailto_services = aMsg.json.fileJson;
-					gAngScope.$digest();
-					console.log('file json updated within client');
+					for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
+						if (areUrlTemplatesOfSame(gAngScope.BC.mailto_services[i].url_template, gAngScope.BC.mailto_services[i].old_url_templates, aMsg.json.submittedUrlTemplate, aMsg.json.submittedOldUrlTemplates)) {
+							delete gAngScope.BC.mailto_services[i].submit;
+							console.log('removed submit flag in client, as it was submitted by bootstrap, submittedUrlTemplate:', aMsg.json.submittedUrlTemplate);
+							break;
+						}
+					};
 					
 				break;
 			default:
