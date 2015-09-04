@@ -113,7 +113,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				}
 				console.info('handlerInfoXPCOM.preferredApplicationHandler:', handlerInfoXPCOM.preferredApplicationHandler);
 				//console.info('intance of nsiwebapp', handlerInfoXPCOM.preferredApplicationHandler instanceof Ci.nsIWebHandlerApp)
-				if (handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
+				if (handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp && handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
 					// yes it was active, lets unset it
 					handlerInfoXPCOM.alwaysAskBeforeHandling = true;
 					handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
@@ -154,15 +154,11 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				for (var i=0; i<nHandlers; i++) {
 					var handlerQI = handlerInfoXPCOM.possibleApplicationHandlers.queryElementAt(i, Ci.nsIWebHandlerApp);
 					// cant remove if its the curently preferred, so check that, and if it is, then unsert it as preferred
-					if (preferredHandlerIsWebApp && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate ==  aServiceEntry.url_template) {
-
+					if (handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp && handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
+						//it looks like the preferredAction was to use this helper app, so now that its no longer there we will have to ask what the user wants to do next time the uesrs clicks a mailto: link
+						handlerInfoXPCOM.alwaysAskBeforeHandling = true;
+						handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
 						handlerInfoXPCOM.preferredApplicationHandler = null;
-						if (handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp) {
-							//it looks like the preferredAction was to use this helper app, so now that its no longer there we will have to ask what the user wants to do next time the uesrs clicks a mailto: link
-							handlerInfoXPCOM.alwaysAskBeforeHandling = true;
-							handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
-							handlerInfoXPCOM.preferredApplicationHandler = null;
-						}
 					}
 					if (handlerQI.uriTemplate == aServiceEntry.url_template) {
 						handlerInfoXPCOM.possibleApplicationHandlers.removeElementAt(i);
