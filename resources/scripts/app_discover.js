@@ -117,6 +117,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 					// yes it was active, lets unset it
 					handlerInfoXPCOM.alwaysAskBeforeHandling = true;
 					handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
+					handlerInfoXPCOM.preferredApplicationHandler = null;
 				} // :todo: troubleshoot, if it wasnt active maybe
 			}
 			myServices.hs.store(handlerInfoXPCOM);
@@ -138,17 +139,29 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				handlerInfoXPCOM.possibleApplicationHandlers.appendElement(handler, false);
 				toggleServiceFromFile(1, aServiceEntry);
 			} else {
+				
+				var preferredHandlerIsWebApp;
+				if (handlerInfoXPCOM.preferredApplicationHandler) {
+					try {
+						handlerInfoXPCOM.preferredApplicationHandler.QueryInterface(Ci.nsIWebHandlerApp); // so it gets the uriTemplate property
+						preferredHandlerIsWebApp = true;
+					} catch (ex) {
+						preferredHandlerIsWebApp = false;
+					}
+				}
+				
 				var nHandlers = handlerInfoXPCOM.possibleApplicationHandlers.length;
 				for (var i=0; i<nHandlers; i++) {
 					var handlerQI = handlerInfoXPCOM.possibleApplicationHandlers.queryElementAt(i, Ci.nsIWebHandlerApp);
 					// cant remove if its the curently preferred, so check that, and if it is, then unsert it as preferred
-					if (handlerInfoXPCOM.preferredApplicationHandler && handlerQI.equals(handlerInfoXPCOM.preferredApplicationHandler)) { // this will throw // Exception { message: "Illegal value'Illegal value' when c…", result: 2147942487, name: "NS_ERROR_ILLEGAL_VALUE", filename: "chrome://mailtowebmails/content/res…", lineNumber: 136, columnNumber: 0, inner: null, data: null, stack: "ANG_APP</MODULE.toggle_install@chro…", location: XPCWrappedNative_NoHelper } // if its a bad uri //:todo: ensure no bad uris are given in url_template // handlerInfoXPCOM.preferredApplicationHandler must not be null
-						console.error('yes it was active, so lets unactivate it');
+					if (preferredHandlerIsWebApp && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate ==  aServiceEntry.url_template) {
+
 						handlerInfoXPCOM.preferredApplicationHandler = null;
 						if (handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp) {
 							//it looks like the preferredAction was to use this helper app, so now that its no longer there we will have to ask what the user wants to do next time the uesrs clicks a mailto: link
 							handlerInfoXPCOM.alwaysAskBeforeHandling = true;
 							handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.alwaysAsk; //this doesnt really do anything but its just nice to be not stale. it doesnt do anything because firefox checks handlerInfo.alwaysAskBeforeHandling to decide if it should ask. so me doing this is just formality to be looking nice
+							handlerInfoXPCOM.preferredApplicationHandler = null;
 						}
 					}
 					if (handlerQI.uriTemplate == aServiceEntry.url_template) {
