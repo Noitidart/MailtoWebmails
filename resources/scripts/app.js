@@ -227,6 +227,17 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 					throw new Error('error occured: could not find service entry for this service you are editing, this is bad, developer made an error, this should never happen');
 				}
 				
+				// make sure not a duplicate of what is currently installed and popular
+				for (var j=0; j<MODULE.mailto_services.length; j++) {
+					if (MODULE.mailto_services[j].url_template == MODULE.editing_handler_id) {
+						continue;
+					}
+					if (MODULE.mailto_services[j].url_template == MODULE.form_url_template) {
+						alert(myServices.sb.GetStringFromName('duplicate_url'));
+						return;
+					}
+				}
+				
 				var ifInstalled_url_template = MODULE.mailto_services[i].url_template;
 				var uriTemplateUpdated = false;
 				var nameUpdated = false;
@@ -334,6 +345,15 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				
 			} else {
 				// user wants add
+				
+				// make sure not a duplicate of what is currently installed and popular
+				for (var i=0; i<MODULE.mailto_services.length; i++) {
+					if (MODULE.mailto_services[i].url_template == MODULE.form_url_template) {
+						alert(myServices.sb.GetStringFromName('duplicate_url'));
+						return;
+					}
+				}
+				
 				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
 				var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
 				handler.name = MODULE.form_name;
