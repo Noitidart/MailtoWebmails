@@ -607,7 +607,7 @@ function uninstall(aData, aReason) {
 	}
 }
 
-function writeDefaultsFile(aNoOverwrite, aCBSuccess) {
+function writeDefaultsFile(aNoOverwrite, aCBSuccessAndReject) {
 	var promise_writeDefault = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(mailto_services_default), {
 		tmpPath: OSPath_installedServices + '.tmp',
 		encoding: 'utf-16',
@@ -617,8 +617,8 @@ function writeDefaultsFile(aNoOverwrite, aCBSuccess) {
 		function(aVal) {
 			console.log('Fullfilled - promise_writeDefault - ', aVal);
 			// start - do stuff here - promise_writeDefault
-			if (aCBSuccess) {
-				aCBSuccess();
+			if (aCBSuccessAndReject) {
+				aCBSuccessAndReject();
 			}
 			// end - do stuff here - promise_writeDefault
 		},
@@ -626,6 +626,9 @@ function writeDefaultsFile(aNoOverwrite, aCBSuccess) {
 			var rejObj = {name:'promise_writeDefault', aReason:aReason};
 			console.error('Rejected - promise_writeDefault - ', rejObj);
 			// deferred_createProfile.reject(rejObj);
+			if (aCBSuccessAndReject) {
+				aCBSuccessAndReject();
+			}
 		}
 	).catch(
 		function(aCaught) {
