@@ -29,7 +29,9 @@
 		<em:contributor>Akash Bhandange for HTML Design</em:contributor>
 		<em:contributor>Lester Gonzales for HTML Design</em:contributor>
 		<em:contributor>nmaier for XPCOM Protocol Education</em:contributor>
-		
+		<em:translator>markh - Dutch</em:translator>
+		<em:translator>Goofytest - French</em:translator>
+
 		<!-- start localizing - For each entry in default data MUST have equivalent in each localized block -->
 		<em:localized>
 			<Description>
@@ -41,6 +43,36 @@
 				<em:contributor>Akash Bhandange for HTML Design</em:contributor>
 				<em:contributor>Lester Gonzales for HTML Design</em:contributor>
 				<em:contributor>nmaier for XPCOM Protocol Education</em:contributor>
+				<em:translator>markh - Dutch</em:translator>
+				<em:translator>Goofytest - French</em:translator>
+			</Description>
+		</em:localized>
+		<em:localized>
+			<Description>
+				<em:locale>fr</em:locale>
+				<em:name>MailtoWebmails</em:name>
+				<em:description>Un outil qui vous permet d'ajouter ou supprimer des services de webmail populaires à partir des liens mailto dans Firefox</em:description>
+				<em:creator>Noitidart</em:creator>
+				<em:contributor>David Lanham</em:contributor>
+				<em:contributor>Akash Bhandange</em:contributor>
+				<em:contributor>Lester Gonzales</em:contributor>
+				<em:contributor>nmaier</em:contributor>
+				<em:translator>markh</em:translator>
+				<em:translator>Goofytest</em:translator>
+			</Description>
+		</em:localized>
+		<em:localized>
+			<Description>
+				<em:locale>nl</em:locale>
+				<em:name>MailtoWebmails</em:name>
+				<em:description>Hulpmiddel voor het toevoegen en/of verwijderen van mailto-servicehandlers aan Firefox voor populaire webmailservices.</em:description>
+				<em:creator>Noitidart</em:creator>
+				<em:contributor>David Lanham</em:contributor>
+				<em:contributor>Akash Bhandange</em:contributor>
+				<em:contributor>Lester Gonzales</em:contributor>
+				<em:contributor>nmaier</em:contributor>
+				<em:translator>markh</em:translator>
+				<em:translator>Goofytest</em:translator>
 			</Description>
 		</em:localized>
 	  </Description>

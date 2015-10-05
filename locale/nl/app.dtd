@@ -1,0 +1,37 @@
+<!ENTITY mailtowebmails.app.addon-name "MailtoWebmails">
+<!ENTITY mailtowebmails.app.addon-description "Hulmiddel voor het toevoegen en/of verwijderen van mailto-servicehandlers aan Firefox voor populaire webmailservices.">
+
+<!ENTITY mailtowebmails.app.title "Services beheren - MailtoWebmails">
+<!ENTITY mailtowebmails.app.desc "Hiervandaan kunt u webmailservices die e-mailkoppelingen verwerken als u ze aanklikt installeren en de-installeren.">
+
+<!ENTITY mailtowebmails.app.footer "Kunt u de gewenste webmailservice niet vinden? Zoek hem op de <a href=&quot;about:mailto?discover&quot;>Ontdekkingspagina</a>. Nog steeds niet gevonden? <a href=&quot;about:mailto?#add_service&quot;>Voeg hem zelf toe</a>. Vragen? <a href=&quot;https://github.com/Noitidart/MailtoWebmails/issues&quot;>Stel ze hier</a>.">
+
+<!ENTITY mailtowebmails.app.discover "Ontdekken">
+<!ENTITY mailtowebmails.app.manage "Beheren">
+
+<!ENTITY mailtowebmails.app.discovered-services "Ontdekte services">
+<!ENTITY mailtowebmails.app.popular-services "Populaire services">
+
+<!ENTITY mailtowebmails.app.enter-provider-name "Voer providernaam in">
+<!ENTITY mailtowebmails.app.enter-wildcard-url "Voer wildcard-URL in">
+<!ENTITY mailtowebmails.app.enter-description "Voer beschrijving van deze webmailservice in">
+
+
+<!ENTITY mailtowebmails.app.css.set-as-active "Instellen als actief">
+<!ENTITY mailtowebmails.app.css.make-inactive "Inactief maken - Altijd vragen instellen">
+<!ENTITY mailtowebmails.app.css.inactive "Inactief">
+<!ENTITY mailtowebmails.app.css.active "Actief">
+<!ENTITY mailtowebmails.app.css.install "Installeren">
+<!ENTITY mailtowebmails.app.css.uninstall "De-installeren">
+<!ENTITY mailtowebmails.app.css.new "Nieuw">
+<!ENTITY mailtowebmails.app.css.updated "Bijgewerkt">
+
+<!ENTITY mailtowebmails.app.css.form-ready-edit "Klik om bewerking op te slaan of druk ‘Esc’ om bewerking af te breken">
+<!ENTITY mailtowebmails.app.css.form-ready-add "Klik om te installeren of druk ‘Esc’ om te wissen">
+
+<!ENTITY mailtowebmails.app.attention "ATTENTIE">
+
+
+<!ENTITY mailtowebmails.app.discover.footer "Kunt u de gezochte webmailservice nog steeds niet vinden? <a href=&quot;about:mailto?#add_service&quot;>Voeg deze zelf toe</a>. Vragen? <a href=&quot;https://github.com/Noitidart/MailtoWebmails/issues&quot;>Stel ze hier</a>.">
+<!ENTITY mailtowebmails.app.discover.subheader "Door gemeenschap gedeelde services">
+<!ENTITY mailtowebmails.app.discover.title "Services ontdekken - MailtoWebmails">

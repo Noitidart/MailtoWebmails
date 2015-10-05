@@ -1,0 +1,37 @@
+<!ENTITY mailtowebmails.app.addon-name "MailtoWebmails ">
+<!ENTITY mailtowebmails.app.addon-description "Un outil pour ajouter ou supprimer des services de webmail populaires à partir des liens mailto dans Firefox.">
+
+<!ENTITY mailtowebmails.app.title "Gérer le services - MailtoWebmails">
+<!ENTITY mailtowebmails.app.desc "Vous pouvez ici installer et désinstaller des services de webmail qui gèreront les liens mail quand vous cliquez sur eux.">
+
+<!ENTITY mailtowebmails.app.footer "Vous ne trouvez pas votre service de webmail préféré&nbsp;? Cherchez-le sur la <a href=&quot;about:mailto?discover&quot;>page de découverte</a>. Vous ne le voyez toujours pas ? <a href=&quot;about:mailto?#add_service&quot;>Ajoutez-le vous-même</a>. Des questions ? <a href=&quot;https://github.com/Noitidart/MailtoWebmails/issues&quot;>Posez-les ici (en anglais svp)</a>.">
+
+<!ENTITY mailtowebmails.app.discover "Découvrir">
+<!ENTITY mailtowebmails.app.manage "Gérer">
+
+<!ENTITY mailtowebmails.app.discovered-services "Sevices découverts">
+<!ENTITY mailtowebmails.app.popular-services "Sevices populaires">
+
+<!ENTITY mailtowebmails.app.enter-provider-name "Saisissez le nom d'un fournisseur de messagerie">
+<!ENTITY mailtowebmails.app.enter-wildcard-url "Saisissez l'URL avec le caractère de remplacement (joker)">
+<!ENTITY mailtowebmails.app.enter-description "Saisissez la description de ce service de webmail">
+
+
+<!ENTITY mailtowebmails.app.css.set-as-active "Activez">
+<!ENTITY mailtowebmails.app.css.make-inactive "Désactivez - Activez l'option « toujours demander ».">
+<!ENTITY mailtowebmails.app.css.inactive "Inactif">
+<!ENTITY mailtowebmails.app.css.active "Activé">
+<!ENTITY mailtowebmails.app.css.install "Installer">
+<!ENTITY mailtowebmails.app.css.uninstall "Désinstaller">
+<!ENTITY mailtowebmails.app.css.new "Nouveau">
+<!ENTITY mailtowebmails.app.css.updated "Mis à jour">
+
+<!ENTITY mailtowebmails.app.css.form-ready-edit "Cliquez pour enregistrer les modifications ou bien appuyez sur la touche Échap pour annuler les changements.">
+<!ENTITY mailtowebmails.app.css.form-ready-add "Cliquez pour installer ou bien appuyez sur la touche Échap pour effacer.">
+
+<!ENTITY mailtowebmails.app.attention "ATTENTION">
+
+
+<!ENTITY mailtowebmails.app.discover.footer "Vous ne trouvez pas votre service de webmail préféré&nbsp;? <a href=&quot;about:mailto?#add_service&quot;>Ajoutez-le vous-même</a>. Des questions ? <a href=&quot;https://github.com/Noitidart/MailtoWebmails/issues&quot;>Posez-les ici (en anglais svp)</a>.">
+<!ENTITY mailtowebmails.app.discover.subheader "Services partagés avec une communauté">
+<!ENTITY mailtowebmails.app.discover.title "Découvrez des services - MailtoWebmails">
