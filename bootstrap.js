@@ -1,7 +1,7 @@
 // Imports
 const {classes: Cc, interfaces: Ci, manager: Cm, results: Cr, utils: Cu, Constructor: CC} = Components;
 Cm.QueryInterface(Ci.nsIComponentRegistrar);
-
+Cu.import('resource://gre/modules/devtools/Console.jsm');
 const {TextDecoder, TextEncoder, OS} = Cu.import('resource://gre/modules/osfile.jsm', {});
 Cu.import('resource://gre/modules/Services.jsm');
 Cu.import('resource://gre/modules/XPCOMUtils.jsm');
@@ -20,7 +20,7 @@ const core = {
 			scripts: 'chrome://mailtowebmails/content/resources/scripts/',
 			styles: 'chrome://mailtowebmails/content/resources/styles/'
 		},
-		cache_key: 'v2.2' // set to version on release
+		cache_key: Math.random() // set to version on release
 	},
 	os: {
 		name: OS.Constants.Sys.Name.toLowerCase(),
@@ -74,9 +74,9 @@ function extendCore() {
 			
 		case 'darwin':
 			var userAgent = myServices.hph.userAgent;
-
+			//console.info('userAgent:', userAgent);
 			var version_osx = userAgent.match(/Mac OS X 10\.([\d\.]+)/);
-
+			//console.info('version_osx matched:', version_osx);
 			
 			if (!version_osx) {
 				throw new Error('Could not identify Mac OS X version.');
@@ -103,7 +103,7 @@ function extendCore() {
 			// nothing special
 	}
 	
-
+	console.log('done adding to core, it is now:', core);
 }
 
 // START - Addon Functionalities					
@@ -121,7 +121,7 @@ AboutMailto.prototype = Object.freeze({
 	},
 
 	newChannel: function(aURI, aSecurity) {
-
+		console.info('aURI:', aURI);
 		var channel;
 		if (aURI.path.toLowerCase().indexOf('?discover') > -1) {
 			channel = Services.io.newChannel(core.addon.path.content + 'app_discover.xhtml', null, null);
@@ -164,7 +164,7 @@ const fsComServer = {
 	register: function(aFsUrl) {
 		// currently set up to take only one framescript url
 		if (fsComServer.registered) {
-
+			console.warn('already registered, returning');
 			return;
 		}
 		if (aFsUrl) {
@@ -176,16 +176,16 @@ const fsComServer = {
 		if (!fsComServer.serverListenerInited) {
 			fsComServer.serverListenerInited = true;
 			Services.mm.addMessageListener(core.addon.id, fsComServer.clientMessageListener);
-
+			console.error('OK REGISTERED MM CML');
 		}
 		try {
 			var isUnregistering = Services.prefs.getBoolPref('fsCom.unregistering.' + core.addon.id);
 			if (isUnregistering) {
-
+				console.error('fsServer id of ', fsComServer.id, 'has started up but putting register to pending as it sees another with same addon id is unregestering');
 				return;  // else wait for old server to emit unregistering complete
 			} // else it should never get here as when my fsComServer is done unregistering it deletes the pref
 		} catch(ex) {
-
+			console.log('fsCom.unregistering pref does not exist for this addon id so that means there was nothing in unregistration process so continue to register');
 		}
 		
 		fsComServer.registered = true;
@@ -207,12 +207,12 @@ const fsComServer = {
 		// run every time a client is uninited, it checks if all fsComServer.aArrClientIds have been uninited
 		fsComServer.aArrClientIds.splice(fsComServer.aArrClientIds.indexOf(aClientId), 1);
 		if (fsComServer.aArrClientIds.length == 0) {
-
+			console.error('OK YAY ALL CLIENTS HAVE BEEN UNINITALIZED');
 			Services.prefs.clearUserPref('fsCom.unregistering.' + core.addon.id, false);
 			Services.mm.removeMessageListener(core.addon.id, fsComServer.clientMessageListener);
 			Services.cpmm.sendAsyncMessage(core.addon.id, {aTopic:'serverRequest_toUpdatedServer_unregisterCompleted'});
 		} else {
-
+			console.warn('some more aArrClientIds are left for unregistration:', fsComServer.aArrClientIds);
 		}
 	},
 	clientBorn: function(aClientId) {
@@ -223,7 +223,7 @@ const fsComServer = {
 		// listens to messages sent from clients (child framescripts) to me/server
 		// also from old server, to listen when to trigger updated register
 		receiveMessage: function(aMsg) {
-
+			console.error('SERVER recieving msg:', aMsg);
 			if (!('serverId' in aMsg.json) || aMsg.json.serverId == fsComServer.id) {
 				switch (aMsg.json.aTopic) {
 					case 'clientRequest_clientBorn':
@@ -246,10 +246,10 @@ const fsComServer = {
 						
 					// end - devuser edit - add your personal message topics to listen to from clients
 					default:
-
+						console.error('SERVER unrecognized aTopic:', aMsg.json.aTopic, aMsg, 'server id:', fsComServer.id);
 				}
 			} else {
-
+				console.warn('incoming message to server but it has an id and it is not of this so ignore it', 'this server id:', fsComServer.id, 'msg target server is:', aMsg.json.serverId, 'aMsg:', aMsg);
 			}
 		}
 	}
@@ -377,7 +377,7 @@ var gServerSubmitTimer = {
 	running: false,
 	callback: {
 		notify: function() {
-
+			console.log('triggered notif callback');
 			gServerSubmitTimer.running = false;
 			checkIfShouldSubmit();
 		}
@@ -413,7 +413,7 @@ function checkIfShouldSubmit() {
 			Services.prefs.setCharPref(myPrefBranch + 'pending_submit', new Date().getTime()); // set it now, in case someone else sends a message to do server update, but the server upate process is already in process
 			readFile_ifNeedSubmit_doSubmit_onFail_startTimer();
 		} else {
-
+			console.info('its been since last server submit:', (nowTime - cPrefVal), 'which is not >= serverSubmitInterval:', serverSubmitIntervalMS);
 			// start timer if it wasnt running
 			if (!gServerSubmitTimer.running) { // equivalent of testing gServerSubmitTimer.running
 				reKickOffServerSubmitTimer();
@@ -424,7 +424,7 @@ function checkIfShouldSubmit() {
 
 function reKickOffServerSubmitTimer() {
 	// start timer, if it was already running, it restarts it for another serverSubmitIntervalMS
-
+	console.error('restarting timer');
 	if (!gServerSubmitTimer.instance) { // equivalent of testing gServerSubmitTimer.running
 		gServerSubmitTimer.instance = Cc['@mozilla.org/timer;1'].createInstance(Ci.nsITimer);
 	}
@@ -437,7 +437,7 @@ function reKickOffServerSubmitTimer() {
 }
 
 function aCBTemplateForRemSubFlag(submittedUrlTemplate, submittedOldUrlTemplates) {
-
+	// console.warn('submittedUrlTemplate:', submittedUrlTemplate, 'submittedOldUrlTemplates:', submittedOldUrlTemplates);
 	Services.mm.broadcastAsyncMessage(core.addon.id, {aTopic:'serverCommand_removeSubmitFlag', submittedUrlTemplate:submittedUrlTemplate, submittedOldUrlTemplates:submittedOldUrlTemplates});
 }
 
@@ -452,7 +452,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 		var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-16'});
 		promise_readInstalledServices.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_readInstalledServices - ', aVal);
 				// start - do stuff here - promise_readInstalledServices
 				fileJson = JSON.parse(aVal);
 				step2();
@@ -460,15 +460,15 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_readInstalledServices', aReason:aReason};
-
+				console.warn('Rejected - promise_readInstalledServices - ', rejObj);
 				// deferred_createProfile.reject(rejObj);
-
+				console.warn('re kicking off timer');
 				reKickOffServerSubmitTimer();
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_readInstalledServices', aCaught:aCaught};
-
+				console.error('Caught - promise_readInstalledServices - ', rejObj);
 				// deferred_createProfile.reject(rejObj);
 			}
 		);
@@ -495,7 +495,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			step3()
 		} else {
 			// if nothing, then clear the pref, destroy the timer
-
+			console.warn('nothing in submitJson, destory timer nad clear pref');
 			Services.prefs.clearUserPref(myPrefBranch + 'pending_submit');
 			gServerSubmitTimer.instance = null;
 		}
@@ -505,7 +505,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 		// if step2 decides server submit is needed, then this does the xhr
 			// and on fail it will resetup timer
 			// or on success it will delete timer AND clear pref AND update fileJson AND write it to disk
-
+		console.info('submitting json:', submitJson);
 		var promise_submitToServer = xhr('http://mailtowebmails.site40.net/ajax/submit_edit_or_new.php', {
 			aResponseType: 'json',
 			aPostData: {
@@ -518,26 +518,26 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 		});
 		promise_submitToServer.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_submitToServer - ', aVal);
 				// start - do stuff here - promise_submitToServer
 				if (aVal && aVal.response && aVal.response.status && aVal.response.status == 'ok') {
 					step4();
 				} else {
-
+					console.error('submission failed, re-kick');
 					reKickOffServerSubmitTimer();
 				}
 				// end - do stuff here - promise_submitToServer
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_submitToServer', aReason:aReason};
-
+				console.warn('Rejected - promise_submitToServer - ', rejObj);
 				// deferred_createProfile.reject(rejObj);
 				reKickOffServerSubmitTimer();
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_submitToServer', aCaught:aCaught};
-
+				console.error('Caught - promise_submitToServer - ', rejObj);
 				// deferred_createProfile.reject(rejObj);
 			}
 		);
@@ -556,7 +556,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 		}], OS.Constants.Path.profileDir);
 		promise_updateFile.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_updateFile - ', aVal);
 				// start - do stuff here - promise_updateFile
 				for (var i=0; i<removeSubmittedFlag_CBArr.length; i++) {
 					removeSubmittedFlag_CBArr[i]();
@@ -565,13 +565,13 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_updateFile', aReason:aReason};
-
+				console.error('Rejected - promise_updateFile - ', rejObj);
 				// deferred_createProfile.reject(rejObj);
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_updateFile', aCaught:aCaught};
-
+				console.error('Caught - promise_updateFile - ', rejObj);
 				// deferred_createProfile.reject(rejObj);
 			}
 		);
@@ -582,7 +582,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 
 var gClientMessageListener = {
 	receiveMessage: function(aMsg) {
-
+		console.error('SERVER recieving msg:', aMsg);
 		switch (aMsg.json.aTopic) {
 			case core.addon.id + '::' + 'notifyBootstrapThereIsPossibleServerSubmitPending':
 					
@@ -590,7 +590,7 @@ var gClientMessageListener = {
 					
 				break;
 			default:
-
+				console.error('SERVER unrecognized aTopic:', aMsg.json.aTopic, aMsg);
 		}
 	}
 }
@@ -615,7 +615,7 @@ function writeDefaultsFile(aNoOverwrite, aCBSuccessAndReject) {
 	}], OS.Constants.Path.profileDir);
 	promise_writeDefault.then(
 		function(aVal) {
-
+			console.log('Fullfilled - promise_writeDefault - ', aVal);
 			// start - do stuff here - promise_writeDefault
 			if (aCBSuccessAndReject) {
 				aCBSuccessAndReject();
@@ -624,7 +624,7 @@ function writeDefaultsFile(aNoOverwrite, aCBSuccessAndReject) {
 		},
 		function(aReason) {
 			var rejObj = {name:'promise_writeDefault', aReason:aReason};
-
+			console.error('Rejected - promise_writeDefault - ', rejObj);
 			// deferred_createProfile.reject(rejObj);
 			if (aCBSuccessAndReject) {
 				aCBSuccessAndReject();
@@ -633,7 +633,7 @@ function writeDefaultsFile(aNoOverwrite, aCBSuccessAndReject) {
 	).catch(
 		function(aCaught) {
 			var rejObj = {name:'promise_writeDefault', aCaught:aCaught};
-
+			console.error('Caught - promise_writeDefault - ', rejObj);
 			// deferred_createProfile.reject(rejObj);
 		}
 	);
@@ -698,12 +698,12 @@ function makeDir_Bug934283(path, options) {
 	// options of like ignoreExisting is exercised on final dir
 	
 	if (!options || !('from' in options)) {
-
+		console.error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
 		throw new Error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
 	}
 
 	if (path.toLowerCase().indexOf(options.from.toLowerCase()) == -1) {
-
+		console.error('The `from` string was not found in `path` string');
 		throw new Error('The `from` string was not found in `path` string');
 	}
 
@@ -711,7 +711,7 @@ function makeDir_Bug934283(path, options) {
 	delete options.from;
 
 	var dirsToMake = OS.Path.split(path).components.slice(OS.Path.split(options_from).components.length);
-
+	console.log('dirsToMake:', dirsToMake);
 
 	var deferred_makeDir_Bug934283 = new Deferred();
 	var promise_makeDir_Bug934283 = deferred_makeDir_Bug934283.promise;
@@ -723,7 +723,7 @@ function makeDir_Bug934283(path, options) {
 		var promise_makeDir = OS.File.makeDir(pathExistsForCertain, options);
 		promise_makeDir.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_makeDir - ', 'ensured/just made:', pathExistsForCertain, aVal);
 				if (dirsToMake.length > 0) {
 					makeDirRecurse();
 				} else {
@@ -736,13 +736,13 @@ function makeDir_Bug934283(path, options) {
 					aReason: aReason,
 					curPath: pathExistsForCertain
 				};
-
+				console.error('Rejected - ' + rejObj.promiseName + ' - ', rejObj);
 				deferred_makeDir_Bug934283.reject(rejObj);
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_makeDir', aCaught:aCaught};
-
+				console.error('Caught - promise_makeDir - ', rejObj);
 				deferred_makeDir_Bug934283.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -772,22 +772,22 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 	
 	// setup retry
 	var retryIt = function() {
-
+		console.info('tryosFile_ retryIt', 'nameOfOsFileFunc:', nameOfOsFileFunc, 'argsOfOsFileFunc:', argsOfOsFileFunc);
 		var promise_retryAttempt = OS.File[nameOfOsFileFunc].apply(OS.File, argsOfOsFileFunc);
 		promise_retryAttempt.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_retryAttempt - ', aVal);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.resolve('retryAttempt succeeded');
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_retryAttempt', aReason:aReason};
-
+				console.error('Rejected - promise_retryAttempt - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); //throw rejObj;
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_retryAttempt', aCaught:aCaught};
-
+				console.error('Caught - promise_retryAttempt - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -823,15 +823,15 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		var promise_makeDirsRecurse = makeDir_Bug934283(toDir, {from: fromDir});
 		promise_makeDirsRecurse.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_makeDirsRecurse - ', aVal);
 				retryIt();
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_makeDirsRecurse', aReason:aReason};
-
+				console.error('Rejected - promise_makeDirsRecurse - ', rejObj);
 				/*
 				if (aReason.becauseNoSuchFile) {
-
+					console.log('make dirs then do retryAttempt');
 					makeDirs();
 				} else {
 					// did not get becauseNoSuchFile, which means the dirs exist (from my testing), so reject with this error
@@ -844,7 +844,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_makeDirsRecurse', aCaught:aCaught};
-
+				console.error('Caught - promise_makeDirsRecurse - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -852,17 +852,17 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 
 	var doInitialAttempt = function() {
 		var promise_initialAttempt = OS.File[nameOfOsFileFunc].apply(OS.File, argsOfOsFileFunc);
-
+		console.info('tryosFile_ initial', 'nameOfOsFileFunc:', nameOfOsFileFunc, 'argsOfOsFileFunc:', argsOfOsFileFunc);
 		promise_initialAttempt.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_initialAttempt - ', aVal);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.resolve('initialAttempt succeeded');
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_initialAttempt', aReason:aReason};
-
+				console.error('Rejected - promise_initialAttempt - ', rejObj);
 				if (aReason.becauseNoSuchFile) { // this is the flag that gets set to true if parent dir(s) dont exist, i saw this from experience
-
+					console.log('make dirs then do secondAttempt');
 					makeDirs();
 				} else {
 					deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); //throw rejObj;
@@ -871,7 +871,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_initialAttempt', aCaught:aCaught};
-
+				console.error('Caught - promise_initialAttempt - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -885,7 +885,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		var promise_checkDirExistsFirstAsCausesNeutering = OS.File.exists(toDir);
 		promise_checkDirExistsFirstAsCausesNeutering.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_checkDirExistsFirstAsCausesNeutering - ', aVal);
 				// start - do stuff here - promise_checkDirExistsFirstAsCausesNeutering
 				if (!aVal) {
 					makeDirs();
@@ -896,13 +896,13 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_checkDirExistsFirstAsCausesNeutering', aReason:aReason};
-
+				console.warn('Rejected - promise_checkDirExistsFirstAsCausesNeutering - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj);
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_checkDirExistsFirstAsCausesNeutering', aCaught:aCaught};
-
+				console.error('Caught - promise_checkDirExistsFirstAsCausesNeutering - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj);
 			}
 		);
@@ -957,7 +957,7 @@ function read_encoded(path, options) {
 	
 	promise_readIt.then(
 		function(aVal) {
-
+			console.log('Fullfilled - promise_readIt - ', {a:{a:aVal}});
 			// start - do stuff here - promise_readIt
 			var readStr;
 			if (Services.vc.compare(Services.appinfo.version, 30) < 0) { // tests if version is less then 30
@@ -970,13 +970,13 @@ function read_encoded(path, options) {
 		},
 		function(aReason) {
 			var rejObj = {name:'promise_readIt', aReason:aReason};
-
+			console.error('Rejected - promise_readIt - ', rejObj);
 			deferred_read_encoded.reject(rejObj);
 		}
 	).catch(
 		function(aCaught) {
 			var rejObj = {name:'promise_readIt', aCaught:aCaught};
-
+			console.error('Caught - promise_readIt - ', rejObj);
 			deferred_read_encoded.reject(rejObj);
 		}
 	);
@@ -1059,7 +1059,7 @@ function xhr(aStr, aOptions={}) {
 	// Note: When using XMLHttpRequest to access a file:// URL the request.status is not properly set to 200 to indicate success. In such cases, request.readyState == 4, request.status == 0 and request.response will evaluate to true.
 	
 	var deferredMain_xhr = new Deferred();
-
+	console.log('here222');
 	var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
 
 	var handler = ev => {
@@ -1128,7 +1128,7 @@ function xhr(aStr, aOptions={}) {
 	}
 	
 	if (aOptions.aTimeout) {
-
+		console.error('setting timeout to:', aOptions.aTimeout)
 		xhr.timeout = aOptions.aTimeout;
 	}
 	
@@ -1156,10 +1156,10 @@ function xhr(aStr, aOptions={}) {
 		var aPostStr = [];
 		for (var pd in aOptions.aPostData) {
 			aPostStr.push(pd + '=' + encodeURIComponent(aOptions.aPostData[pd])); // :todo: figure out if should encodeURIComponent `pd` also figure out if encodeURIComponent is the right way to do this
-
+			console.info(aPostStr[aPostStr.length-1]);
 		}
 		aPostStr = aPostStr.join('&');
-
+		console.info('aPostStr:', aPostStr);
 		xhr.send(aPostStr);
 	} else {
 		xhr.open(aOptions.aMethod ? aOptions.aMethod : 'GET', aStr, true);
