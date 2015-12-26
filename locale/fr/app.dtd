@@ -32,6 +32,6 @@
 <!ENTITY mailtowebmails.app.attention "ATTENTION">
 
 
-<!ENTITY mailtowebmails.app.discover.footer "Vous ne trouvez pas votre service de webmail préféré&nbsp;? <a href=&#34;about:mailto?#add_service&#34;>Ajoutez-le vous-même</a>. Des questions ? <a href=&#34;https://github.com/Noitidart/MailtoWebmails/issues&#34;>Posez-les ici (en anglais svp)</a>.">
+<!ENTITY mailtowebmails.app.discover.footer "Vous ne trouvez pas votre service de webmail préféré? <a href=&#34;about:mailto?#add_service&#34;>Ajoutez-le vous-même</a>. Des questions ? <a href=&#34;https://github.com/Noitidart/MailtoWebmails/issues&#34;>Posez-les ici (en anglais svp)</a>.">
 <!ENTITY mailtowebmails.app.discover.subheader "Services partagés avec une communauté">
 <!ENTITY mailtowebmails.app.discover.title "Découvrez des services - MailtoWebmails">
