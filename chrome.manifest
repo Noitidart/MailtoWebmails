@@ -2,3 +2,4 @@ content mailtowebmails ./
 locale mailtowebmails en-US locale/en-US/
 locale mailtowebmails fr locale/fr/
 locale mailtowebmails nl locale/nl/
+locale mailtowebmails sl locale/sl/

@@ -4,7 +4,7 @@
 <!ENTITY mailtowebmails.app.title "Services beheren - MailtoWebmails">
 <!ENTITY mailtowebmails.app.desc "Hiervandaan kunt u webmailservices die e-mailkoppelingen verwerken als u ze aanklikt installeren en de-installeren.">
 
-<!ENTITY mailtowebmails.app.footer "Kunt u de gewenste webmailservice niet vinden? Zoek hem op de <a href=&quot;about:mailto?discover&quot;>Ontdekkingspagina</a>. Nog steeds niet gevonden? <a href=&quot;about:mailto?#add_service&quot;>Voeg hem zelf toe</a>. Vragen? <a href=&quot;https://github.com/Noitidart/MailtoWebmails/issues&quot;>Stel ze hier</a>.">
+<!ENTITY mailtowebmails.app.footer "Kunt u de gewenste webmailservice niet vinden? Zoek hem op de <a href=&#34;about:mailto?discover&#34;>Ontdekkingspagina</a>. Nog steeds niet gevonden? <a href=&#34;about:mailto?#add_service&#34;>Voeg hem zelf toe</a>. Vragen? <a href=&#34;https://github.com/Noitidart/MailtoWebmails/issues&#34;>Stel ze hier</a>.">
 
 <!ENTITY mailtowebmails.app.discover "Ontdekken">
 <!ENTITY mailtowebmails.app.manage "Beheren">
@@ -32,6 +32,6 @@
 <!ENTITY mailtowebmails.app.attention "ATTENTIE">
 
 
-<!ENTITY mailtowebmails.app.discover.footer "Kunt u de gezochte webmailservice nog steeds niet vinden? <a href=&quot;about:mailto?#add_service&quot;>Voeg deze zelf toe</a>. Vragen? <a href=&quot;https://github.com/Noitidart/MailtoWebmails/issues&quot;>Stel ze hier</a>.">
+<!ENTITY mailtowebmails.app.discover.footer "Kunt u de gezochte webmailservice nog steeds niet vinden? <a href=&#34;about:mailto?#add_service&#34;>Voeg deze zelf toe</a>. Vragen? <a href=&#34;https://github.com/Noitidart/MailtoWebmails/issues&#34;>Stel ze hier</a>.">
 <!ENTITY mailtowebmails.app.discover.subheader "Door gemeenschap gedeelde services">
 <!ENTITY mailtowebmails.app.discover.title "Services ontdekken - MailtoWebmails">

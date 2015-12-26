@@ -1,0 +1,37 @@
+<!ENTITY mailtowebmails.app.addon-name "MailtoWebmails">
+<!ENTITY mailtowebmails.app.addon-description "Orodje za dodajanje in/ali odstranjevanje krmilnika storitve mailto v Firefox za priljubljene spletne storitve.">
+
+<!ENTITY mailtowebmails.app.title "Upravljaj s storitvami - MailtoWebmails">
+<!ENTITY mailtowebmails.app.desc "Od tu lahko namestite in odstranite spletne storitve, ki bodo obdelale e-poštne povezave, ko na njih kliknete.">
+
+<!ENTITY mailtowebmails.app.footer "Ne najdete želene spletne storitve? Poiščite jo na <a href=&#34;about:mailto?discover&#34;>Strani za odkrivanje </a>. Je še vedno ne najdete? <a href=&#34;about:mailto?#add_service&#34;>Dodajte jo sami</a>. Vprašanja? <a href=&#34;https://github.com/Noitidart/MailtoWebmails/issues&#34;>Vprašajte tu</a>.">
+
+<!ENTITY mailtowebmails.app.discover "Odkrij">
+<!ENTITY mailtowebmails.app.manage "Upravljanje">
+
+<!ENTITY mailtowebmails.app.discovered-services "Odkrite storitve">
+<!ENTITY mailtowebmails.app.popular-services "Priljubljene storitve">
+
+<!ENTITY mailtowebmails.app.enter-provider-name "Vnesite ime ponudnika">
+<!ENTITY mailtowebmails.app.enter-wildcard-url "Vnesite URL z nadomestnimi znaki">
+<!ENTITY mailtowebmails.app.enter-description "Vnesite opis te spletne storitve">
+
+
+<!ENTITY mailtowebmails.app.css.set-as-active "Nastavi kot dejavnega">
+<!ENTITY mailtowebmails.app.css.make-inactive "Naredi nedejavnega - Omogoči &#34;Vedno vprašaj&#34;">
+<!ENTITY mailtowebmails.app.css.inactive "Nedejaven">
+<!ENTITY mailtowebmails.app.css.active "Dejaven">
+<!ENTITY mailtowebmails.app.css.install "Namesti">
+<!ENTITY mailtowebmails.app.css.uninstall "Odstrani">
+<!ENTITY mailtowebmails.app.css.new "Nov">
+<!ENTITY mailtowebmails.app.css.updated "Posodobljen">
+
+<!ENTITY mailtowebmails.app.css.form-ready-edit "Kliknite, da shranite urejanje ali pritisnite &#34;Esc&#34;, da ga prekličete">
+<!ENTITY mailtowebmails.app.css.form-ready-add "Kliknite, da namestite ali pritisnite &#34;Esc&#34;, da počistite">
+
+<!ENTITY mailtowebmails.app.attention "POZOR">
+
+
+<!ENTITY mailtowebmails.app.discover.footer "Še vedno ne najdete želene spletne storitve? <a href=&#34;about:mailto?#add_service&#34;>Dodajte jo sami</a>. Vprašanja? <a href=&#34;https://github.com/Noitidart/MailtoWebmails/issues&#34;>Vprašajte tu</a>.">
+<!ENTITY mailtowebmails.app.discover.subheader "Storitve, ki jih deli skupnost">
+<!ENTITY mailtowebmails.app.discover.title "Odkrijte storitve - MailtoWebmails">

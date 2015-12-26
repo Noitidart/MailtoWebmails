@@ -1,37 +1,37 @@
-<!ENTITY mailtowebmails.app.addon-name 'MailtoWebmails'>
-<!ENTITY mailtowebmails.app.addon-description 'Tool for adding and/or removing mailto service handlers to Firefox for popular webmail services.'>
+<!ENTITY mailtowebmails.app.addon-name "MailtoWebmails">
+<!ENTITY mailtowebmails.app.addon-description "Tool for adding and/or removing mailto service handlers to Firefox for popular webmail services.">
 
-<!ENTITY mailtowebmails.app.title 'Manage Services - MailtoWebmails'>
-<!ENTITY mailtowebmails.app.desc 'From here you can install and uninstall webmail services that will handle eMail links when you click them.'>
+<!ENTITY mailtowebmails.app.title "Manage Services - MailtoWebmails">
+<!ENTITY mailtowebmails.app.desc "From here you can install and uninstall webmail services that will handle eMail links when you click them.">
 
-<!ENTITY mailtowebmails.app.footer 'Can&#39;t find the webmail service you wanted? Find it on the <a href="about:mailto?discover">Discover page</a>. Still not there? <a href="about:mailto?#add_service">Add it yourself</a>. Questions? <a href="https://github.com/Noitidart/MailtoWebmails/issues">Ask here</a>.'>
+<!ENTITY mailtowebmails.app.footer "Can't find the webmail service you wanted? Find it on the <a href=&#34;about:mailto?discover&#34;>Discover page</a>. Still not there? <a href=&#34;about:mailto?#add_service&#34;>Add it yourself</a>. Questions? <a href=&#34;https://github.com/Noitidart/MailtoWebmails/issues&#34;>Ask here</a>.">
 
-<!ENTITY mailtowebmails.app.discover 'Discover'>
-<!ENTITY mailtowebmails.app.manage 'Manage'>
+<!ENTITY mailtowebmails.app.discover "Discover">
+<!ENTITY mailtowebmails.app.manage "Manage">
 
-<!ENTITY mailtowebmails.app.discovered-services 'Discovered Services'>
-<!ENTITY mailtowebmails.app.popular-services 'Popular Services'>
+<!ENTITY mailtowebmails.app.discovered-services "Discovered Services">
+<!ENTITY mailtowebmails.app.popular-services "Popular Services">
 
-<!ENTITY mailtowebmails.app.enter-provider-name 'Enter provider name'>
-<!ENTITY mailtowebmails.app.enter-wildcard-url 'Enter wildcard compose URL'>
-<!ENTITY mailtowebmails.app.enter-description 'Enter description of this webmail service'>
-
-
-<!ENTITY mailtowebmails.app.css.set-as-active 'Set as Active'>
-<!ENTITY mailtowebmails.app.css.make-inactive 'Make Inactive - Enable Always Ask'>
-<!ENTITY mailtowebmails.app.css.inactive 'Inactive'>
-<!ENTITY mailtowebmails.app.css.active 'Active'>
-<!ENTITY mailtowebmails.app.css.install 'Install'>
-<!ENTITY mailtowebmails.app.css.uninstall 'Uninstall'>
-<!ENTITY mailtowebmails.app.css.new 'New'>
-<!ENTITY mailtowebmails.app.css.updated 'Updated'>
-
-<!ENTITY mailtowebmails.app.css.form-ready-edit 'Click to save edit or hit "Esc" to cancel edit'>
-<!ENTITY mailtowebmails.app.css.form-ready-add 'Click to install or hit "Esc" to clear'>
-
-<!ENTITY mailtowebmails.app.attention 'ATTENTION'>
+<!ENTITY mailtowebmails.app.enter-provider-name "Enter provider name">
+<!ENTITY mailtowebmails.app.enter-wildcard-url "Enter wildcard compose URL">
+<!ENTITY mailtowebmails.app.enter-description "Enter description of this webmail service">
 
 
-<!ENTITY mailtowebmails.app.discover.footer 'Still can&#39;t find the webmail service you were looking for? <a href="about:mailto?#add_service">Add it yourself</a>. Questions? <a href="https://github.com/Noitidart/MailtoWebmails/issues">Ask here</a>.'>
-<!ENTITY mailtowebmails.app.discover.subheader 'Community Shared Services'>
-<!ENTITY mailtowebmails.app.discover.title 'Discover Services - MailtoWebmails'>
+<!ENTITY mailtowebmails.app.css.set-as-active "Set as Active">
+<!ENTITY mailtowebmails.app.css.make-inactive "Make Inactive - Enable Always Ask">
+<!ENTITY mailtowebmails.app.css.inactive "Inactive">
+<!ENTITY mailtowebmails.app.css.active "Active">
+<!ENTITY mailtowebmails.app.css.install "Install">
+<!ENTITY mailtowebmails.app.css.uninstall "Uninstall">
+<!ENTITY mailtowebmails.app.css.new "New">
+<!ENTITY mailtowebmails.app.css.updated "Updated">
+
+<!ENTITY mailtowebmails.app.css.form-ready-edit "Click to save edit or hit &#34;Esc&#34; to cancel edit">
+<!ENTITY mailtowebmails.app.css.form-ready-add "Click to install or hit &#34;Esc&#34; to clear">
+
+<!ENTITY mailtowebmails.app.attention "ATTENTION">
+
+
+<!ENTITY mailtowebmails.app.discover.footer "Still can't find the webmail service you were looking for? <a href=&#34;about:mailto?#add_service&#34;>Add it yourself</a>. Questions? <a href=&#34;https://github.com/Noitidart/MailtoWebmails/issues&#34;>Ask here</a>.">
+<!ENTITY mailtowebmails.app.discover.subheader "Community Shared Services">
+<!ENTITY mailtowebmails.app.discover.title "Discover Services - MailtoWebmails">

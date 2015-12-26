@@ -4,7 +4,7 @@
 <!ENTITY mailtowebmails.app.title "Gérer le services - MailtoWebmails">
 <!ENTITY mailtowebmails.app.desc "Vous pouvez ici installer et désinstaller des services de webmail qui gèreront les liens mail quand vous cliquez sur eux.">
 
-<!ENTITY mailtowebmails.app.footer "Vous ne trouvez pas votre service de webmail préféré&nbsp;? Cherchez-le sur la <a href=&quot;about:mailto?discover&quot;>page de découverte</a>. Vous ne le voyez toujours pas ? <a href=&quot;about:mailto?#add_service&quot;>Ajoutez-le vous-même</a>. Des questions ? <a href=&quot;https://github.com/Noitidart/MailtoWebmails/issues&quot;>Posez-les ici (en anglais svp)</a>.">
+<!ENTITY mailtowebmails.app.footer "Vous ne trouvez pas votre service de webmail préféré? Cherchez-le sur la <a href=&#34;about:mailto?discover&#34;>page de découverte</a>. Vous ne le voyez toujours pas ? <a href=&#34;about:mailto?#add_service&#34;>Ajoutez-le vous-même</a>. Des questions ? <a href=&#34;https://github.com/Noitidart/MailtoWebmails/issues&#34;>Posez-les ici (en anglais svp)</a>.">
 
 <!ENTITY mailtowebmails.app.discover "Découvrir">
 <!ENTITY mailtowebmails.app.manage "Gérer">
@@ -32,6 +32,6 @@
 <!ENTITY mailtowebmails.app.attention "ATTENTION">
 
 
-<!ENTITY mailtowebmails.app.discover.footer "Vous ne trouvez pas votre service de webmail préféré&nbsp;? <a href=&quot;about:mailto?#add_service&quot;>Ajoutez-le vous-même</a>. Des questions ? <a href=&quot;https://github.com/Noitidart/MailtoWebmails/issues&quot;>Posez-les ici (en anglais svp)</a>.">
+<!ENTITY mailtowebmails.app.discover.footer "Vous ne trouvez pas votre service de webmail préféré&nbsp;? <a href=&#34;about:mailto?#add_service&#34;>Ajoutez-le vous-même</a>. Des questions ? <a href=&#34;https://github.com/Noitidart/MailtoWebmails/issues&#34;>Posez-les ici (en anglais svp)</a>.">
 <!ENTITY mailtowebmails.app.discover.subheader "Services partagés avec une communauté">
 <!ENTITY mailtowebmails.app.discover.title "Découvrez des services - MailtoWebmails">
