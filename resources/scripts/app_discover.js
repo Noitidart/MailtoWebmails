@@ -72,21 +72,21 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 		};
 	}])
 	.controller('BodyController', ['$scope', '$sce', function($scope, $sce) {
-		
+
 		var MODULE = this;
-		
+
 		MODULE.mailto_services = [];
 		MODULE.mailto_services_updated_details = {};
 		MODULE.editing_handler_id = null; // id is uriTemplate/url_handler
 		MODULE.attn_msg = $sce.trustAsHtml(myServices.sb.GetStringFromName('attn_connecting'));
-		
+
 		MODULE.toggle_active = function(aServiceEntry) {
 			if (!aServiceEntry.active) {
 				for (var i=0; i<MODULE.mailto_services.length; i++) {
 					MODULE.mailto_services[i].active = false;
 				}
 				aServiceEntry.active = true;
-				
+
 				// find this handler and set it as active
 				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
 				var handlers = handlerInfoXPCOM.possibleApplicationHandlers.enumerate();
@@ -103,7 +103,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				// :todo: troubleshoot, if not found
 			} else {
 				aServiceEntry.active = false;
-				
+
 				// implement to firefox, to ask on next click, as this one was active
 				// ensure that this handler was active
 				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
@@ -131,7 +131,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 			if (!aServiceEntry.installed) {
 				aServiceEntry.active = false;
 			}
-			
+
 			// implement update to firefox
 			var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
 			if (aServiceEntry.installed) {
@@ -141,7 +141,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				handlerInfoXPCOM.possibleApplicationHandlers.appendElement(handler, false);
 				toggleServiceFromFile(1, aServiceEntry);
 			} else {
-				
+
 				var preferredHandlerIsWebApp;
 				if (handlerInfoXPCOM.preferredApplicationHandler) {
 					try {
@@ -151,7 +151,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 						preferredHandlerIsWebApp = false;
 					}
 				}
-				
+
 				var nHandlers = handlerInfoXPCOM.possibleApplicationHandlers.length;
 				for (var i=0; i<nHandlers; i++) {
 					var handlerQI = handlerInfoXPCOM.possibleApplicationHandlers.queryElementAt(i, Ci.nsIWebHandlerApp);
@@ -171,13 +171,13 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 			}
 			myServices.hs.store(handlerInfoXPCOM);
 		};
-		
+
 		MODULE.edit = function(aServiceEntry) {
-			
+
 		};
-		
+
 		MODULE.add = function() {
-			
+
 		};
 
 		MODULE.info = function() {
@@ -194,15 +194,15 @@ function doOnLoad() {
 	var gAngBody = angular.element(document.body);
 	gAngScope = gAngBody.scope();
 	gAngInjector = gAngBody.injector();
-	
-	var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-16'});
-	
+
+	var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-8'});
+
 	// check and get whats currently installed/active
 	var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
 
     //start - find installed handlers
     var handlersXPCOM = handlerInfoXPCOM.possibleApplicationHandlers.enumerate();
-	
+
 	var handlers = [];
     while (handlersXPCOM.hasMoreElements()) {
         var handler = handlersXPCOM.getNext().QueryInterface(Ci.nsIWebHandlerApp);
@@ -275,12 +275,12 @@ function tryUpdate() {
 					gAngScope.BC.attn_msg = gAngInjector.get('$sce').trustAsHtml(aVal.response.reason);
 				} else {
 					gAngScope.BC.attn_msg = null;
-					
+
 					var responseJson = aVal.response;
 					console.info('repsonse json:', aVal.response);
-					
+
 					var responseHandlers = responseJson.social_handlers;
-					
+
 					// delete from responseHandlers whatever is installed // as only getting group 1, so if its installed then it shows. if uninstalled it does not exist on user
 					for (var server_url_template in responseHandlers) {
 						var server_old_url_templates = responseHandlers[server_url_template].old_url_templates;
@@ -300,7 +300,7 @@ function tryUpdate() {
 								}
 							}
 							// end - get installed_old_url_templates from file
-							
+
 							// now test if its installed
 							if (areUrlTemplatesOfSame(installed_url_template, installed_old_url_templates, server_url_template, server_old_url_templates)) {
 								console.error('it was found that url_template of', server_url_template, 'is already installed by user, so do not show this one, it might be that server_url_template occurs in old_url_templates and we will let the update on Manage page take care of updating it as i dont show update labels on Discover page, old_url_templates:', responseHandlers[server_url_template].old_url_templates);
@@ -309,14 +309,14 @@ function tryUpdate() {
 							}
 						}
 					}
-					
+
 					gHandlers = null;
-					
+
 					// create mailto_services obj
 					for (var url_template in responseHandlers) {
 						gAngScope.BC.mailto_services.push(responseHandlers[url_template]);
 					}
-				}			
+				}
 			}
 			gAngScope.$digest();
 			// end - do stuff here - promise_fetchUpdates
@@ -339,22 +339,22 @@ function tryUpdate() {
 
 function areUrlTemplatesOfSame(aUrlTemplate_1, aOldUrlTemplates_1, aUrlTemplate_2, aOldUrlTemplates_2) {
 	// tests if handler 1 is same as handler 2 by checking url_template and old_url_templates
-	
+
 	// test if aUrlTemplate_1 is the same as aUrlTemplate_2
 	if (aUrlTemplate_1 == aUrlTemplate_2) {
 		return true;
 	}
-	
+
 	// test if aUrlTemplate_1 is in aOldUrlTemplates_2
 	if (aOldUrlTemplates_2.indexOf(aUrlTemplate_1) > -1) {
 		return true;
 	}
-	
+
 	// test if aUrlTemplate_2 is in aOldUrlTemplates_1
 	if (aOldUrlTemplates_1.indexOf(aUrlTemplate_2) > -1) {
 		return true;
 	}
-	
+
 	// test if any of aOldUrlTemplates_1 are in aOldUrlTemplates_2 (this is same as doing reverse test of if any aOldUrlTemplates_2 are in aOldUrlTemplates_1)
 	for (var l=0; l<aOldUrlTemplates_1.length; l++) {
 		for (var m=0; m<aOldUrlTemplates_2.length; m++) {
@@ -363,7 +363,7 @@ function areUrlTemplatesOfSame(aUrlTemplate_1, aOldUrlTemplates_1, aUrlTemplate_
 			}
 		}
 	}
-	
+
 	return false;
 }
 
@@ -371,9 +371,9 @@ function toggleServiceFromFile(aAddOrRemove, aServiceEntry) {
 	// set aAddOrRemove to 0 for removing, and to 1 for adding
 	// if 0 and not there, it wont do anything as its already not there - same goes for 1
 	var file_json;
-	
+
 	var do_readFile = function() {
-		var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-16'});
+		var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-8'});
 		promise_readInstalledServices.then(
 			function(aVal) {
 				console.log('Fullfilled - promise_readInstalledServices - ', aVal);
@@ -401,9 +401,9 @@ function toggleServiceFromFile(aAddOrRemove, aServiceEntry) {
 			}
 		);
 	};
-	
+
 	var do_checkFileJson = function() {
-		
+
 		var itFound = false;
 		var itUpdated = false;
 		for (var i=0; i<file_json.length; i++) {
@@ -412,7 +412,7 @@ function toggleServiceFromFile(aAddOrRemove, aServiceEntry) {
 				break;
 			}
 		}
-		
+
 		if (aAddOrRemove) {
 			// devuser wants add
 			if (itFound) {
@@ -436,19 +436,19 @@ function toggleServiceFromFile(aAddOrRemove, aServiceEntry) {
 				file_json.splice(i, 1);
 			}
 		}
-		
+
 		if (itUpdated) {
 			do_writeUpdated();
 		}
 	};
-	
+
 	var do_writeUpdated = function() {
 		// only called if json was updated
 		var stringified = JSON.stringify(file_json);
-		
-		var promise_overwrite = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + stringified, {
+
+		var promise_overwrite = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, stringified, {
 			tmpPath: OSPath_installedServices + '.tmp',
-			encoding: 'utf-16',
+			encoding: 'utf-8',
 			noOverwrite: false
 		}], OS.Constants.Path.profileDir);
 		promise_overwrite.then(
@@ -470,7 +470,7 @@ function toggleServiceFromFile(aAddOrRemove, aServiceEntry) {
 			}
 		);
 	};
-	
+
 	do_readFile();
 }
 
@@ -487,20 +487,20 @@ function read_encoded(path, options) {
 	// because the options.encoding was introduced only in Fx30, this function enables previous Fx to use it
 	// must pass encoding to options object, same syntax as OS.File.read >= Fx30
 	// TextDecoder must have been imported with Cu.importGlobalProperties(['TextDecoder']);
-	
+
 	var deferred_read_encoded = new Deferred();
-	
+
 	if (options && !('encoding' in options)) {
 		deferred_read_encoded.reject('Must pass encoding in options object, otherwise just use OS.File.read');
 		return deferred_read_encoded.promise;
 	}
-	
+
 	if (options && Services.vc.compare(Services.appinfo.version, 30) < 0) { // tests if version is less then 30
 		//var encoding = options.encoding; // looks like i dont need to pass encoding to TextDecoder, not sure though for non-utf-8 though
 		delete options.encoding;
 	}
 	var promise_readIt = OS.File.read(path, options);
-	
+
 	promise_readIt.then(
 		function(aVal) {
 			console.log('Fullfilled - promise_readIt - ', {a:{a:aVal}});
@@ -526,7 +526,7 @@ function read_encoded(path, options) {
 			deferred_read_encoded.reject(rejObj);
 		}
 	);
-	
+
 	return deferred_read_encoded.promise;
 }
 function makeDir_Bug934283(path, options) {
@@ -534,7 +534,7 @@ function makeDir_Bug934283(path, options) {
 	// the `from` option should be a string of a folder that you know exists for sure. then the dirs after that, in path will be created
 	// for example: path should be: `OS.Path.join('C:', 'thisDirExistsForSure', 'may exist', 'may exist2')`, and `from` should be `OS.Path.join('C:', 'thisDirExistsForSure')`
 	// options of like ignoreExisting is exercised on final dir
-	
+
 	if (!options || !('from' in options)) {
 		console.error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
 		throw new Error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
@@ -593,21 +593,21 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 	//last update: 061215 0303p - verified worker version didnt have the fix i needed to land here ALSO FIXED so it handles neutering of Fx37 for writeAtomic and I HAD TO implement this fix to worker version, fix was to introduce aOptions.causesNeutering
 	// aOptions:
 		// causesNeutering - default is false, if you use writeAtomic or another function and use an ArrayBuffer then set this to true, it will ensure directory exists first before trying. if it tries then fails the ArrayBuffer gets neutered and the retry will fail with "invalid arguments"
-		
+
 	// i use this with writeAtomic, copy, i havent tested with other things
 	// argsOfOsFileFunc is array of args
 	// will execute nameOfOsFileFunc with argsOfOsFileFunc, if rejected and reason is directories dont exist, then dirs are made then rexecute the nameOfOsFileFunc
 	// i added makeDir as i may want to create a dir with ignoreExisting on final dir as was the case in pickerIconset()
 	// returns promise
-	
+
 	var deferred_tryOsFile_ifDirsNoExistMakeThenRetry = new Deferred();
-	
+
 	if (['writeAtomic', 'copy', 'makeDir'].indexOf(nameOfOsFileFunc) == -1) {
 		deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject('nameOfOsFileFunc of "' + nameOfOsFileFunc + '" is not supported');
 		// not supported because i need to know the source path so i can get the toDir for makeDir on it
 		return deferred_tryOsFile_ifDirsNoExistMakeThenRetry.promise; //just to exit further execution
 	}
-	
+
 	// setup retry
 	var retryIt = function() {
 		console.info('tryosFile_ retryIt', 'nameOfOsFileFunc:', nameOfOsFileFunc, 'argsOfOsFileFunc:', argsOfOsFileFunc);
@@ -630,7 +630,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			}
 		);
 	};
-	
+
 	// popToDir
 	var toDir;
 	var popToDir = function() {
@@ -638,7 +638,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			case 'writeAtomic':
 				toDir = OS.Path.dirname(argsOfOsFileFunc[0]);
 				break;
-				
+
 			case 'copy':
 				toDir = OS.Path.dirname(argsOfOsFileFunc[1]);
 				break;
@@ -646,13 +646,13 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			case 'makeDir':
 				toDir = OS.Path.dirname(argsOfOsFileFunc[0]);
 				break;
-				
+
 			default:
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject('nameOfOsFileFunc of "' + nameOfOsFileFunc + '" is not supported');
 				return; // to prevent futher execution
 		}
 	};
-	
+
 	// setup recurse make dirs
 	var makeDirs = function() {
 		if (!toDir) {
@@ -714,7 +714,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			}
 		);
 	};
-	
+
 	if (!aOptions.causesNeutering) {
 		doInitialAttempt();
 	} else {
@@ -745,8 +745,8 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			}
 		);
 	}
-	
-	
+
+
 	return deferred_tryOsFile_ifDirsNoExistMakeThenRetry.promise;
 }
 function aReasonMax(aReason) {
@@ -822,7 +822,7 @@ function xhr(aStr, aOptions={}) {
 	// Returns a promise
 		// resolves with xhr object
 		// rejects with object holding property "xhr" which holds the xhr object
-	
+
 	/*** aOptions
 	{
 		aLoadFlags: flags, // https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/NsIRequest#Constants
@@ -832,7 +832,7 @@ function xhr(aStr, aOptions={}) {
 		aPostData: string
 	}
 	*/
-	
+
 	var aOptions_DEFAULT = {
 		aLoadFlags: Ci.nsIRequest.LOAD_ANONYMOUS | Ci.nsIRequest.LOAD_BYPASS_CACHE | Ci.nsIRequest.INHIBIT_PERSISTENT_CACHING,
 		aPostData: null,
@@ -841,15 +841,15 @@ function xhr(aStr, aOptions={}) {
 		aTimeout: 0, // 0 means never timeout, value is in milliseconds
 		Headers: null
 	}
-	
+
 	for (var opt in aOptions_DEFAULT) {
 		if (!(opt in aOptions)) {
 			aOptions[opt] = aOptions_DEFAULT[opt];
 		}
 	}
-	
+
 	// Note: When using XMLHttpRequest to access a file:// URL the request.status is not properly set to 200 to indicate success. In such cases, request.readyState == 4, request.status == 0 and request.response will evaluate to true.
-	
+
 	var deferredMain_xhr = new Deferred();
 	console.log('here222');
 	var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
@@ -859,7 +859,7 @@ function xhr(aStr, aOptions={}) {
 
 		switch (ev.type) {
 			case 'load':
-			
+
 					if (xhr.readyState == 4) {
 						if (xhr.status == 200) {
 							deferredMain_xhr.resolve(xhr);
@@ -886,12 +886,12 @@ function xhr(aStr, aOptions={}) {
 							deferredMain_xhr.reject(rejObj);
 						}
 					}
-					
+
 				break;
 			case 'abort':
 			case 'error':
 			case 'timeout':
-				
+
 					var rejObj = {
 						name: 'deferredMain_xhr.promise',
 						aReason: ev.type[0].toUpperCase() + ev.type.substr(1),
@@ -899,7 +899,7 @@ function xhr(aStr, aOptions={}) {
 						message: xhr.statusText + ' [' + ev.type + ':' + xhr.status + ']'
 					};
 					deferredMain_xhr.reject(rejObj);
-				
+
 				break;
 			default:
 				var rejObj = {
@@ -918,12 +918,12 @@ function xhr(aStr, aOptions={}) {
 	if (aOptions.isBackgroundReq) {
 		xhr.mozBackgroundRequest = true;
 	}
-	
+
 	if (aOptions.aTimeout) {
 		console.error('setting timeout to:', aOptions.aTimeout)
 		xhr.timeout = aOptions.aTimeout;
 	}
-	
+
 	var do_setHeaders = function() {
 		if (aOptions.Headers) {
 			for (var h in aOptions.Headers) {
@@ -931,13 +931,13 @@ function xhr(aStr, aOptions={}) {
 			}
 		}
 	};
-	
+
 	if (aOptions.aPostData) {
 		xhr.open('POST', aStr, true);
 		do_setHeaders();
 		xhr.channel.loadFlags |= aOptions.aLoadFlags;
 		xhr.responseType = aOptions.aResponseType;
-		
+
 		/*
 		var aFormData = Cc['@mozilla.org/files/formdata;1'].createInstance(Ci.nsIDOMFormData);
 		for (var pd in aOptions.aPostData) {
@@ -958,7 +958,7 @@ function xhr(aStr, aOptions={}) {
 		xhr.responseType = aOptions.aResponseType;
 		xhr.send(null);
 	}
-	
+
 	return deferredMain_xhr.promise;
 }
 // end - common helper functions

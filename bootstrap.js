@@ -1,7 +1,6 @@
 // Imports
 const {classes: Cc, interfaces: Ci, manager: Cm, results: Cr, utils: Cu, Constructor: CC} = Components;
 Cm.QueryInterface(Ci.nsIComponentRegistrar);
-Cu.import('resource://gre/modules/devtools/Console.jsm');
 const {TextDecoder, TextEncoder, OS} = Cu.import('resource://gre/modules/osfile.jsm', {});
 Cu.import('resource://gre/modules/Services.jsm');
 Cu.import('resource://gre/modules/XPCOMUtils.jsm');
@@ -71,13 +70,13 @@ function extendCore() {
 				core.os.version_name = 'xp';
 			}
 			break;
-			
+
 		case 'darwin':
 			var userAgent = myServices.hph.userAgent;
 			//console.info('userAgent:', userAgent);
 			var version_osx = userAgent.match(/Mac OS X 10\.([\d\.]+)/);
 			//console.info('version_osx matched:', version_osx);
-			
+
 			if (!version_osx) {
 				throw new Error('Could not identify Mac OS X version.');
 			} else {
@@ -95,43 +94,60 @@ function extendCore() {
 				// this makes it so that 10.10.0 becomes 10.100
 				// 10.10.1 => 10.101
 				// so can compare numerically, as 10.100 is less then 10.101
-				
+
 				//core.os.version = 6.9; // note: debug: temporarily forcing mac to be 10.6 so we can test kqueue
 			}
 			break;
 		default:
 			// nothing special
 	}
-	
+
 	console.log('done adding to core, it is now:', core);
 }
 
-// START - Addon Functionalities					
+// START - Addon Functionalities
 // start - about module
-var aboutFactory_mailto;
-function AboutMailto() {}
-AboutMailto.prototype = Object.freeze({
-	classDescription: 'NativeShot History Application',
-	contractID: '@mozilla.org/network/protocol/about;1?what=mailto',
-	classID: Components.ID('{6d3c9270-4612-11e5-b970-0800200c9a66}'),
-	QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
+var aboutFactory_instance;
+function AboutPage() {}
 
-	getURIFlags: function(aURI) {
-		return Ci.nsIAboutModule.ALLOW_SCRIPT | Ci.nsIAboutModule.URI_MUST_LOAD_IN_CHILD;
-	},
+function initAndRegisterAbout() {
+	// init it
+	AboutPage.prototype = Object.freeze({
+		classDescription: 'MailtoWebmails App',
+		contractID: '@mozilla.org/network/protocol/about;1?what=mailto',
+		classID: Components.ID('{6d3c9270-4612-11e5-b970-0800200c9a66}'),
+		QueryInterface: XPCOMUtils.generateQI([Ci.nsIAboutModule]),
 
-	newChannel: function(aURI, aSecurity) {
-		console.info('aURI:', aURI);
-		var channel;
-		if (aURI.path.toLowerCase().indexOf('?discover') > -1) {
-			channel = Services.io.newChannel(core.addon.path.content + 'app_discover.xhtml', null, null);
-		} else {
-			channel = Services.io.newChannel(core.addon.path.content + 'app.xhtml', null, null);
+		getURIFlags: function(aURI) {
+			return Ci.nsIAboutModule.ALLOW_SCRIPT;
+		},
+
+		newChannel: function(aURI, aSecurity_or_aLoadInfo) {
+			var redirUrl;
+			if (aURI.path.toLowerCase().indexOf('?discover') > -1) {
+				redirUrl = core.addon.path.content + 'app_discover.xhtml';
+			} else {
+				redirUrl = core.addon.path.content + 'app.xhtml';
+			}
+
+			var channel;
+			if (Services.vc.compare(core.firefox.version, '47.*') > 0) {
+				var redirURI = Services.io.newURI(redirUrl, null, null);
+				channel = Services.io.newChannelFromURIWithLoadInfo(redirURI, aSecurity_or_aLoadInfo);
+			} else {
+				channel = Services.io.newChannel(redirUrl, null, null);
+			}
+			channel.originalURI = aURI;
+
+			return channel;
 		}
-		channel.originalURI = aURI;
-		return channel;
-	}
-});
+	});
+
+	// register it
+	aboutFactory_instance = new AboutFactory(AboutPage);
+
+	console.log('aboutFactory_instance:', aboutFactory_instance);
+}
 
 function AboutFactory(component) {
 	this.createInstance = function(outer, iid) {
@@ -171,7 +187,7 @@ const fsComServer = {
 			// devuser passed
 			fsComServer.devuserSpecifiedFsUrl = aFsUrl;
 		} // else { // programttic call from serverRequest_toUpdatedServer_unregisterCompleted //}
-		
+
 		//core.fsServer = {id:fsComServer.id};
 		if (!fsComServer.serverListenerInited) {
 			fsComServer.serverListenerInited = true;
@@ -187,7 +203,7 @@ const fsComServer = {
 		} catch(ex) {
 			console.log('fsCom.unregistering pref does not exist for this addon id so that means there was nothing in unregistration process so continue to register');
 		}
-		
+
 		fsComServer.registered = true;
 		fsComServer.fsUrl = fsComServer.devuserSpecifiedFsUrl + '?' + core.addon.cache_key;
 		Services.mm.loadFrameScript(fsComServer.fsUrl, true);
@@ -227,23 +243,23 @@ const fsComServer = {
 			if (!('serverId' in aMsg.json) || aMsg.json.serverId == fsComServer.id) {
 				switch (aMsg.json.aTopic) {
 					case 'clientRequest_clientBorn':
-							
+
 							fsComServer.clientBorn(aMsg.json.clientId);
-							
+
 						break;
 					case 'clientRequest_clientShutdownComplete':
-							
+
 							fsComServer.clientShutdown(aMsg.json.clientId);
-							
+
 						break;
 					case 'serverRequest_toUpdatedServer_unregisterCompleted':
-							
+
 							// register this newly upgraded one
 							fsComServer.register();
-							
+
 						break;
 					// start - devuser edit - add your personal message topics to listen to from clients
-						
+
 					// end - devuser edit - add your personal message topics to listen to from clients
 					default:
 						console.error('SERVER unrecognized aTopic:', aMsg.json.aTopic, aMsg, 'server id:', fsComServer.id);
@@ -446,10 +462,10 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 	var fileJson = [];
 	var submitJson = [];
 	var removeSubmittedFlag_CBArr = [];
-	
+
 	var step1 = function() {
 		// read file
-		var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-16'});
+		var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-8'});
 		promise_readInstalledServices.then(
 			function(aVal) {
 				console.log('Fullfilled - promise_readInstalledServices - ', aVal);
@@ -473,7 +489,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			}
 		);
 	};
-	
+
 	var step2 = function() {
 		// check if file holds anything needing submit
 			// .submit == 1 == add
@@ -490,7 +506,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 				removeSubmittedFlag_CBArr.push(aCBTemplateForRemSubFlag.bind(null, fileJson[i].url_template, fileJson[i].old_url_templates));
 			}
 		}
-		
+
 		if (submitJson.length > 0) {
 			step3()
 		} else {
@@ -500,7 +516,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			gServerSubmitTimer.instance = null;
 		}
 	};
-	
+
 	var step3 = function() {
 		// if step2 decides server submit is needed, then this does the xhr
 			// and on fail it will resetup timer
@@ -542,16 +558,16 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			}
 		);
 	};
-	
+
 	var step4 = function() {
 		// wrap up on success
 		// clear the pref, destroy the timer, and update to file that no more submits pending
 		Services.prefs.clearUserPref(myPrefBranch + 'pending_submit');
 		gServerSubmitTimer.instance = null;
-		
-		var promise_updateFile = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(fileJson), {
+
+		var promise_updateFile = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, JSON.stringify(fileJson), {
 			tmpPath: OSPath_installedServices + '.tmp',
-			encoding: 'utf-16',
+			encoding: 'utf-8',
 			noOverwrite: false
 		}], OS.Constants.Path.profileDir);
 		promise_updateFile.then(
@@ -576,7 +592,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			}
 		);
 	};
-	
+
 	step1();
 }
 
@@ -585,9 +601,9 @@ var gClientMessageListener = {
 		console.error('SERVER recieving msg:', aMsg);
 		switch (aMsg.json.aTopic) {
 			case core.addon.id + '::' + 'notifyBootstrapThereIsPossibleServerSubmitPending':
-					
+
 					checkIfShouldSubmit();
-					
+
 				break;
 			default:
 				console.error('SERVER unrecognized aTopic:', aMsg.json.aTopic, aMsg);
@@ -598,19 +614,19 @@ var gClientMessageListener = {
 function install() {}
 function uninstall(aData, aReason) {
 	if (aReason == ADDON_UNINSTALL) {
-		
+
 		// delete simple storage
 		OS.File.removeDir(OS.Path.join(OS.Constants.Path.profileDir, JETPACK_DIR_BASENAME, core.addon.id));
-		
+
 		// delete pref if it was there
 		Services.prefs.clearUserPref(myPrefBranch + 'pending_submit');
 	}
 }
 
 function writeDefaultsFile(aNoOverwrite, aCBSuccessAndReject) {
-	var promise_writeDefault = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, String.fromCharCode(0xfeff) + JSON.stringify(mailto_services_default), {
+	var promise_writeDefault = tryOsFile_ifDirsNoExistMakeThenRetry('writeAtomic', [OSPath_installedServices, JSON.stringify(mailto_services_default), {
 		tmpPath: OSPath_installedServices + '.tmp',
-		encoding: 'utf-16',
+		encoding: 'utf-8',
 		noOverwrite: aNoOverwrite
 	}], OS.Constants.Path.profileDir);
 	promise_writeDefault.then(
@@ -642,11 +658,11 @@ function writeDefaultsFile(aNoOverwrite, aCBSuccessAndReject) {
 function startup(aData, aReason) {
 	// core.addon.aData = aData;
 	extendCore();
-	
+
 	//framescriptlistener more
 	//fsComServer.register(core.addon.path.scripts + '_framescript-warn-on-submit.js');
 	//end framescriptlistener more
-	
+
 	if (aReason == ADDON_INSTALL) {
 		// overwrite, then open tab
 		writeDefaultsFile(false, function() {
@@ -658,17 +674,17 @@ function startup(aData, aReason) {
 	} else if ([ADDON_DOWNGRADE, ADDON_UPGRADE, APP_STARTUP, ADDON_ENABLE].indexOf(aReason) > -1) {
 		// dont overwrite
 		// then do check
-		
+
 		writeDefaultsFile(true, checkIfShouldSubmit);
 	} else {
 		// just do check
 		checkIfShouldSubmit();
 	}
-	
-	aboutFactory_mailto = new AboutFactory(AboutMailto);
-	
+
+	initAndRegisterAbout();
+
 	Services.mm.addMessageListener(core.addon.id, gClientMessageListener);
-	
+
 }
 
 function shutdown(aData, aReason) {
@@ -679,10 +695,9 @@ function shutdown(aData, aReason) {
 	//end framescriptlistener more
 
 	Services.mm.removeMessageListener(core.addon.id, gClientMessageListener);
-	
-	// an issue with this unload is that framescripts are left over, i want to destory them eventually
-	aboutFactory_mailto.unregister();
-	
+
+	aboutFactory_instance.unregister();
+
 	if (gServerSubmitTimer.instance) { // equivalent of testing gServerSubmitTimer.running
 		gServerSubmitTimer.instance.cancel();
 		gServerSubmitTimer.instance = null;
@@ -696,7 +711,7 @@ function makeDir_Bug934283(path, options) {
 	// the `from` option should be a string of a folder that you know exists for sure. then the dirs after that, in path will be created
 	// for example: path should be: `OS.Path.join('C:', 'thisDirExistsForSure', 'may exist', 'may exist2')`, and `from` should be `OS.Path.join('C:', 'thisDirExistsForSure')`
 	// options of like ignoreExisting is exercised on final dir
-	
+
 	if (!options || !('from' in options)) {
 		console.error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
 		throw new Error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
@@ -755,21 +770,21 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 	//last update: 061215 0303p - verified worker version didnt have the fix i needed to land here ALSO FIXED so it handles neutering of Fx37 for writeAtomic and I HAD TO implement this fix to worker version, fix was to introduce aOptions.causesNeutering
 	// aOptions:
 		// causesNeutering - default is false, if you use writeAtomic or another function and use an ArrayBuffer then set this to true, it will ensure directory exists first before trying. if it tries then fails the ArrayBuffer gets neutered and the retry will fail with "invalid arguments"
-		
+
 	// i use this with writeAtomic, copy, i havent tested with other things
 	// argsOfOsFileFunc is array of args
 	// will execute nameOfOsFileFunc with argsOfOsFileFunc, if rejected and reason is directories dont exist, then dirs are made then rexecute the nameOfOsFileFunc
 	// i added makeDir as i may want to create a dir with ignoreExisting on final dir as was the case in pickerIconset()
 	// returns promise
-	
+
 	var deferred_tryOsFile_ifDirsNoExistMakeThenRetry = new Deferred();
-	
+
 	if (['writeAtomic', 'copy', 'makeDir'].indexOf(nameOfOsFileFunc) == -1) {
 		deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject('nameOfOsFileFunc of "' + nameOfOsFileFunc + '" is not supported');
 		// not supported because i need to know the source path so i can get the toDir for makeDir on it
 		return deferred_tryOsFile_ifDirsNoExistMakeThenRetry.promise; //just to exit further execution
 	}
-	
+
 	// setup retry
 	var retryIt = function() {
 		console.info('tryosFile_ retryIt', 'nameOfOsFileFunc:', nameOfOsFileFunc, 'argsOfOsFileFunc:', argsOfOsFileFunc);
@@ -792,7 +807,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			}
 		);
 	};
-	
+
 	// popToDir
 	var toDir;
 	var popToDir = function() {
@@ -800,7 +815,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			case 'writeAtomic':
 				toDir = OS.Path.dirname(argsOfOsFileFunc[0]);
 				break;
-				
+
 			case 'copy':
 				toDir = OS.Path.dirname(argsOfOsFileFunc[1]);
 				break;
@@ -808,13 +823,13 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			case 'makeDir':
 				toDir = OS.Path.dirname(argsOfOsFileFunc[0]);
 				break;
-				
+
 			default:
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject('nameOfOsFileFunc of "' + nameOfOsFileFunc + '" is not supported');
 				return; // to prevent futher execution
 		}
 	};
-	
+
 	// setup recurse make dirs
 	var makeDirs = function() {
 		if (!toDir) {
@@ -876,7 +891,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			}
 		);
 	};
-	
+
 	if (!aOptions.causesNeutering) {
 		doInitialAttempt();
 	} else {
@@ -907,8 +922,8 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			}
 		);
 	}
-	
-	
+
+
 	return deferred_tryOsFile_ifDirsNoExistMakeThenRetry.promise;
 }
 function aReasonMax(aReason) {
@@ -941,20 +956,20 @@ function read_encoded(path, options) {
 	// because the options.encoding was introduced only in Fx30, this function enables previous Fx to use it
 	// must pass encoding to options object, same syntax as OS.File.read >= Fx30
 	// TextDecoder must have been imported with Cu.importGlobalProperties(['TextDecoder']);
-	
+
 	var deferred_read_encoded = new Deferred();
-	
+
 	if (options && !('encoding' in options)) {
 		deferred_read_encoded.reject('Must pass encoding in options object, otherwise just use OS.File.read');
 		return deferred_read_encoded.promise;
 	}
-	
+
 	if (options && Services.vc.compare(Services.appinfo.version, 30) < 0) { // tests if version is less then 30
 		//var encoding = options.encoding; // looks like i dont need to pass encoding to TextDecoder, not sure though for non-utf-8 though
 		delete options.encoding;
 	}
 	var promise_readIt = OS.File.read(path, options);
-	
+
 	promise_readIt.then(
 		function(aVal) {
 			console.log('Fullfilled - promise_readIt - ', {a:{a:aVal}});
@@ -980,7 +995,7 @@ function read_encoded(path, options) {
 			deferred_read_encoded.reject(rejObj);
 		}
 	);
-	
+
 	return deferred_read_encoded.promise;
 }
 function Deferred() {
@@ -1030,7 +1045,7 @@ function xhr(aStr, aOptions={}) {
 	// Returns a promise
 		// resolves with xhr object
 		// rejects with object holding property "xhr" which holds the xhr object
-	
+
 	/*** aOptions
 	{
 		aLoadFlags: flags, // https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/NsIRequest#Constants
@@ -1040,7 +1055,7 @@ function xhr(aStr, aOptions={}) {
 		aPostData: string
 	}
 	*/
-	
+
 	var aOptions_DEFAULT = {
 		aLoadFlags: Ci.nsIRequest.LOAD_ANONYMOUS | Ci.nsIRequest.LOAD_BYPASS_CACHE | Ci.nsIRequest.INHIBIT_PERSISTENT_CACHING,
 		aPostData: null,
@@ -1049,15 +1064,15 @@ function xhr(aStr, aOptions={}) {
 		aTimeout: 0, // 0 means never timeout, value is in milliseconds
 		Headers: null
 	}
-	
+
 	for (var opt in aOptions_DEFAULT) {
 		if (!(opt in aOptions)) {
 			aOptions[opt] = aOptions_DEFAULT[opt];
 		}
 	}
-	
+
 	// Note: When using XMLHttpRequest to access a file:// URL the request.status is not properly set to 200 to indicate success. In such cases, request.readyState == 4, request.status == 0 and request.response will evaluate to true.
-	
+
 	var deferredMain_xhr = new Deferred();
 	console.log('here222');
 	var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
@@ -1067,7 +1082,7 @@ function xhr(aStr, aOptions={}) {
 
 		switch (ev.type) {
 			case 'load':
-			
+
 					if (xhr.readyState == 4) {
 						if (xhr.status == 200) {
 							deferredMain_xhr.resolve(xhr);
@@ -1094,12 +1109,12 @@ function xhr(aStr, aOptions={}) {
 							deferredMain_xhr.reject(rejObj);
 						}
 					}
-					
+
 				break;
 			case 'abort':
 			case 'error':
 			case 'timeout':
-				
+
 					var rejObj = {
 						name: 'deferredMain_xhr.promise',
 						aReason: ev.type[0].toUpperCase() + ev.type.substr(1),
@@ -1107,7 +1122,7 @@ function xhr(aStr, aOptions={}) {
 						message: xhr.statusText + ' [' + ev.type + ':' + xhr.status + ']'
 					};
 					deferredMain_xhr.reject(rejObj);
-				
+
 				break;
 			default:
 				var rejObj = {
@@ -1126,12 +1141,12 @@ function xhr(aStr, aOptions={}) {
 	if (aOptions.isBackgroundReq) {
 		xhr.mozBackgroundRequest = true;
 	}
-	
+
 	if (aOptions.aTimeout) {
 		console.error('setting timeout to:', aOptions.aTimeout)
 		xhr.timeout = aOptions.aTimeout;
 	}
-	
+
 	var do_setHeaders = function() {
 		if (aOptions.Headers) {
 			for (var h in aOptions.Headers) {
@@ -1139,13 +1154,13 @@ function xhr(aStr, aOptions={}) {
 			}
 		}
 	};
-	
+
 	if (aOptions.aPostData) {
 		xhr.open('POST', aStr, true);
 		do_setHeaders();
 		xhr.channel.loadFlags |= aOptions.aLoadFlags;
 		xhr.responseType = aOptions.aResponseType;
-		
+
 		/*
 		var aFormData = Cc['@mozilla.org/files/formdata;1'].createInstance(Ci.nsIDOMFormData);
 		for (var pd in aOptions.aPostData) {
@@ -1168,7 +1183,7 @@ function xhr(aStr, aOptions={}) {
 		xhr.responseType = aOptions.aResponseType;
 		xhr.send(null);
 	}
-	
+
 	return deferredMain_xhr.promise;
 }
 // end - common helper functions
