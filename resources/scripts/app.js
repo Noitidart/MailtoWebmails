@@ -94,7 +94,9 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
 				var handlers = handlerInfoXPCOM.possibleApplicationHandlers.enumerate();
 				while (handlers.hasMoreElements()) {
-					var handler = handlers.getNext().QueryInterface(Ci.nsIWebHandlerApp);
+					try {
+						var handler = handlers.getNext().QueryInterface(Ci.nsIWebHandlerApp);
+					} catch(ignore) {}
 					if (handler.uriTemplate == aServiceEntry.url_template) {
 						// found it
 						handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
@@ -490,7 +492,12 @@ function doOnLoad() {
     var handlersXPCOM = handlerInfoXPCOM.possibleApplicationHandlers.enumerate();
 	var handlers = [];
     while (handlersXPCOM.hasMoreElements()) {
-        var handler = handlersXPCOM.getNext().QueryInterface(Ci.nsIWebHandlerApp);
+		try {
+        	var handler = handlersXPCOM.getNext().QueryInterface(Ci.nsIWebHandlerApp);
+		} catch(ex) {
+			console.error('error while enum, ex:', ex);
+			continue;
+		}
 		handlers.push(handler);
         console.log('handler', handler)
     }

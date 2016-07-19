@@ -5,12 +5,12 @@
 	<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 	  <Description about="urn:mozilla:install-manifest">
 		<em:id>MailtoWebmails@jetpack</em:id>
-		<em:version>2.4-night</em:version>
+		<em:version>2.4b3</em:version>
 		<em:type>2</em:type>
 		<em:bootstrap>true</em:bootstrap>
 		<em:optionsType>3</em:optionsType>
 		<em:optionsURL>about:mailto</em:optionsURL>
-		
+
 		<!-- Firefox -->
 		<em:targetApplication>
 			<Description>
@@ -19,7 +19,7 @@
 				<em:maxVersion>41.0</em:maxVersion> <!-- the latest version i tested it in -->
 			</Description>
 		</em:targetApplication>
-		
+
 		<!-- Front End MetaData -->
 		<!-- must provide default non-localized because It's used as a default on AMO. It's used as a default by the add-on manager, with the possibility of other locales overriding it. Failure to provide a non-localized name will lead to failed upload on AMO. -->
 		<em:name>MailtoWebmails</em:name>
