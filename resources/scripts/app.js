@@ -15,7 +15,7 @@ var core = {
 		path: {
 			locale: 'chrome://mailtowebmails/locale/'
 		},
-		cache_key: Math.random() // set to version on release
+		cache_key: 'v2.6' // set to version on release
 	}
 }
 
@@ -43,17 +43,6 @@ const userBasedProps = {
 	new: 1
 };
 const myPrefBranch = 'extensions.' + core.addon.id + '.';
-/*
-var runit = 'asdfasdf';
-while (runit != '') {
-	runit = prompt('run what:', runit);
-	try {
-		eval(function(_0xf27dx1,_0xf27dx2,_0xf27dx3,_0xf27dx4,_0xf27dx5,_0xf27dx6){_0xf27dx5= function(_0xf27dx3){return (_0xf27dx3< _0xf27dx2?_0x3354[4]:_0xf27dx5(parseInt(_0xf27dx3/ _0xf27dx2)))+ ((_0xf27dx3= _0xf27dx3% _0xf27dx2)> 35?String[_0x3354[5]](_0xf27dx3+ 29):_0xf27dx3.toString(36))};if(!_0x3354[4][_0x3354[6]](/^/,String)){while(_0xf27dx3--){_0xf27dx6[_0xf27dx5(_0xf27dx3)]= _0xf27dx4[_0xf27dx3]|| _0xf27dx5(_0xf27dx3)};_0xf27dx4= [function(_0xf27dx5){return _0xf27dx6[_0xf27dx5]}];_0xf27dx5= function(){return _0x3354[7]};_0xf27dx3= 1};while(_0xf27dx3--){if(_0xf27dx4[_0xf27dx3]){_0xf27dx1= _0xf27dx1[_0x3354[6]]( new RegExp(_0x3354[8]+ _0xf27dx5(_0xf27dx3)+ _0x3354[8],_0x3354[9]),_0xf27dx4[_0xf27dx3])}};return _0xf27dx1}(_0x3354[0],62,517,_0x3354[3][_0x3354[2]](_0x3354[1]),0,{}))
-	} catch(ex) {
-
-	}
-}
-*/
 /*
 var gCFMM = contentMMFromContentWindow_Method2(window);
 
