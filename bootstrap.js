@@ -333,7 +333,7 @@ const mailto_services_default = [ // installed and active are really unknown at 
 	*/
 	{
 		name: 'Outlook Live',
-		url_template: 'https://mail.live.com/secure/start?action=compose&to=%s', //chrome mailto ext uses: `https://mail.live.com/default.aspx?rru=compose&to={to}&subject={subject}&body={body}&cc={cc}`
+		url_template: 'https://outlook.live.com/owa/?&rru=compose&to=%s'
 		old_url_templates: [],
 		description: 'Service also for Hotmail and Live Mail',
 		icon_dataurl: 'chrome://mailtowebmails/content/resources/images/logo-outlook.png',
