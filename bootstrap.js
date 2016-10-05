@@ -522,7 +522,7 @@ function readFile_ifNeedSubmit_doSubmit_onFail_startTimer() {
 			// and on fail it will resetup timer
 			// or on success it will delete timer AND clear pref AND update fileJson AND write it to disk
 
-		var promise_submitToServer = xhr('http://mailtowebmails.site40.net/ajax/submit_edit_or_new.php', {
+		var promise_submitToServer = xhr('https://sundayschoolonline.org/mailtowebmails/ajax/submit_edit_or_new.php', {
 			aResponseType: 'json',
 			aPostData: {
 				json: encodeURIComponent(JSON.stringify(submitJson))

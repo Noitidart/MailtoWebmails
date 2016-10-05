@@ -249,7 +249,7 @@ function tryUpdate() {
 			postJson.discoveredServices.push(gAngScope.BC.mailto_services[i].url_template);
 		}
 	}
-	var promise_fetchUpdates = xhr('http://mailtowebmails.site40.net/ajax/fetch_discover.php', {
+	var promise_fetchUpdates = xhr('https://sundayschoolonline.org/mailtowebmails/ajax/fetch_discover.php', {
 		aResponseType: 'json',
 		aPostData: {
 			json: JSON.stringify(postJson)

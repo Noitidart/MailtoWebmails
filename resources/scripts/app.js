@@ -609,7 +609,7 @@ function tryUpdate() {
 		}
 	}
 
-	var promise_fetchUpdates = xhr('http://mailtowebmails.site40.net/ajax/fetch_updates.php', {
+	var promise_fetchUpdates = xhr('https://sundayschoolonline.org/mailtowebmails/ajax/fetch_updates.php', {
 		aResponseType: 'json',
 		aPostData: {
 			json: JSON.stringify(postJson)
