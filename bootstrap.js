@@ -19,7 +19,7 @@ const core = {
 			scripts: 'chrome://mailtowebmails/content/resources/scripts/',
 			styles: 'chrome://mailtowebmails/content/resources/styles/'
 		},
-		cache_key: 'v2.6' // set to version on release
+		cache_key: 'v2.8' // set to version on release
 	},
 	os: {
 		name: OS.Constants.Sys.Name.toLowerCase(),

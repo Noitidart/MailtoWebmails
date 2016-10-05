@@ -15,7 +15,7 @@ var core = {
 		path: {
 			locale: 'chrome://mailtowebmails/locale/'
 		},
-		cache_key: 'v2.6' // set to version on release
+		cache_key: 'v2.8' // set to version on release
 	}
 }
 
